@@ -2501,6 +2501,7 @@ main{min-width:0}
 
   /* 启动时自动拉一次 */
   pullCloud();
+  if (!CLOUD.token) cloudFlag(" · 只读，保存需 token");
 
   /* 投资与进度：各分组按钮控制自身可编辑状态 */
   applyInvestLock();
