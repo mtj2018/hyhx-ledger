@@ -519,7 +519,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
             3. 产值：填写「本月完成」，「累计完成」默认按上月末累计+本月完成自动计算，也可直接修改；手工填写的累计完成以填报值为准。<br>
             4. 人员情况：填写管理人员数、农民工用工人数。<br>
             5. 土建1标、机电1标、交安1标另有「分地市州」板块，按地市州填写。<br>
-            6. 线下版本为只读演示：停止录入约 1 秒自动保存到本机；每次打开页面都以线上数据为准覆盖本机，本机数据不再上传。
+            6. 停止录入约 1 秒自动保存：线上访问（mtj2018.github.io）会同步到云端，换设备打开即可看到；本机下载的网页只读取云端数据，怎么改都不会影响线上。
           </p>
         </div>
       </div>
@@ -552,6 +552,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     file: "hyhx-report.json",
     token: ["gh", "p_rzbm0wOAJ6", "FZFFgxRfMO", "B33Snm1piw1Wybw9"].join("")
   };
+  /* 线上访问（http/https）自动写回云端；本机 file:// 打开完全只读，改了也不影响线上 */
+  var ONLINE = (location.protocol === "http:" || location.protocol === "https:");
 
   function $(s) { return document.querySelector(s); }
   function fmt(v, d) {
@@ -979,6 +981,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         lockOf(CUR.tid, CUR.ym)[name] = 1;
         DIRTY = false;
         persist();
+        pushCloud();
         flag("已提交并锁定：" + LKNAME[name], true);
         renderAll();
       } else {
@@ -988,6 +991,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         delete lockOf(CUR.tid, CUR.ym)[name];
         DIRTY = false;
         persist();
+        pushCloud();
         flag("已解锁：" + LKNAME[name] + "，可以修改", true);
         renderAll();
       }
@@ -1154,7 +1158,25 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     var h = $("#pg-hint");
     if (h) { h.textContent = s; h.style.color = ok ? "#2F6B3C" : "#A24A18"; }
   }
-  /* 线下版本只读：本机数据不再上传线上（原 doPush / pushCloud 已取消） */
+  /* 线上访问才写回云端；本机 file:// 只读 */
+  var SYNC_OK = false;
+  var pushQueue = Promise.resolve();
+  function doPush(retry) {
+    var ts = DB.ts, reports = DB.reports;
+    return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify({ files: (function () { var o = {}; o[CLOUD.file] = { content: JSON.stringify({ ts: ts, data: { reports: reports } }) }; return o; })() }) })
+      .then(function (r) {
+        if (r.status === 409 && (retry || 0) < 3) return doPush((retry || 0) + 1);
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
+      .then(function () { flag("已保存并同步云端", true); })
+      .catch(function (e) { flag("云端未同步（" + (e && e.message ? e.message : e) + "）", false); });
+  }
+  function pushCloud() {
+    if (!ONLINE || !SYNC_OK) return Promise.resolve();
+    pushQueue = pushQueue.then(function () { return doPush(0); }, function () { return doPush(0); });
+    return pushQueue;
+  }
   function pullCloud() {
     return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -1163,14 +1185,16 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         var c = f.content;
         if (f.truncated && f.raw_url) return fetch(f.raw_url).then(function (x) { return x.text(); }).then(applyRemote);
         return applyRemote(c);
-      }).catch(function (e) { console.warn("云端读取失败", e); });
+      }).then(function () { SYNC_OK = true; }).catch(function (e) { console.warn("云端读取失败", e); });
   }
   function applyRemote(c) {
     try {
       var o = JSON.parse(c); if (!o || !o.data || !o.data.reports) return;
-      /* 线下版本只读：以线上为准，直接覆盖本机数据 */
-      DB = { ts: o.ts || 0, reports: o.data.reports };
-      persistLocal(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true);
+      /* 线上版：云端更新时才覆盖，避免冲掉正在填的内容；本机文件版：一直以云端为准 */
+      if (!ONLINE || (o.ts || 0) >= (DB.ts || 0)) {
+        DB = { ts: o.ts || 0, reports: o.data.reports };
+        persistLocal(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true);
+      }
     } catch (e) {}
   }
   function persistLocal() { try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) {} }
@@ -1183,8 +1207,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       if (AS_BUSY) { autoSave(); return; }
       AS_BUSY = true;
       persist();
-      AS_BUSY = false;
-      flag("已自动保存（本机）", true);
+      pushCloud().then(function () { AS_BUSY = false; }, function () { AS_BUSY = false; });
+      flag(ONLINE ? "已自动保存并同步云端" : "已自动保存（本机，只读）", true);
     }, 1000);
   }
   document.addEventListener("input", autoSave, true);
