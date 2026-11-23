@@ -307,6 +307,7 @@ main{min-width:0}
 .fcr-in{width:100%;box-sizing:border-box;border:1px solid #F4EBD5;background:#FFFDF6;border-radius:4px;font-family:inherit;font-size:12.5px;line-height:1.5;color:#B3591A;padding:2px 6px;text-align:right;font-variant-numeric:tabular-nums}
 .fcr-in:focus{outline:none;border-color:#2F6FEB;background:#fff}
 .fcr-in[readonly]{background:transparent;border-color:transparent;color:#0F2C5C}
+.fcr-tbl td.fcr-fix{font-variant-numeric:tabular-nums;white-space:nowrap;cursor:default}
 .fa-tbl td.faint{color:#93A0B0}
 .fa-tbl tr.fa-band td.faint,
 .fa-tbl tr.fa-other td.faint,
@@ -415,10 +416,12 @@ td.c input.pgi,input.pgc{text-align:center}
 .card-head .hint.pg-flag{margin-left:14px;margin-right:auto;display:inline-flex;align-items:center;gap:6px;background:#FDECEA;border:1px solid #F2C3BC;border-left:3px solid #C0392B;border-radius:4px;padding:5px 11px;font-size:12.5px;line-height:1;color:#9E2B21;letter-spacing:.3px;white-space:nowrap;box-shadow:0 1px 2px rgba(192,57,43,.08)}
 .pg-flag b{color:#B3261E;font-weight:800}
 .pg-flag i{font-style:normal;color:#D58B82}
-.pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
 .pg-lk:hover{background:#28508F}
-.pg-lk.is-on{background:#fff;color:#1E3A6E;border-color:#C9D2E0}
-.pg-lk.is-on:hover{background:#F3F6FB}
+.pg-lk.is-on{width:30px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#1E3A6E;border-color:#C9D2E0}
+.pg-lk.is-on:hover{background:#F3F6FB;border-color:#9FB2CC}
+.pg-lk svg{width:13px;height:13px;display:block}
+.pg-money{margin-left:auto;font-size:12px;color:#5F7086;letter-spacing:.4px;white-space:nowrap}
 .card.is-locked input.pgi{background:#F1F3F7;color:#5B6675;cursor:not-allowed}
 .tbl th.c{text-align:center}
 th.nmc,td.nmc{white-space:nowrap;font-size:12px}
@@ -451,6 +454,28 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-st-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
 .pg-st-ok .pg-st-dot{background:#2E9159}
 .pg-st-no .pg-st-dot{background:#C14343}
+.pg-split{display:grid;grid-template-columns:minmax(0,2.35fr) minmax(0,0.95fr);gap:14px;align-items:start}
+@media (max-width:1180px){.pg-split{grid-template-columns:1fr}}
+.hd-right{display:flex;align-items:center;gap:10px}
+.pg-xls{border:1px solid #B9CCE4;background:#F2F7FF;color:#16407F;font:600 12px/1 "Microsoft YaHei",inherit;padding:7px 12px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.pg-xls:hover{background:#E3EEFF;border-color:#8FB0DA}
+.pg-xls:active{background:#D6E6FF}
+.rail nav .nav-item{display:flex;align-items:center;gap:9px;padding:15px 14px;font-size:15px;font-weight:700}
+.rail nav .nav-item span{font-size:15px;font-weight:700;color:var(--navy);letter-spacing:.02em}
+.rail nav .nav-item.is-on span{color:#FFFFFF}
+.rail nav .nav-sec{display:block;padding:16px 14px 7px;color:#7C8B9F;font-weight:600;font-size:12px;letter-spacing:.14em;background:transparent;border-bottom:0}
+.rail nav .nav-item.sub{position:relative;padding:8px 14px 8px 34px;color:#33465F;font-weight:500}
+.rail nav .nav-item.sub span{font-size:13px;font-weight:500;color:#33465F}
+.rail nav .nav-item.sub::before{content:"";position:absolute;left:20px;top:0;bottom:0;width:2px;background:#E6EDF6}
+.rail nav .nav-item.sub.is-on{background:var(--navy)}
+.rail nav .nav-item.sub.is-on span{color:#FFFFFF}
+.rail nav .nav-item.sub.is-on::before{background:#41639B}
+.pg-tbl tr.rowband td{background:#F7FAFF}
+#pg-ppl .pg-tbl th,#pg-ppl .pg-tbl td{text-align:center}
+.rail .nav-jump{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:15px 14px;border:1px solid var(--line);background:var(--paper);color:var(--navy);text-decoration:none;font-size:15px;font-weight:700;letter-spacing:.02em}
+.rail .nav-jump:hover{background:var(--mist)}
+.rail .nav-jump::after{content:"\2197";font-size:13px;color:#8FA1B8;font-weight:600;line-height:1}
+@media (max-width:980px){.rail nav .nav-sec{display:none}.rail nav .nav-item.sub::before{display:none}}
 
 
 /* ---------- 页面查看锁 ---------- */
@@ -472,6 +497,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   font:13px inherit;font-weight:600;cursor:pointer;letter-spacing:.04em}
 .pg-gate-row button:hover{background:#1D4E97}
 .pg-gate-err{min-height:16px;margin-top:8px;font-size:12px;color:#C0392B}
+.pg-gate-tip{margin-top:2px;font-size:11.5px;color:#8A96A8;letter-spacing:.01em}
 .pg-gate-box.shake{animation:pgshake .38s}
 @keyframes pgshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
@@ -496,7 +522,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
       <button id="btn-import" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导入数据</button>
       <input type="file" id="import-file" accept=".json,application/json" style="display:none">
-      <button id="btn-save" type="button" style="font-family:inherit;font-size:13px;line-height:1;padding:8px 18px;border-radius:6px;cursor:pointer;border:1px solid #FFFFFF;background:#FFFFFF;color:#16407F;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.18)">保存</button>
     </div>
   </div>
 </header>
@@ -505,13 +530,17 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   <aside class="rail">
     <nav>
       <a class="nav-item is-on" href="#overview" data-view="overview"><span>项目总览</span></a>
-      <a class="nav-item" href="#investment" data-view="investment"><span>投资与进度</span></a>
-      <a class="nav-item" href="#progress" data-view="progress"><span>形象进度情况</span></a>
-      <a class="nav-item" href="#exec" data-view="exec"><span>概算执行情况</span></a>
-      <a class="nav-item" href="#fixedasset" data-view="fixedasset"><span>固定资产投资</span></a>
-      <a class="nav-item" href="#files" data-view="files"><span>重要文件台账</span></a>
+      <div class="nav-sec">概算管理</div>
+      <a class="nav-item sub" href="#investment" data-view="investment"><span>概算执行总览</span></a>
+      <a class="nav-item sub" href="#exec" data-view="exec"><span>概算执行明细</span></a>
+      <div class="nav-sec">固投管理</div>
+      <a class="nav-item sub" href="#fixedasset" data-view="fixedasset"><span>固投执行总览</span></a>
+      <div class="nav-sec">进度管理</div>
+      <a class="nav-item sub" href="#progress" data-view="progress"><span>形象进度总览</span></a>
+      <a class="nav-item" href="#files" data-view="files"><span>文档管理</span></a>
       <a class="nav-item" href="#other" data-view="other"><span>其他信息</span></a>
     </nav>
+    <a class="nav-jump" target="_blank" rel="noopener" href="https://mtj2018.github.io/hyhx-ledger/report.html" title="打开工程月报填报页（B 页，线上）"><span>基础数据管理</span></a>
   </aside>
 
   <main>
@@ -519,15 +548,18 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     <!-- ===== 视图：形象进度情况（汇总） ===== -->
     <section class="view" id="view-progress">
       <div class="card">
-        <div class="card-head"><h2>形象进度情况</h2><span class="hint">由各标段工程月报填报自动汇总</span></div>
+        <div class="card-head"><h2>形象进度总览</h2><span class="hint">由各标段工程月报填报自动汇总</span></div>
         <div class="pg-bar">
-          <select class="pg-sel" id="pg-month"></select>
+          <select class="pg-sel" id="pg-year"></select>
+          <select class="pg-sel" id="pg-mon"></select>
           <span class="pg-hint" id="pg-src">数据来源：工程月报填报页</span>
         </div>
       </div>
-      <div class="card" id="pg-shape"></div>
+      <div class="pg-split">
+        <div class="card" id="pg-shape"></div>
+        <div class="card" id="pg-ppl"></div>
+      </div>
       <div class="card" id="pg-out"></div>
-      <div class="card" id="pg-ppl"></div>
       <div class="card" id="pg-gs"></div>
       <div class="card" id="pg-city"></div>
     </section>
@@ -1227,7 +1259,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (s) { s.textContent = "最后修改时间 " + stamp; s.style.color = ""; }
       try { localStorage.setItem(KEY + "-ts", stamp); } catch (e) {}
       DIRTY = false;
-      try { if (window.__pgPushLedger) window.__pgPushLedger(); } catch (e0) {}
       var b = el("btn-save");
       if (b) { b.style.background = "#FFFFFF"; b.style.color = "#16407F"; b.style.borderColor = "#FFFFFF"; }
     } catch (e) {
@@ -1499,9 +1530,11 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
   /* ---------- 概算执行情况 ---------- */
   var EXEC_YEARS = [2024, 2025, 2026, 2027];
-  var EXEC_TAB = 2026;
-  var EXEC_MONTH = 11;    /* 2026 年右侧「X月完成」当前月份（仅 11、12 月可录） */
-  var EXEC_MONTH27 = 1;   /* 2027 年右侧「X月完成」当前月份（1—12 月可录） */
+  /* 默认打开定位当前自然年月；超出可录区间按月夹到边界 */
+  var NOWY = (new Date()).getFullYear(), NOWM = (new Date()).getMonth() + 1;
+  var EXEC_TAB = EXEC_YEARS.indexOf(NOWY) >= 0 ? NOWY : 2026;
+  var EXEC_MONTH = NOWY < 2026 ? 11 : (NOWY === 2026 ? Math.min(12, Math.max(11, NOWM)) : 12);
+  var EXEC_MONTH27 = NOWY < 2027 ? 1 : (NOWY === 2027 ? Math.min(12, Math.max(1, NOWM)) : 12);
   function curMon(y) { return y === 2027 ? EXEC_MONTH27 : EXEC_MONTH; }
   var EXEC_CH = {
     "1": ["101", "102", "103", "104", "106", "107", "108", "109", "110"],
@@ -2989,6 +3022,107 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     return idx;
   }
 
+  /* 「实际投资」自动提取：
+     土建1标（武汉/孝感/仙桃）取 B 页「分地市州产值填报」同月同地市州的完成产值；
+     土建2标～土建10标取 B 页「产值完成情况（万元）」同标段同月的「累计完成 · 合计」 */
+  var FA_T1CITY = { caidian: "蔡甸", hanchuan: "汉川", xiantao: "仙桃" };
+  function faRepDB() {
+    if (window.__REPDB) return window.__REPDB;
+    try {
+      var raw = localStorage.getItem("hyhx-report-v1");
+      if (raw) window.__REPDB = JSON.parse(raw);
+    } catch (e) {}
+    return window.__REPDB;
+  }
+  function faRegDone(city, t) {
+    var db = faRepDB();
+    if (!db || !db.reports) return null;
+    if (t == null) return null;
+    var ym = "20" + String(t).slice(0, 2) + "-" + String(t).slice(2);
+    var r = (db.reports.t1 || {})[ym];
+    if (!r || !r.reg) return null;
+    var o = r.reg[city] || {};
+    var v = o.done;
+    if (v === undefined || v === null || v === "") return null;
+    v = Number(v);
+    return isFinite(v) ? v : null;
+  }
+  function faIsT1(c, g, i) { return g === 0 && i === 0 && !!FA_T1CITY[c.k]; }
+  function faBS() { return window.__PG_BASE || {}; }
+  function faTenderOf(tid) {
+    var ts = faBS().tenders || [], i;
+    for (i = 0; i < ts.length; i++) if (ts[i].tid === tid) return ts[i];
+    return null;
+  }
+  function faOutGet(tid, ym, kind, k) {
+    var db = faRepDB();
+    if (!db || !db.reports) return null;
+    var r = (db.reports[tid] || {})[ym];
+    if (!r) return null;
+    var g = r[kind];
+    if (!g || g[k] === undefined || g[k] === null || g[k] === "") return null;
+    var v = Number(g[k]);
+    return isFinite(v) ? v : null;
+  }
+  /* 与 B 页 outPrevCum / outAt 完全同一口径 */
+  function faOutPrevCum(tid, row, ym) {
+    var idx = (faBS().months || []).indexOf(ym), cum = row.cum || 0, k, mo, ov, v;
+    for (k = 1; k < idx; k++) {
+      mo = faBS().months[k];
+      ov = faOutGet(tid, mo, "outcum", row.k);
+      if (ov !== null) { cum = ov; continue; }
+      v = faOutGet(tid, mo, "out", row.k);
+      if (v !== null) cum += v;
+    }
+    return cum;
+  }
+  function faOutCum(tid, row, ym) {
+    var idx = (faBS().months || []).indexOf(ym);
+    var cum = faOutPrevCum(tid, row, ym);
+    var oc = faOutGet(tid, ym, "outcum", row.k);
+    if (oc !== null) cum = oc;
+    else if (idx > 0) { var v = faOutGet(tid, ym, "out", row.k); if (v !== null) cum += v; }
+    return cum;
+  }
+  /* A 页月标签（如 "2611"）→ B 页月份（如 "2026-11"） */
+  function faYmOf(tag) {
+    if (tag == null) return null;
+    var s = String(tag);
+    if (s.indexOf("-") > 0) return s;
+    if (s.length < 4) return null;
+    return "20" + s.slice(0, 2) + "-" + s.slice(2);
+  }
+  /* 该标段该月「产值完成情况（万元）」累计完成 · 合计 */
+  function faTenderOutCum(tid, cm) {
+    var t = faTenderOf(tid);
+    if (!t || !t.out || !t.out.length) return null;
+    cm = faYmOf(cm);
+    if (cm == null || (faBS().months || []).indexOf(cm) < 0) return null;
+    var tot = 0, i;
+    for (i = 0; i < t.out.length; i++) {
+      var key = (t.out[i].k === undefined ? i : t.out[i].k);
+      tot += faOutCum(tid, { k: key, cum: t.out[i].cum || 0 }, cm);
+    }
+    return tot;
+  }
+  /* 该行是否需要固化为只读：土建N标（N=1 时限于武汉/孝感/仙桃）返回 B 页标段 tid */
+  function faFixTid(c, i) {
+    var nm = (c.jian && c.jian[i] && c.jian[i][0]) || "";
+    var m = nm.match(/^土建(\d+)标/);
+    if (!m) return null;
+    var n = parseInt(m[1], 10);
+    if (n === 1) return FA_T1CITY[c.k] ? "t1" : null;
+    return "t" + n;
+  }
+  /* 实际投资：能取到 B 页数据的行用提取值，其余沿用卡片内填报的 fak_ 值 */
+  function faActVal(c, i, cm) {
+    var tid = faFixTid(c, i);
+    if (tid) {
+      var v0 = (tid === "t1") ? faRegDone(FA_T1CITY[c.k], cm) : faTenderOutCum(tid, cm);
+      if (v0 != null) return v0;
+    }
+    return faGet("fak_" + c.k + "_0_" + i);
+  }
   function faCheckRail(c, cm) {
     var rows = "", k, act, cum, diff, sumAct = null, sumCum = 0;
     var sumAll = 0, htAllSum = faHtBand(c) + faHtOther(c);
@@ -2998,18 +3132,25 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     var jx = faJianIdx(c);
     for (var q = 0; q < jx.length; q++) {
       k = jx[q];
-      act = faGet("fak_" + c.k + "_0_" + k);
+      act = faActVal(c, k, cm);
       cum = faCum(c, 0, k, cm);
       if (act != null) sumAct = (sumAct == null ? act : sumAct + act);
       diff = act == null ? null : act - cum;
+      if (diff != null && Math.abs(diff) < 0.5) diff = 0;
+      var fixTid = faFixTid(c, k);
+      var fcrCell = fixTid
+        ? '<td class="fcr-fix" title="自动取自 B 页同标段同月产值（累计完成合计），不可修改">'
+          + (act == null ? "\u2014" : fmt(act)) + '</td>'
+        : '<td><input class="fcr-in" type="text" data-int="1" data-k="fak_' + c.k + '_0_' + k + '"'
+          + (act == null ? ' placeholder="—"' : ' data-def="' + fmt(act) + '" value="' + fmt(act) + '"')
+          + '></td>';
       rows += '<tr data-farow="fr_' + k + '"><td>' + c.jian[k][0] + '</td>'
-        + '<td><input class="fcr-in" type="text" data-int="1" data-k="fak_' + c.k + '_0_' + k + '"'
-        + (act == null ? ' placeholder="—"' : ' data-def="' + fmt(act) + '" value="' + fmt(act) + '"')
-        + '></td>'
+        + fcrCell
         + '<td id="fq_' + c.k + '_0_' + k + '"' + (diff != null && diff < 0 ? ' style="color:#C0392B"' : '') + '>'
         + (diff == null ? "—" : fmt(diff)) + '</td></tr>';
     }
     var sDiff = sumAct == null ? null : sumAct - sumCum;
+    if (sDiff != null && Math.abs(sDiff) < 0.5) sDiff = 0;
     rows = '<tr class="sum" data-farow="fr_b"><td>建安费</td>'
       + '<td id="fsum_' + c.k + '">' + (sumAct == null ? "—" : fmt(sumAct)) + '</td>'
       + '<td id="fqs_' + c.k + '"' + (sDiff != null && sDiff < 0 ? ' style="color:#C0392B"' : '') + '>'
@@ -3155,7 +3296,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       faPut("fy_" + c.k + "_0_" + i, fmt(ytd));
       faPut("fr_" + c.k + "_0_" + i, fmt(cum));
       faPut("fr_" + c.k + "_0_" + i + "_r", ht == null ? "—" : fmt(ht - cum));
-      var actK = faGet("fak_" + c.k + "_0_" + i), difK = actK == null ? null : actK - cum;
+      var actK = faActVal(c, i, cm), difK = actK == null ? null : actK - cum;
+      if (difK != null && Math.abs(difK) < 0.5) difK = 0;
       faPut("fq_" + c.k + "_0_" + i, difK == null ? "—" : fmt(difK));
       var dEl = el("fq_" + c.k + "_0_" + i);
       if (dEl) dEl.style.color = (difK != null && difK < 0) ? "#C0392B" : "";
@@ -3191,13 +3333,15 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       + "，占概算投资 " + pctTxt(invNow ? tAll / invNow : 0));
     var sa = null, kk;
     for (kk = 0; kk < c.jian.length; kk++) {
-      var ak = faGet("fak_" + c.k + "_0_" + kk);
+      var ak = faActVal(c, kk, cm);
       if (ak != null) sa = (sa == null ? ak : sa + ak);
     }
     faPut("fsum_" + c.k, sa == null ? "—" : fmt(sa));
-    faPut("fqs_" + c.k, sa == null ? "—" : fmt(sa - jc2));
+    var sdif = sa == null ? null : sa - jc2;
+    if (sdif != null && Math.abs(sdif) < 0.5) sdif = 0;
+    faPut("fqs_" + c.k, sdif == null ? "—" : fmt(sdif));
     var sq = el("fqs_" + c.k);
-    if (sq) sq.style.color = (sa != null && sa - jc2 < 0) ? "#C0392B" : "";
+    if (sq) sq.style.color = (sdif != null && sdif < 0) ? "#C0392B" : "";
     if (c.months) {
       faPut("fk_" + c.k + "_tot", fmt(htB + htO));
       faPut("fk_" + c.k + "_htj", fmt(htB));
@@ -3238,7 +3382,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     });
     var h = el("fa-hint"), c = null;
     FA_CITIES.forEach(function (x) { if (x.k === k) c = x; });
-    if (h) h.textContent = "单位：万元";
+    if (h) h.textContent = "单位：万元　|　土建1标（武汉·孝感·仙桃）取 B 页分地市州产值；土建2～10标取 B 页「分项产值情况」累计完成合计，均不可修改";
     setTimeout(faAlignRail, 0);
   }
 
@@ -3316,6 +3460,20 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     faApplyLock();
     showFA(c.k);
   }
+  window.__faReload = function () {
+    var act = null, onTab = document.querySelector("#fa-tabs .fa-tab.on");
+    if (onTab) act = onTab.getAttribute("data-fatab");
+    FA_CITIES.forEach(function (c) {
+      var old = el("fa-p-" + c.k);
+      if (!old) return;
+      var box = document.createElement("div");
+      box.innerHTML = faCityPanel(c);
+      old.parentNode.replaceChild(box.firstChild, old);
+    });
+    faSync();
+    faApplyLock();
+    if (act) showFA(act);
+  };
 
   (function () {
     var wrap = el("fa-wrap"), tabs = el("fa-tabs");
@@ -3419,13 +3577,24 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   })();
 
 
-  /* ================= 形象进度汇总 + 云端同步 ================= */
+  /* ================= 形象进度汇总 + 线上读取（线下版本只读） ================= */
   (function () {
-    var BASE = {"months":["2026-11","2026-12","2027-01","2027-02","2027-03","2027-04","2027-05","2027-06","2027-07","2027-08","2027-09","2027-10","2027-11","2027-12","2028-01","2028-02","2028-03","2028-04","2028-05","2028-06","2028-07","2028-08","2028-09","2028-10","2028-11","2028-12","2029-01","2029-02","2029-03","2029-04","2029-05","2029-06","2029-07","2029-08","2029-09","2029-10","2029-11","2029-12"],"tenders":[{"tid":"t1","name":"1标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":70.0,"prev":70.0,"mon":0.0,"cum":70.0,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":149.154,"prev":69.15,"mon":0.0,"cum":69.15,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":158.6,"prev":28.35,"mon":0.2,"cum":28.55,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":219.1,"prev":128.48,"mon":1.74,"cum":130.22,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":252.03,"prev":124.58,"mon":4.95,"cum":129.53,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":66.684,"prev":3.2,"mon":0.0,"cum":3.2,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":107.2,"prev":10.02,"mon":6.15,"cum":16.17,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":76.6,"prev":10.46,"mon":5.39,"cum":15.85,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":76.6,"prev":9.9,"mon":5.65,"cum":15.55,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":76.6,"prev":8.87,"mon":6.28,"cum":15.15,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":107.2,"prev":2.1,"mon":6.45,"cum":8.55,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":107.2,"prev":3.02,"mon":5.85,"cum":8.87,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":107.2,"prev":0.3,"mon":7.49,"cum":7.79,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":143.0,"prev":99.0,"mon":1.0,"cum":100.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":4560.0,"prev":2236.0,"mon":14.0,"cum":2250.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":2216.0,"prev":2216.0,"mon":0.0,"cum":2216.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":539.0,"prev":262.0,"mon":19.0,"cum":281.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":2531.0,"prev":1142.0,"mon":51.0,"cum":1193.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":1730.0,"prev":1002.0,"mon":48.0,"cum":1050.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":12638.0,"prev":4863.0,"mon":499.0,"cum":5362.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":12638.0,"prev":3568.0,"mon":568.0,"cum":4136.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":70.0,"prev":0.0,"mon":1.0,"cum":1.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":34602.0,"prev":2673.4,"mon":927.0,"cum":3600.4,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":69204.0,"prev":5346.8,"mon":0.0,"cum":5346.8,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":107.2,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":36537.953,"mon":649.0,"cum":23957.0,"k":0},{"no":"2","nm":"路基工程","contract":103402.3337,"mon":1155.0,"cum":28779.0,"k":1},{"no":"3","nm":"路面工程","contract":61049.1038,"mon":4523.0,"cum":9232.0,"k":2},{"no":"4","nm":"桥梁工程","contract":102057.014,"mon":2530.0,"cum":44624.0,"k":3},{"no":"5","nm":"改扩建工程","contract":55327.7918,"mon":1627.0,"cum":8339.0,"k":4},{"no":"7","nm":"绿化工程","contract":7016.2925,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":148868.7664,"mon":1438.0,"cum":58092.0,"k":6}],"people":{"mgr":312.0,"worker":1244.0}},{"tid":"t2","name":"2标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":21.4,"prev":21.4,"mon":0.0,"cum":21.4,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":15.4728,"prev":2.972,"mon":0.0,"cum":2.972,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":9.8226,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":98.1,"prev":0.3266,"mon":0.0,"cum":0.3266,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":1.47,"prev":0.5155,"mon":0.0,"cum":0.5155,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":4.0775,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":13.3168,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":29.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":3012.0,"prev":1370.0,"mon":31.0,"cum":1401.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":729.0,"prev":254.0,"mon":68.0,"cum":322.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1658.0,"prev":669.0,"mon":30.0,"cum":699.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":702.0,"prev":278.0,"mon":14.0,"cum":292.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":5035.0,"prev":1549.0,"mon":148.0,"cum":1697.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":5035.0,"prev":1022.0,"mon":138.0,"cum":1160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":3040.916,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12163.664,"prev":680.0,"mon":30.0,"cum":710.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":63027.648,"prev":0.0,"mon":30.0,"cum":30.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":14629.7372,"mon":null,"cum":13575.54,"k":0},{"no":"2","nm":"路基工程","contract":29175.0728,"mon":213.0,"cum":4555.88,"k":1},{"no":"4","nm":"桥梁工程","contract":102164.6377,"mon":2385.0,"cum":46855.5096,"k":2},{"no":"5","nm":"改扩建工程","contract":7308.2719,"mon":null,"cum":null,"k":3},{"no":"7","nm":"绿化工程","contract":1129.4535,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":90341.0821,"mon":2872.0,"cum":18638.0,"k":5}],"people":{"mgr":85.0,"worker":554.0}},{"tid":"t3","name":"3标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":27.4,"prev":27.4,"mon":0.0,"cum":27.4,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":80.09,"prev":71.2,"mon":8.89,"cum":80.09,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":8.9,"prev":2.1,"mon":0.0,"cum":2.1,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":134.35,"prev":85.0,"mon":2.0,"cum":87.0,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":3.913,"prev":2.95,"mon":0.0,"cum":2.95,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":1.08,"prev":0.84,"mon":0.0,"cum":0.84,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":72.59,"prev":2.2,"mon":0.0,"cum":2.2,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":76.0,"prev":55.0,"mon":0.0,"cum":55.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":774.0,"prev":452.0,"mon":45.0,"cum":497.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":1800.0,"prev":1752.0,"mon":44.0,"cum":1796.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":51.0,"prev":19.0,"mon":1.0,"cum":20.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":248.0,"prev":36.0,"mon":4.0,"cum":40.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":643.0,"prev":477.0,"mon":40.0,"cum":517.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":5058.0,"prev":2172.0,"mon":1039.0,"cum":3211.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":5058.0,"prev":2009.0,"mon":913.0,"cum":2922.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":10935.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":21870.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":9562.4403,"mon":0.0,"cum":6746.0,"k":0},{"no":"2","nm":"路基工程","contract":39048.3456,"mon":546.0,"cum":15589.0,"k":1},{"no":"4","nm":"桥梁工程","contract":28658.6084,"mon":1514.0,"cum":16532.0,"k":2},{"no":"5","nm":"改扩建工程","contract":8837.4033,"mon":null,"cum":283.0,"k":3},{"no":"7","nm":"绿化工程","contract":1413.6889,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":40540.6642,"mon":943.0,"cum":31750.0,"k":5}],"people":{"mgr":72.0,"worker":319.0}},{"tid":"t4","name":"4标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":30.8,"prev":30.8,"mon":0.0,"cum":30.8,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":82.3,"prev":82.3,"mon":0.0,"cum":82.3,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":35.6,"prev":12.47,"mon":0.0,"cum":12.47,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":177.3,"prev":90.0,"mon":5.7,"cum":95.7,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":4.16,"prev":2.84,"mon":0.11,"cum":2.95,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":127.0,"prev":95.0,"mon":5.0,"cum":100.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":567.0,"prev":266.0,"mon":0.0,"cum":266.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":89.0,"prev":39.0,"mon":5.0,"cum":44.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":273.0,"prev":72.0,"mon":25.0,"cum":97.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":168.0,"prev":21.0,"mon":12.0,"cum":33.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1155.0,"prev":100.0,"mon":60.0,"cum":160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1155.0,"prev":0.0,"mon":34.0,"cum":34.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":0.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":2273.78,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":4185.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":8574.0,"mon":60.0,"cum":5733.0,"k":0},{"no":"2","nm":"路基工程","contract":43475.971,"mon":1134.0,"cum":20506.0,"k":1},{"no":"3","nm":"路面工程","contract":34867.0,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":16842.6882,"mon":264.0,"cum":4796.0,"k":3},{"no":"5","nm":"改扩建工程","contract":14918.0,"mon":353.0,"cum":2782.0,"k":4},{"no":"7","nm":"绿化工程","contract":1932.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":47008.0,"mon":777.0,"cum":18357.0,"k":6}],"people":{"mgr":94.0,"worker":291.0}},{"tid":"t5","name":"5标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":35.0,"prev":31.9,"mon":0.0,"cum":31.9,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":59.24,"prev":54.78,"mon":0.0,"cum":54.78,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":66.34,"prev":5.3,"mon":2.0,"cum":7.3,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":150.13,"prev":74.36,"mon":4.2,"cum":78.56,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.584,"prev":1.747,"mon":0.05,"cum":1.797,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":1.5,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":21.227,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":82.0,"prev":39.0,"mon":1.0,"cum":40.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":2060.0,"prev":1124.0,"mon":6.0,"cum":1130.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":426.0,"prev":426.0,"mon":0.0,"cum":426.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":329.0,"prev":73.0,"mon":1.0,"cum":74.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1318.0,"prev":669.0,"mon":35.0,"cum":704.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":648.0,"prev":318.0,"mon":34.0,"cum":352.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":4904.0,"prev":1543.0,"mon":264.0,"cum":1807.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":4904.0,"prev":1028.0,"mon":243.0,"cum":1271.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":3.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12927.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":25854.0,"prev":3136.0,"mon":310.54,"cum":3446.54,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":12683.3665,"mon":null,"cum":7969.25,"k":0},{"no":"2","nm":"路基工程","contract":46913.0,"mon":1641.0,"cum":15363.04,"k":1},{"no":"4","nm":"桥梁工程","contract":47231.0,"mon":914.0,"cum":11365.86,"k":2},{"no":"5","nm":"改扩建工程","contract":9084.0,"mon":341.0,"cum":1658.12,"k":3},{"no":"7","nm":"绿化工程","contract":1566.0,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":58485.0,"mon":1342.0,"cum":37121.83,"k":5}],"people":{"mgr":81.0,"worker":714.0}},{"tid":"t6","name":"6标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":28.92,"prev":28.92,"mon":0.0,"cum":28.92,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":52.29,"prev":52.29,"mon":0.0,"cum":52.29,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":0.6,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":190.06,"prev":94.73,"mon":4.57,"cum":99.3,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.3879,"prev":1.671,"mon":0.124,"cum":1.795,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":7.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":50.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":90.8,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":90.8,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":73.0,"prev":58.0,"mon":0.0,"cum":58.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1788.0,"prev":934.0,"mon":40.0,"cum":974.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":588.0,"prev":526.0,"mon":45.0,"cum":571.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":287.0,"prev":101.0,"mon":13.0,"cum":114.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":769.0,"prev":422.0,"mon":15.0,"cum":437.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":681.0,"prev":299.0,"mon":22.0,"cum":321.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":3319.0,"prev":1921.0,"mon":204.0,"cum":2125.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":3319.0,"prev":1500.0,"mon":183.0,"cum":1683.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":9687.0,"prev":470.0,"mon":722.0,"cum":1192.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":20041.0,"prev":4028.0,"mon":1132.0,"cum":5160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":8254.39,"mon":126.54,"cum":5684.12,"k":0},{"no":"2","nm":"路基工程","contract":43859.72,"mon":1086.75,"cum":17106.33,"k":1},{"no":"3","nm":"路面工程","contract":42859.51,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":27095.0,"mon":1178.17,"cum":15883.0,"k":3},{"no":"5","nm":"改扩建工程","contract":9531.5,"mon":1172.35,"cum":2388.16,"k":4},{"no":"7","nm":"绿化工程","contract":1128.86,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":61014.0,"mon":2267.5,"cum":29662.5,"k":6}],"people":{"mgr":92.0,"worker":465.0}},{"tid":"t7","name":"7标 ","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":62.3,"prev":62.3,"mon":0.0,"cum":62.3,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":79.96,"prev":77.85,"mon":0.83,"cum":78.68,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":116.02,"prev":22.41,"mon":0.42,"cum":22.83,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":262.0,"prev":56.8,"mon":33.62,"cum":90.42,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":5.78,"prev":3.134,"mon":1.028,"cum":4.162,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":6.92,"prev":0.3,"mon":0.04,"cum":0.34,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":71.14,"prev":0.0,"mon":0.04,"cum":0.04,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":129.0,"prev":79.0,"mon":8.0,"cum":87.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":2668.0,"prev":797.0,"mon":40.0,"cum":837.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":678.0,"prev":169.0,"mon":46.0,"cum":215.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1240.0,"prev":324.0,"mon":51.0,"cum":375.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":933.0,"prev":212.0,"mon":70.0,"cum":282.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":4988.0,"prev":964.0,"mon":388.0,"cum":1352.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":4988.0,"prev":434.0,"mon":465.0,"cum":899.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":0.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12410.234,"prev":0.0,"mon":526.47,"cum":526.47,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":12410.234,"prev":0.0,"mon":1656.0,"cum":1656.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":12000.0,"mon":193.0,"cum":6941.0,"k":0},{"no":"2","nm":"路基工程","contract":53657.0,"mon":1985.0,"cum":19325.0,"k":1},{"no":"3","nm":"路面工程","contract":54488.0,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":42331.0,"mon":274.0,"cum":12556.0,"k":3},{"no":"5","nm":"改扩建工程","contract":25767.0,"mon":50.0,"cum":3857.0,"k":4},{"no":"7","nm":"绿化工程","contract":3182.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":60885.0,"mon":1335.0,"cum":8426.0,"k":6}],"people":{"mgr":95.0,"worker":527.0}},{"tid":"t8","name":"8标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":35.6,"prev":35.6,"mon":0.0,"cum":35.6,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":162.0,"prev":162.0,"mon":0.0,"cum":162.0,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":78.0,"prev":29.0,"mon":3.0,"cum":32.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":377.0,"prev":162.0,"mon":10.0,"cum":172.0,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.1,"prev":1.91,"mon":0.1,"cum":2.01,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":4.2,"prev":3.7,"mon":0.2,"cum":3.9,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":50.0,"prev":4.2,"mon":3.0,"cum":7.2,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":202.0,"prev":135.0,"mon":5.0,"cum":140.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"2","nm":"引江济汉桥特大桥","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":108.0,"prev":108.0,"mon":0.0,"cum":108.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"承台","unit":"座","total":5.0,"prev":5.0,"mon":0.0,"cum":5.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|承台","k":16},{"lv":4,"no":"","nm":"系梁","unit":"道","total":17.0,"prev":17.0,"mon":0.0,"cum":17.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|系梁","k":17},{"lv":4,"no":"","nm":"索塔","unit":"节","total":26.0,"prev":26.0,"mon":0.0,"cum":26.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|索塔","k":18},{"lv":4,"no":"","nm":"墩柱","unit":"个","total":59.0,"prev":59.0,"mon":0.0,"cum":59.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|墩柱","k":19},{"lv":4,"no":"","nm":"盖梁","unit":"道","total":19.0,"prev":19.0,"mon":0.0,"cum":19.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|盖梁","k":20},{"lv":3,"no":"","nm":"上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构","k":21},{"lv":4,"no":"","nm":"桥面板","unit":"米","total":897.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|桥面板","k":22},{"lv":4,"no":"","nm":"斜拉索","unit":"道","total":72.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|斜拉索","k":23},{"lv":4,"no":"","nm":"箱梁预制","unit":"片","total":114.0,"prev":114.0,"mon":0.0,"cum":114.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|箱梁预制","k":24},{"lv":4,"no":"","nm":"箱梁安装","unit":"片","total":114.0,"prev":0.0,"mon":114.0,"cum":114.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|箱梁安装","k":25},{"lv":4,"no":"","nm":"护栏","unit":"米","total":1794.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|护栏","k":26},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":27},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":28},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1603.0,"prev":812.0,"mon":60.0,"cum":872.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":29},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":30},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":257.0,"prev":170.0,"mon":10.0,"cum":180.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":31},{"lv":4,"no":"","nm":"墩台","unit":"个","total":800.0,"prev":464.0,"mon":26.0,"cum":490.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":32},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":281.0,"prev":180.0,"mon":10.0,"cum":190.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":33},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":34},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":2658.0,"prev":1030.0,"mon":150.0,"cum":1180.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":35},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":2658.0,"prev":624.0,"mon":130.0,"cum":754.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":36},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":51.0,"prev":16.0,"mon":4.0,"cum":20.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":37},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":7351.0,"prev":140.0,"mon":120.0,"cum":260.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":38},{"lv":4,"no":"","nm":"护栏","unit":"米","total":9756.19,"prev":0.0,"mon":300.0,"cum":300.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":39},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":40}],"out":[{"no":"1","nm":"临时工程与设施","contract":15207.2,"mon":157.0,"cum":12102.0,"k":0},{"no":"2","nm":"路基工程","contract":56531.6,"mon":1314.0,"cum":30000.0,"k":1},{"no":"4","nm":"桥梁工程","contract":47795.0,"mon":2347.0,"cum":26873.0,"k":2},{"no":"5","nm":"改扩建工程","contract":10218.5,"mon":667.0,"cum":2390.0,"k":3},{"no":"7","nm":"绿化工程","contract":0,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":35268.5,"mon":1511.0,"cum":20168.0,"k":5}],"people":{"mgr":88.0,"worker":875.0}},{"tid":"t9","name":"9标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":28.0,"prev":28.0,"mon":0.0,"cum":28.0,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":94.0,"prev":89.0,"mon":0.0,"cum":89.0,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":97.31,"prev":42.81,"mon":35.07,"cum":77.88,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":354.67,"prev":147.13,"mon":11.64,"cum":158.77,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.3,"prev":2.195,"mon":0.045,"cum":2.24,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":9.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":28.2,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":147.0,"prev":80.0,"mon":2.0,"cum":82.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":647.0,"prev":309.0,"mon":27.0,"cum":336.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":0.0,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":115.0,"prev":47.0,"mon":1.0,"cum":48.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":222.0,"prev":126.0,"mon":2.0,"cum":128.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":228.0,"prev":58.0,"mon":12.0,"cum":70.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1544.0,"prev":420.0,"mon":117.0,"cum":537.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1544.0,"prev":157.0,"mon":0.0,"cum":157.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":2040.19,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":2040.19,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":58.6,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":10427.68,"mon":262.0,"cum":6727.0,"k":0},{"no":"2","nm":"路基工程","contract":43672.86,"mon":2143.0,"cum":33137.0,"k":1},{"no":"3","nm":"路面工程","contract":48212.25,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":12690.87,"mon":251.0,"cum":8980.0,"k":3},{"no":"5","nm":"改扩建工程","contract":15660.29,"mon":679.0,"cum":1950.0,"k":4},{"no":"7","nm":"绿化工程","contract":3177.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":56503.49,"mon":null,"cum":null,"k":6}],"people":{"mgr":68.0,"worker":310.0}},{"tid":"t10","name":"10标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":17.6,"prev":17.18,"mon":0.0,"cum":17.18,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":176.7,"prev":174.78,"mon":0.0,"cum":174.78,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":446.0,"prev":198.05,"mon":5.66,"cum":203.71,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":395.0,"prev":153.84,"mon":1.21,"cum":155.05,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":1.05,"prev":0.94,"mon":0.0,"cum":0.94,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":18.9,"prev":2.17,"mon":0.42,"cum":2.59,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":87.9,"prev":11.2,"mon":2.9,"cum":14.1,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":158.0,"prev":45.0,"mon":4.0,"cum":49.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1048.0,"prev":332.0,"mon":26.0,"cum":358.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":256.0,"prev":92.0,"mon":7.0,"cum":99.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":505.0,"prev":155.0,"mon":1.0,"cum":156.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":179.0,"prev":52.0,"mon":9.0,"cum":61.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1576.0,"prev":541.0,"mon":48.0,"cum":589.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1576.0,"prev":293.0,"mon":24.0,"cum":317.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":7620.76,"mon":39.96,"cum":5075.63,"k":0},{"no":"2","nm":"路基工程","contract":45082.16,"mon":503.69,"cum":14861.93,"k":1},{"no":"4","nm":"桥梁工程","contract":21222.29,"mon":363.13,"cum":4230.28,"k":2},{"no":"5","nm":"改扩建工程","contract":18094.74,"mon":399.28,"cum":5826.49,"k":3},{"no":"7","nm":"绿化工程","contract":4491.15,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":17553.6,"mon":356.74,"cum":4796.03,"k":5}],"people":{"mgr":59.0,"worker":286.0}},{"tid":"m1","name":"机电1标","type":"me","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":33.0,"mon":0.0,"cum":33.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":1},{"lv":1,"no":"九","nm":"机电工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"机电工程","k":2},{"lv":2,"no":"1","nm":"设备购置","unit":"%","total":100.0,"prev":3.45,"mon":0.51,"cum":3.96,"leaf":true,"grp":null,"parent":"设备购置","agg":"机电工程|设备购置","k":3},{"lv":2,"no":"2","nm":"设备安装","unit":"%","total":100.0,"prev":4.49,"mon":0.16,"cum":4.65,"leaf":true,"grp":null,"parent":"设备安装","agg":"机电工程|设备安装","k":4}],"out":[{"no":"1","nm":"临时工程与设施","contract":1944.6695,"mon":null,"cum":727.6695,"k":0},{"no":"9","nm":"机电工程","contract":62699.0,"mon":295.6681,"cum":2587.1306,"k":1}],"people":{"mgr":32.0,"worker":55.0}},{"tid":"j1","name":"交安1标","type":"jt","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":20.0,"mon":0.0,"cum":20.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":1},{"lv":1,"no":"七","nm":"交安工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"交安工程","k":2},{"lv":2,"no":"1","nm":"隔离栅","unit":"公里","total":111.9,"prev":5.0,"mon":4.0,"cum":9.0,"leaf":true,"grp":null,"parent":"隔离栅","agg":"交安工程|隔离栅","k":3},{"lv":2,"no":"2","nm":"护栏","unit":"公里","total":125.7,"prev":6.0,"mon":5.0,"cum":11.0,"leaf":true,"grp":null,"parent":"护栏","agg":"交安工程|护栏","k":4},{"lv":2,"no":"3","nm":"标志标牌","unit":"个","total":1310.0,"prev":0.0,"mon":18.0,"cum":18.0,"leaf":true,"grp":null,"parent":"标志标牌","agg":"交安工程|标志标牌","k":5}],"out":[{"no":"1","nm":"临时工程与设施","contract":273.0,"mon":0.0,"cum":50.8,"k":0},{"no":"6","nm":"交安工程","contract":12501.0,"mon":212.0,"cum":471.0,"k":1}],"people":{"mgr":12.0,"worker":40.0}}],"regions":{"t1":{"kind":"simple","rows":[{"city":"蔡甸","plan":null,"done":null},{"city":"汉川","plan":null,"done":null},{"city":"仙桃","plan":null,"done":null}]},"m1":{"kind":"simple","rows":[{"city":"蔡甸","plan":null,"done":12312.2469},{"city":"汉川","plan":null,"done":2966.3169},{"city":"仙桃","plan":null,"done":30028.8795},{"city":"潜江","plan":null,"done":17391.5567}]},"j1":{"kind":"jt","rows":[{"city":"蔡甸","outPlan":7066,"outDone":38,"glPlan":69,"glDone":5,"fhPlan":80,"fhDone":6,"bzPlan":204,"bzDone":0},{"city":"汉川","outPlan":1702,"outDone":0,"glPlan":20,"glDone":0,"fhPlan":10,"fhDone":0,"bzPlan":112,"bzDone":0},{"city":"仙桃","outPlan":3731,"outDone":0,"glPlan":23,"glDone":0,"fhPlan":35,"fhDone":0,"bzPlan":75,"bzDone":0}]}},"summary":{"gaisuan":[{"name":"路基","plan":577743.2372,"done":349739.83078,"pct":0.605355127088972},{"name":"桥梁","plan":843181.6914,"done":395678.63892,"pct":0.469268537203439},{"name":"路面","plan":321932,"done":42925.078248,"pct":0.133335854304636},{"name":"交叉","plan":658626,"done":36989.58135,"pct":0.0561617387561378},{"name":"交安","plan":287099,"done":3837.953903,"pct":0.013368050404216},{"name":"绿化","plan":94029,"done":0,"pct":0},{"name":"建安费","plan":3072546,"done":949136.781729963,"pct":0.308908892407132}],"road":[{"city":"蔡甸","plan":63551.756092,"done":20587.05765,"pct":0.323941601553817},{"city":"汉川","plan":17332.297116,"done":5056.4703,"pct":0.291736880931507},{"city":"仙桃","plan":155990.674044,"done":61852.1479,"pct":0.396511831742925},{"city":"潜江","plan":92438.917952,"done":40749.05935,"pct":0.440821466248225},{"city":"荆州","plan":115548.64744,"done":61902.875,"pct":0.53572998361702},{"city":"宜昌","plan":132880.944556,"done":60238.65715,"pct":0.453328032482593}],"bridge":[{"city":"蔡甸","plan":92749.986054,"done":null,"pct":null},{"city":"汉川","plan":25295.450742,"done":null,"pct":null},{"city":"仙桃","plan":227659.056678,"done":null,"pct":null},{"city":"潜江","plan":134909.070624,"done":34197.3193,"pct":null},{"city":"荆州","plan":168636.33828,"done":null,"pct":null},{"city":"宜昌","plan":193931.789022,"done":null,"pct":null}]}};
+    var BASE = {"months":["2026-11","2026-12","2027-01","2027-02","2027-03","2027-04","2027-05","2027-06","2027-07","2027-08","2027-09","2027-10","2027-11","2027-12","2028-01","2028-02","2028-03","2028-04","2028-05","2028-06","2028-07","2028-08","2028-09","2028-10","2028-11","2028-12","2029-01","2029-02","2029-03","2029-04","2029-05","2029-06","2029-07","2029-08","2029-09","2029-10","2029-11","2029-12"],"tenders":[{"tid":"t1","name":"1标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":70.0,"prev":70.0,"mon":0.0,"cum":70.0,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":149.154,"prev":69.15,"mon":0.0,"cum":69.15,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":158.6,"prev":28.35,"mon":0.2,"cum":28.55,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":219.1,"prev":128.48,"mon":1.74,"cum":130.22,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":252.03,"prev":124.58,"mon":4.95,"cum":129.53,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":66.684,"prev":3.2,"mon":0.0,"cum":3.2,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":107.2,"prev":10.02,"mon":6.15,"cum":16.17,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":76.6,"prev":10.46,"mon":5.39,"cum":15.85,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":76.6,"prev":9.9,"mon":5.65,"cum":15.55,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":76.6,"prev":8.87,"mon":6.28,"cum":15.15,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":107.2,"prev":2.1,"mon":6.45,"cum":8.55,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":107.2,"prev":3.02,"mon":5.85,"cum":8.87,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":107.2,"prev":0.3,"mon":7.49,"cum":7.79,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":143.0,"prev":99.0,"mon":1.0,"cum":100.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":4560.0,"prev":2236.0,"mon":14.0,"cum":2250.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":2216.0,"prev":2216.0,"mon":0.0,"cum":2216.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":539.0,"prev":262.0,"mon":19.0,"cum":281.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":2531.0,"prev":1142.0,"mon":51.0,"cum":1193.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":1730.0,"prev":1002.0,"mon":48.0,"cum":1050.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":12638.0,"prev":4863.0,"mon":499.0,"cum":5362.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":12638.0,"prev":3568.0,"mon":568.0,"cum":4136.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":70.0,"prev":0.0,"mon":1.0,"cum":1.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":34602.0,"prev":2673.4,"mon":927.0,"cum":3600.4,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":69204.0,"prev":5346.8,"mon":0.0,"cum":5346.8,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":107.2,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":36537.953,"mon":649.0,"cum":23957.0,"k":0},{"no":"2","nm":"路基工程","contract":103402.3337,"mon":1155.0,"cum":28779.0,"k":1},{"no":"3","nm":"路面工程","contract":61049.1038,"mon":4523.0,"cum":9232.0,"k":2},{"no":"4","nm":"桥梁工程","contract":102057.014,"mon":2530.0,"cum":44624.0,"k":3},{"no":"5","nm":"改扩建工程","contract":55327.7918,"mon":1627.0,"cum":8339.0,"k":4},{"no":"7","nm":"绿化工程","contract":7016.2925,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":148868.7664,"mon":1438.0,"cum":58092.0,"k":6}],"people":{"mgr":312.0,"worker":1244.0}},{"tid":"t2","name":"2标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":21.4,"prev":21.4,"mon":0.0,"cum":21.4,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":15.4728,"prev":2.972,"mon":0.0,"cum":2.972,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":9.8226,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":98.1,"prev":0.3266,"mon":0.0,"cum":0.3266,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":1.47,"prev":0.5155,"mon":0.0,"cum":0.5155,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":4.0775,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":13.3168,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":29.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":3012.0,"prev":1370.0,"mon":31.0,"cum":1401.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":729.0,"prev":254.0,"mon":68.0,"cum":322.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1658.0,"prev":669.0,"mon":30.0,"cum":699.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":702.0,"prev":278.0,"mon":14.0,"cum":292.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":5035.0,"prev":1549.0,"mon":148.0,"cum":1697.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":5035.0,"prev":1022.0,"mon":138.0,"cum":1160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":3040.916,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12163.664,"prev":680.0,"mon":30.0,"cum":710.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":63027.648,"prev":0.0,"mon":30.0,"cum":30.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":14629.7372,"mon":null,"cum":13575.54,"k":0},{"no":"2","nm":"路基工程","contract":29175.0728,"mon":213.0,"cum":4555.88,"k":1},{"no":"4","nm":"桥梁工程","contract":102164.6377,"mon":2385.0,"cum":46855.5096,"k":2},{"no":"5","nm":"改扩建工程","contract":7308.2719,"mon":null,"cum":null,"k":3},{"no":"7","nm":"绿化工程","contract":1129.4535,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":90341.0821,"mon":2872.0,"cum":18638.0,"k":5}],"people":{"mgr":85.0,"worker":554.0}},{"tid":"t3","name":"3标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":27.4,"prev":27.4,"mon":0.0,"cum":27.4,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":80.09,"prev":71.2,"mon":8.89,"cum":80.09,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":8.9,"prev":2.1,"mon":0.0,"cum":2.1,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":134.35,"prev":85.0,"mon":2.0,"cum":87.0,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":3.913,"prev":2.95,"mon":0.0,"cum":2.95,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":1.08,"prev":0.84,"mon":0.0,"cum":0.84,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":72.59,"prev":2.2,"mon":0.0,"cum":2.2,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":76.0,"prev":55.0,"mon":0.0,"cum":55.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":774.0,"prev":452.0,"mon":45.0,"cum":497.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":1800.0,"prev":1752.0,"mon":44.0,"cum":1796.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":51.0,"prev":19.0,"mon":1.0,"cum":20.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":248.0,"prev":36.0,"mon":4.0,"cum":40.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":643.0,"prev":477.0,"mon":40.0,"cum":517.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":5058.0,"prev":2172.0,"mon":1039.0,"cum":3211.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":5058.0,"prev":2009.0,"mon":913.0,"cum":2922.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":10935.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":21870.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":9562.4403,"mon":0.0,"cum":6746.0,"k":0},{"no":"2","nm":"路基工程","contract":39048.3456,"mon":546.0,"cum":15589.0,"k":1},{"no":"4","nm":"桥梁工程","contract":28658.6084,"mon":1514.0,"cum":16532.0,"k":2},{"no":"5","nm":"改扩建工程","contract":8837.4033,"mon":null,"cum":283.0,"k":3},{"no":"7","nm":"绿化工程","contract":1413.6889,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":40540.6642,"mon":943.0,"cum":31750.0,"k":5}],"people":{"mgr":72.0,"worker":319.0}},{"tid":"t4","name":"4标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":30.8,"prev":30.8,"mon":0.0,"cum":30.8,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":82.3,"prev":82.3,"mon":0.0,"cum":82.3,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":35.6,"prev":12.47,"mon":0.0,"cum":12.47,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":177.3,"prev":90.0,"mon":5.7,"cum":95.7,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":4.16,"prev":2.84,"mon":0.11,"cum":2.95,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":127.0,"prev":95.0,"mon":5.0,"cum":100.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":567.0,"prev":266.0,"mon":0.0,"cum":266.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":89.0,"prev":39.0,"mon":5.0,"cum":44.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":273.0,"prev":72.0,"mon":25.0,"cum":97.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":168.0,"prev":21.0,"mon":12.0,"cum":33.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1155.0,"prev":100.0,"mon":60.0,"cum":160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1155.0,"prev":0.0,"mon":34.0,"cum":34.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":0.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":2273.78,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":4185.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":8574.0,"mon":60.0,"cum":5733.0,"k":0},{"no":"2","nm":"路基工程","contract":43475.971,"mon":1134.0,"cum":20506.0,"k":1},{"no":"3","nm":"路面工程","contract":34867.0,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":16842.6882,"mon":264.0,"cum":4796.0,"k":3},{"no":"5","nm":"改扩建工程","contract":14918.0,"mon":353.0,"cum":2782.0,"k":4},{"no":"7","nm":"绿化工程","contract":1932.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":47008.0,"mon":777.0,"cum":18357.0,"k":6}],"people":{"mgr":94.0,"worker":291.0}},{"tid":"t5","name":"5标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":35.0,"prev":31.9,"mon":0.0,"cum":31.9,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":59.24,"prev":54.78,"mon":0.0,"cum":54.78,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":66.34,"prev":5.3,"mon":2.0,"cum":7.3,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":150.13,"prev":74.36,"mon":4.2,"cum":78.56,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.584,"prev":1.747,"mon":0.05,"cum":1.797,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":1.5,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":21.227,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":82.0,"prev":39.0,"mon":1.0,"cum":40.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":2060.0,"prev":1124.0,"mon":6.0,"cum":1130.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":426.0,"prev":426.0,"mon":0.0,"cum":426.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":329.0,"prev":73.0,"mon":1.0,"cum":74.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1318.0,"prev":669.0,"mon":35.0,"cum":704.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":648.0,"prev":318.0,"mon":34.0,"cum":352.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":4904.0,"prev":1543.0,"mon":264.0,"cum":1807.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":4904.0,"prev":1028.0,"mon":243.0,"cum":1271.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":3.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12927.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":25854.0,"prev":3136.0,"mon":310.54,"cum":3446.54,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":12683.3665,"mon":null,"cum":7969.25,"k":0},{"no":"2","nm":"路基工程","contract":46913.0,"mon":1641.0,"cum":15363.04,"k":1},{"no":"4","nm":"桥梁工程","contract":47231.0,"mon":914.0,"cum":11365.86,"k":2},{"no":"5","nm":"改扩建工程","contract":9084.0,"mon":341.0,"cum":1658.12,"k":3},{"no":"7","nm":"绿化工程","contract":1566.0,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":58485.0,"mon":1342.0,"cum":37121.83,"k":5}],"people":{"mgr":81.0,"worker":714.0}},{"tid":"t6","name":"6标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":28.92,"prev":28.92,"mon":0.0,"cum":28.92,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":52.29,"prev":52.29,"mon":0.0,"cum":52.29,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":0.6,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":190.06,"prev":94.73,"mon":4.57,"cum":99.3,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.3879,"prev":1.671,"mon":0.124,"cum":1.795,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":7.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":50.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":90.8,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":90.8,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":73.0,"prev":58.0,"mon":0.0,"cum":58.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1788.0,"prev":934.0,"mon":40.0,"cum":974.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":588.0,"prev":526.0,"mon":45.0,"cum":571.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":287.0,"prev":101.0,"mon":13.0,"cum":114.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":769.0,"prev":422.0,"mon":15.0,"cum":437.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":681.0,"prev":299.0,"mon":22.0,"cum":321.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":3319.0,"prev":1921.0,"mon":204.0,"cum":2125.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":3319.0,"prev":1500.0,"mon":183.0,"cum":1683.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":9687.0,"prev":470.0,"mon":722.0,"cum":1192.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":20041.0,"prev":4028.0,"mon":1132.0,"cum":5160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":8254.39,"mon":126.54,"cum":5684.12,"k":0},{"no":"2","nm":"路基工程","contract":43859.72,"mon":1086.75,"cum":17106.33,"k":1},{"no":"3","nm":"路面工程","contract":42859.51,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":27095.0,"mon":1178.17,"cum":15883.0,"k":3},{"no":"5","nm":"改扩建工程","contract":9531.5,"mon":1172.35,"cum":2388.16,"k":4},{"no":"7","nm":"绿化工程","contract":1128.86,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":61014.0,"mon":2267.5,"cum":29662.5,"k":6}],"people":{"mgr":92.0,"worker":465.0}},{"tid":"t7","name":"7标 ","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":62.3,"prev":62.3,"mon":0.0,"cum":62.3,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":79.96,"prev":77.85,"mon":0.83,"cum":78.68,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":116.02,"prev":22.41,"mon":0.42,"cum":22.83,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":262.0,"prev":56.8,"mon":33.62,"cum":90.42,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":5.78,"prev":3.134,"mon":1.028,"cum":4.162,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":6.92,"prev":0.3,"mon":0.04,"cum":0.34,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":71.14,"prev":0.0,"mon":0.04,"cum":0.04,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":129.0,"prev":79.0,"mon":8.0,"cum":87.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":2668.0,"prev":797.0,"mon":40.0,"cum":837.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":678.0,"prev":169.0,"mon":46.0,"cum":215.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1240.0,"prev":324.0,"mon":51.0,"cum":375.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":933.0,"prev":212.0,"mon":70.0,"cum":282.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":4988.0,"prev":964.0,"mon":388.0,"cum":1352.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":4988.0,"prev":434.0,"mon":465.0,"cum":899.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":0.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12410.234,"prev":0.0,"mon":526.47,"cum":526.47,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":12410.234,"prev":0.0,"mon":1656.0,"cum":1656.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":12000.0,"mon":193.0,"cum":6941.0,"k":0},{"no":"2","nm":"路基工程","contract":53657.0,"mon":1985.0,"cum":19325.0,"k":1},{"no":"3","nm":"路面工程","contract":54488.0,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":42331.0,"mon":274.0,"cum":12556.0,"k":3},{"no":"5","nm":"改扩建工程","contract":25767.0,"mon":50.0,"cum":3857.0,"k":4},{"no":"7","nm":"绿化工程","contract":3182.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":60885.0,"mon":1335.0,"cum":8426.0,"k":6}],"people":{"mgr":95.0,"worker":527.0}},{"tid":"t8","name":"8标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":35.6,"prev":35.6,"mon":0.0,"cum":35.6,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":162.0,"prev":162.0,"mon":0.0,"cum":162.0,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":78.0,"prev":29.0,"mon":3.0,"cum":32.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":377.0,"prev":162.0,"mon":10.0,"cum":172.0,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.1,"prev":1.91,"mon":0.1,"cum":2.01,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":4.2,"prev":3.7,"mon":0.2,"cum":3.9,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":50.0,"prev":4.2,"mon":3.0,"cum":7.2,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":202.0,"prev":135.0,"mon":5.0,"cum":140.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"2","nm":"引江济汉桥特大桥","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":108.0,"prev":108.0,"mon":0.0,"cum":108.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"承台","unit":"座","total":5.0,"prev":5.0,"mon":0.0,"cum":5.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|承台","k":16},{"lv":4,"no":"","nm":"系梁","unit":"道","total":17.0,"prev":17.0,"mon":0.0,"cum":17.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|系梁","k":17},{"lv":4,"no":"","nm":"索塔","unit":"节","total":26.0,"prev":26.0,"mon":0.0,"cum":26.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|索塔","k":18},{"lv":4,"no":"","nm":"墩柱","unit":"个","total":59.0,"prev":59.0,"mon":0.0,"cum":59.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|墩柱","k":19},{"lv":4,"no":"","nm":"盖梁","unit":"道","total":19.0,"prev":19.0,"mon":0.0,"cum":19.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|盖梁","k":20},{"lv":3,"no":"","nm":"上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构","k":21},{"lv":4,"no":"","nm":"桥面板","unit":"米","total":897.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|桥面板","k":22},{"lv":4,"no":"","nm":"斜拉索","unit":"道","total":72.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|斜拉索","k":23},{"lv":4,"no":"","nm":"箱梁预制","unit":"片","total":114.0,"prev":114.0,"mon":0.0,"cum":114.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|箱梁预制","k":24},{"lv":4,"no":"","nm":"箱梁安装","unit":"片","total":114.0,"prev":0.0,"mon":114.0,"cum":114.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|箱梁安装","k":25},{"lv":4,"no":"","nm":"护栏","unit":"米","total":1794.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|护栏","k":26},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":27},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":28},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1603.0,"prev":812.0,"mon":60.0,"cum":872.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":29},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":30},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":257.0,"prev":170.0,"mon":10.0,"cum":180.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":31},{"lv":4,"no":"","nm":"墩台","unit":"个","total":800.0,"prev":464.0,"mon":26.0,"cum":490.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":32},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":281.0,"prev":180.0,"mon":10.0,"cum":190.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":33},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":34},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":2658.0,"prev":1030.0,"mon":150.0,"cum":1180.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":35},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":2658.0,"prev":624.0,"mon":130.0,"cum":754.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":36},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":51.0,"prev":16.0,"mon":4.0,"cum":20.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":37},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":7351.0,"prev":140.0,"mon":120.0,"cum":260.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":38},{"lv":4,"no":"","nm":"护栏","unit":"米","total":9756.19,"prev":0.0,"mon":300.0,"cum":300.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":39},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":40}],"out":[{"no":"1","nm":"临时工程与设施","contract":15207.2,"mon":157.0,"cum":12102.0,"k":0},{"no":"2","nm":"路基工程","contract":56531.6,"mon":1314.0,"cum":30000.0,"k":1},{"no":"4","nm":"桥梁工程","contract":47795.0,"mon":2347.0,"cum":26873.0,"k":2},{"no":"5","nm":"改扩建工程","contract":10218.5,"mon":667.0,"cum":2390.0,"k":3},{"no":"7","nm":"绿化工程","contract":0,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":35268.5,"mon":1511.0,"cum":20168.0,"k":5}],"people":{"mgr":88.0,"worker":875.0}},{"tid":"t9","name":"9标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":28.0,"prev":28.0,"mon":0.0,"cum":28.0,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":94.0,"prev":89.0,"mon":0.0,"cum":89.0,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":97.31,"prev":42.81,"mon":35.07,"cum":77.88,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":354.67,"prev":147.13,"mon":11.64,"cum":158.77,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.3,"prev":2.195,"mon":0.045,"cum":2.24,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":9.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":28.2,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":147.0,"prev":80.0,"mon":2.0,"cum":82.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":647.0,"prev":309.0,"mon":27.0,"cum":336.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":0.0,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":115.0,"prev":47.0,"mon":1.0,"cum":48.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":222.0,"prev":126.0,"mon":2.0,"cum":128.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":228.0,"prev":58.0,"mon":12.0,"cum":70.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1544.0,"prev":420.0,"mon":117.0,"cum":537.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1544.0,"prev":157.0,"mon":0.0,"cum":157.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":2040.19,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":2040.19,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":58.6,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":10427.68,"mon":262.0,"cum":6727.0,"k":0},{"no":"2","nm":"路基工程","contract":43672.86,"mon":2143.0,"cum":33137.0,"k":1},{"no":"3","nm":"路面工程","contract":48212.25,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":12690.87,"mon":251.0,"cum":8980.0,"k":3},{"no":"5","nm":"改扩建工程","contract":15660.29,"mon":679.0,"cum":1950.0,"k":4},{"no":"7","nm":"绿化工程","contract":3177.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":56503.49,"mon":null,"cum":null,"k":6}],"people":{"mgr":68.0,"worker":310.0}},{"tid":"t10","name":"10标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":17.6,"prev":17.18,"mon":0.0,"cum":17.18,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":176.7,"prev":174.78,"mon":0.0,"cum":174.78,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":446.0,"prev":198.05,"mon":5.66,"cum":203.71,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":395.0,"prev":153.84,"mon":1.21,"cum":155.05,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":1.05,"prev":0.94,"mon":0.0,"cum":0.94,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":18.9,"prev":2.17,"mon":0.42,"cum":2.59,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":87.9,"prev":11.2,"mon":2.9,"cum":14.1,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":158.0,"prev":45.0,"mon":4.0,"cum":49.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"其余桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1048.0,"prev":332.0,"mon":26.0,"cum":358.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":256.0,"prev":92.0,"mon":7.0,"cum":99.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":505.0,"prev":155.0,"mon":1.0,"cum":156.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":179.0,"prev":52.0,"mon":9.0,"cum":61.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1576.0,"prev":541.0,"mon":48.0,"cum":589.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1576.0,"prev":293.0,"mon":24.0,"cum":317.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":7620.76,"mon":39.96,"cum":5075.63,"k":0},{"no":"2","nm":"路基工程","contract":45082.16,"mon":503.69,"cum":14861.93,"k":1},{"no":"4","nm":"桥梁工程","contract":21222.29,"mon":363.13,"cum":4230.28,"k":2},{"no":"5","nm":"改扩建工程","contract":18094.74,"mon":399.28,"cum":5826.49,"k":3},{"no":"7","nm":"绿化工程","contract":4491.15,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":17553.6,"mon":356.74,"cum":4796.03,"k":5}],"people":{"mgr":59.0,"worker":286.0}},{"tid":"m1","name":"机电1标","type":"me","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":33.0,"mon":0.0,"cum":33.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":1},{"lv":1,"no":"九","nm":"机电工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"机电工程","k":2},{"lv":2,"no":"1","nm":"设备购置","unit":"%","total":100.0,"prev":3.45,"mon":0.51,"cum":3.96,"leaf":true,"grp":null,"parent":"设备购置","agg":"机电工程|设备购置","k":3},{"lv":2,"no":"2","nm":"设备安装","unit":"%","total":100.0,"prev":4.49,"mon":0.16,"cum":4.65,"leaf":true,"grp":null,"parent":"设备安装","agg":"机电工程|设备安装","k":4}],"out":[{"no":"1","nm":"临时工程与设施","contract":1944.6695,"mon":null,"cum":727.6695,"k":0},{"no":"9","nm":"机电工程","contract":62699.0,"mon":295.6681,"cum":2587.1306,"k":1}],"people":{"mgr":32.0,"worker":55.0}},{"tid":"j1","name":"交安1标","type":"jt","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":20.0,"mon":0.0,"cum":20.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":1},{"lv":1,"no":"七","nm":"交安工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"交安工程","k":2},{"lv":2,"no":"1","nm":"隔离栅","unit":"公里","total":111.9,"prev":5.0,"mon":4.0,"cum":9.0,"leaf":true,"grp":null,"parent":"隔离栅","agg":"交安工程|隔离栅","k":3},{"lv":2,"no":"2","nm":"护栏","unit":"公里","total":125.7,"prev":6.0,"mon":5.0,"cum":11.0,"leaf":true,"grp":null,"parent":"护栏","agg":"交安工程|护栏","k":4},{"lv":2,"no":"3","nm":"标志标牌","unit":"个","total":1310.0,"prev":0.0,"mon":18.0,"cum":18.0,"leaf":true,"grp":null,"parent":"标志标牌","agg":"交安工程|标志标牌","k":5}],"out":[{"no":"1","nm":"临时工程与设施","contract":273.0,"mon":0.0,"cum":50.8,"k":0},{"no":"6","nm":"交安工程","contract":12501.0,"mon":212.0,"cum":471.0,"k":1}],"people":{"mgr":12.0,"worker":40.0}}],"regions":{"t1":{"kind":"simple","rows":[{"city":"蔡甸","plan":null,"done":null},{"city":"汉川","plan":null,"done":null},{"city":"仙桃","plan":null,"done":null}]},"m1":{"kind":"simple","rows":[{"city":"蔡甸","plan":null,"done":12312.2469},{"city":"汉川","plan":null,"done":2966.3169},{"city":"仙桃","plan":null,"done":30028.8795},{"city":"潜江","plan":null,"done":17391.5567}]},"j1":{"kind":"jt","rows":[{"city":"蔡甸","outPlan":7066,"outDone":38,"glPlan":69,"glDone":5,"fhPlan":80,"fhDone":6,"bzPlan":204,"bzDone":0},{"city":"汉川","outPlan":1702,"outDone":0,"glPlan":20,"glDone":0,"fhPlan":10,"fhDone":0,"bzPlan":112,"bzDone":0},{"city":"仙桃","outPlan":3731,"outDone":0,"glPlan":23,"glDone":0,"fhPlan":35,"fhDone":0,"bzPlan":75,"bzDone":0}]}},"summary":{"gaisuan":[{"name":"路基","plan":577743.2372,"done":349739.83078,"pct":0.605355127088972},{"name":"桥梁","plan":843181.6914,"done":395678.63892,"pct":0.469268537203439},{"name":"路面","plan":321932,"done":42925.078248,"pct":0.133335854304636},{"name":"交叉","plan":658626,"done":36989.58135,"pct":0.0561617387561378},{"name":"交安","plan":287099,"done":3837.953903,"pct":0.013368050404216},{"name":"绿化","plan":94029,"done":0,"pct":0},{"name":"建安费","plan":3072546,"done":949136.781729963,"pct":0.308908892407132}],"road":[{"city":"蔡甸","plan":63551.756092,"done":20587.05765,"pct":0.323941601553817},{"city":"汉川","plan":17332.297116,"done":5056.4703,"pct":0.291736880931507},{"city":"仙桃","plan":155990.674044,"done":61852.1479,"pct":0.396511831742925},{"city":"潜江","plan":92438.917952,"done":40749.05935,"pct":0.440821466248225},{"city":"荆州","plan":115548.64744,"done":61902.875,"pct":0.53572998361702},{"city":"宜昌","plan":132880.944556,"done":60238.65715,"pct":0.453328032482593}],"bridge":[{"city":"蔡甸","plan":92749.986054,"done":null,"pct":null},{"city":"汉川","plan":25295.450742,"done":null,"pct":null},{"city":"仙桃","plan":227659.056678,"done":null,"pct":null},{"city":"潜江","plan":134909.070624,"done":34197.3193,"pct":null},{"city":"荆州","plan":168636.33828,"done":null,"pct":null},{"city":"宜昌","plan":193931.789022,"done":null,"pct":null}]}};
+    window.__PG_BASE = BASE;
     var RKEY = "hyhx-report-v1";
     var DB = { ts: 0, reports: {} };
     try { var raw = localStorage.getItem(RKEY); if (raw) { var o = JSON.parse(raw); if (o && o.reports) DB = o; } } catch (e) {}
     var YM = BASE.months[0];
+    /* 形象进度默认定位当前自然月（今月不在可选范围内则取最近的已开始月份） */
+    (function () {
+      var d = new Date(), ym = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2);
+      var i, v = BASE.months[0];
+      if (!BASE.months.length) return;
+      if (ym <= BASE.months[0]) YM = BASE.months[0];
+      else if (ym >= BASE.months[BASE.months.length - 1]) YM = BASE.months[BASE.months.length - 1];
+      else { for (i = 0; i < BASE.months.length; i++) if (BASE.months[i] <= ym) v = BASE.months[i]; YM = v; }
+    })();
+    window.__REPDB = DB;
 
     var CLOUD = {
       token: ["gh", "p_rzbm0wOAJ6", "FZFFgxRfMO", "B33Snm1piw1Wybw9"].join(""),
@@ -3503,7 +3672,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           var key = row.agg || curSec;
           var g = map[key];
           if (!g) {
-            g = map[key] = { name: row.nm, unit: row.unit, no: row.no, lv: row.lv,
+            g = map[key] = { name: row.nm, unit: row.unit, no: row.no, lv: row.lv, leaf: !!row.leaf,
                              sec: curSec, secno: curSecno, total: 0, prev: 0, mon: 0, cum: 0, n: 0,
                              pctRow: row.unit === "%", has: false };
             order.push(key);
@@ -3550,52 +3719,281 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       return rows;
     }
 
-    function head(title, hint) {
+    function head(title, hint, extra) {
+      if (extra) {
+        return '<div class="card-head"><h2>' + title + '</h2><div class="hd-right"><span class="hint">'
+          + (hint || "") + '</span>' + extra + '</div></div>';
+      }
       return '<div class="card-head"><h2>' + title + '</h2><span class="hint">' + (hint || "") + '</span></div>';
     }
 
-    function renderShape() {
-      var rows = aggShape(YM).map(function (g) {
-        var sec = (g.sec || "");
-        var nd = (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : 4;
-        var nf = function (v) { return nd === 2 ? fmtz(v, 2) : fmt(v, nd); };
-        if (g.lv === 1 && !g.has) {
-          return '<tr><td class="c sec">' + (g.secno || "") + '</td><td class="sec" colspan="7">' + g.name + "</td></tr>";
-        }
-        if (g.lv === 1 && g.has) {
-          return '<tr><td class="c sec">' + (g.secno || "") + '</td><td class="sec">' + g.name + "</td>"
-            + '<td class="c unit">' + (g.unit || "") + "</td><td class='c'>" + nf(g.total) + "</td>"
-            + '<td class="c">' + nf(g.prev) + "</td><td class='c'>" + nf(g.mon) + "</td>"
-            + '<td class="c">' + nf(g.cum) + "</td>"
-            + '<td class="c">' + (g.total ? pct(g.cum / g.total) : "") + "</td></tr>";
-        }
-        if (g.lv === 3 && !g.has) {
-          return '<tr><td></td><td class="grp" colspan="7">' + g.name + "</td></tr>";
-        }
-        if (!g.has) {
-          return '<tr><td class="c sec">' + (g.no || "") + "</td><td class='ind1'>" + g.name + "</td>"
-            + '<td class="c unit">' + (g.unit || "") + "</td><td class='c'>" + (g.total ? nf(g.total) : "") + "</td>"
-            + '<td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td></tr>';
-        }
-        var cls = g.lv <= 2 ? "ind1" : (g.lv === 3 ? "ind2" : "ind3");
-        return "<tr><td class='c sec'>" + (g.lv <= 2 ? (g.no || "") : "") + "</td><td class='" + cls + "'>" + g.name + "</td>"
-          + '<td class="c unit">' + (g.unit || "") + "</td>"
-          + '<td class="c">' + (g.pctRow ? "" : nf(g.total)) + "</td>"
-          + '<td class="c">' + nf(g.prev) + (g.pctRow ? "%" : "") + "</td>"
-          + '<td class="c">' + nf(g.mon) + (g.pctRow ? "%" : "") + "</td>"
-          + '<td class="c">' + nf(g.cum) + (g.pctRow ? "%" : "") + "</td>"
-          + '<td class="c">' + (g.total ? pct(g.cum / g.total) : "") + "</td></tr>";
-      }).join("");
-      q("#pg-shape").innerHTML = head("形象进度完成情况汇总表", YM.replace("-", " 年 ") + " 月　全项目")
-        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-        + '<th style="width:52px" class="c">序号</th><th>工程名称</th><th style="width:96px" class="c unit">单位</th>'
-        + '<th style="width:112px" class="c">总数量</th><th style="width:132px" class="c">上月末累计</th>'
-        + '<th style="width:116px" class="c">本月完成</th><th style="width:132px" class="c">本月底累计</th>'
-        + '<th style="width:96px" class="c">完成比例</th>'
-        + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
-        + '<div class="note">土建 1—10 标、机电 1 标、交安 1 标数据合计；百分比项目为各标段平均值。</div>';
+    function ndOf(sec) {
+      return (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : (sec === "桥梁工程" ? 0 : 4);
+    }
+    function fnum(v, nd) {
+      if (v === null || v === undefined || v === "") return "";
+      var n = Number(v); if (!isFinite(n)) return "";
+      if (nd === 2) return fmtz(n, 2);
+      if (nd === 0) return fmt(Math.round(n), 0);
+      return fmt(n, 4);
     }
 
+    /* ============ 内置 XLSX 写手（无外网依赖） ============ */
+    function zcrc32(u8) {
+      var t = zcrc32.t;
+      if (!t) {
+        t = zcrc32.t = [];
+        for (var n = 0; n < 256; n++) {
+          var c = n;
+          for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+          t[n] = c >>> 0;
+        }
+      }
+      var crc = 0xFFFFFFFF;
+      for (var i = 0; i < u8.length; i++) crc = (crc >>> 8) ^ t[(crc ^ u8[i]) & 0xFF];
+      return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+    function zipPack(entries) {
+      var enc = new TextEncoder(), out = [], cen = [], off = 0;
+      function w16(a, v) { a.push(v & 255, (v >>> 8) & 255); }
+      function w32(a, v) { a.push(v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255); }
+      entries.forEach(function (e) {
+        var nm = Array.prototype.slice.call(enc.encode(e.name)), d = e.bytes;
+        var crc = zcrc32(d), len = d.length, lh = [];
+        w32(lh, 0x04034b50); w16(lh, 20); w16(lh, 0x0800); w16(lh, 0); w16(lh, 0); w16(lh, 0x21);
+        w32(lh, crc); w32(lh, len); w32(lh, len); w16(lh, nm.length); w16(lh, 0);
+        out.push(lh, nm, Array.prototype.slice.call(d));
+        var ch = [];
+        w32(ch, 0x02014b50); w16(ch, 20); w16(ch, 20); w16(ch, 0x0800); w16(ch, 0); w16(ch, 0); w16(ch, 0x21);
+        w32(ch, crc); w32(ch, len); w32(ch, len); w16(ch, nm.length);
+        w16(ch, 0); w16(ch, 0); w16(ch, 0); w16(ch, 0); w32(ch, 0); w32(ch, off);
+        cen.push(ch, nm);
+        off += lh.length + nm.length + len;
+      });
+      var cd = [];
+      cen.forEach(function (a) { for (var i = 0; i < a.length; i++) cd.push(a[i]); });
+      var eo = [];
+      w32(eo, 0x06054b50); w16(eo, 0); w16(eo, 0);
+      w16(eo, entries.length); w16(eo, entries.length);
+      w32(eo, cd.length); w32(eo, off); w16(eo, 0);
+      var all = [];
+      function push(a) { for (var i = 0; i < a.length; i++) all.push(a[i]); }
+      out.forEach(push); push(cd); push(eo);
+      return new Uint8Array(all);
+    }
+    function xEsc(str) {
+      return String(str === null || str === undefined ? "" : str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function xCol(i) {
+      var s = "";
+      while (i > 0) { var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); }
+      return s;
+    }
+    function roundTo(v, nd) {
+      var x = Number(v); if (!isFinite(x)) return null;
+      if (nd === 0) return Math.round(x);
+      if (nd === 2) return Math.round(x * 100) / 100;
+      return Math.round(x * 10000) / 10000;
+    }
+    function buildXlsx() {
+      var list = aggShape(YM), NC = 11, rows = [], merges = [];
+      var ymA = YM.split("-");
+      var head3 = "截止" + ymA[0] + "年" + parseInt(ymA[1], 10) + "月底累计完成";
+      function row() { var a = []; for (var i = 0; i < NC; i++) a.push(null); return a; }
+      function put(r, i, v, st, isNum) { r[i] = { v: v, s: st, n: !!isNum }; }
+
+      var r0 = row();
+      put(r0, 0, "汉宜改扩建项目形象进度完成情况一览表", 1);
+      rows.push(r0); merges.push("A1:K1");
+
+      var r1 = row();
+      put(r1, 0, "项目名称：沪渝高速公路武汉至宜昌段改扩建工程      所属建设公司：湖北汉宜高速公路有限公司", 2);
+      rows.push(r1); merges.push("A2:K2");
+
+      var r2 = row(), r3 = row();
+      put(r2, 0, "序号", 3); put(r2, 1, "工程名称", 3); put(r2, 4, "单位", 3); put(r2, 5, "总数量", 3);
+      put(r2, 6, head3, 3); put(r2, 8, "本月实际完成", 3); put(r2, 9, "截止本月底累计完成", 3);
+      put(r3, 6, "累计完成", 3); put(r3, 7, "占总数量百分比", 3); put(r3, 8, "数量", 3);
+      put(r3, 9, "累计完成", 3); put(r3, 10, "占总量百分比", 3);
+      rows.push(r2, r3);
+      merges.push("A3:A4", "B3:D4", "E3:E4", "F3:F4", "G3:H3", "I3:I4", "J3:K3");
+
+      list.forEach(function (g) {
+        var rw = row(), rowno = rows.length + 1, nd = ndOf(g.sec);
+        if (g.lv === 1 && !g.leaf) {
+          put(rw, 0, g.secno || "", 5);
+          put(rw, 1, g.name, 4);
+          merges.push("B" + rowno + ":D" + rowno);
+        } else if (!g.leaf) {
+          put(rw, 1, g.name, 4);
+          merges.push("B" + rowno + ":D" + rowno);
+        } else {
+          put(rw, 0, g.lv <= 2 ? (g.no || "") : "", 5);
+          put(rw, 1, g.name, 4);
+          merges.push("B" + rowno + ":D" + rowno);
+          put(rw, 4, g.unit || "", 5);
+          var ns = nd === 0 ? 6 : (nd === 2 ? 7 : 8);
+          var tot = g.pctRow ? 100 : (g.total || null);
+          if (tot) put(rw, 5, g.pctRow ? 100 : roundTo(tot, nd), g.pctRow ? 6 : ns, true);
+          if (g.has) {
+            var pv = roundTo(g.prev, nd), mo = roundTo(g.mon, nd), cu = roundTo(g.cum, nd);
+            if (pv !== null) put(rw, 6, pv, ns, true);
+            if (pv !== null && tot) put(rw, 7, pv / tot, 9, true);
+            if (mo !== null) put(rw, 8, mo, ns, true);
+            if (cu !== null) put(rw, 9, cu, ns, true);
+            if (cu !== null && tot) put(rw, 10, cu / tot, 9, true);
+          }
+        }
+        for (var ci = 0; ci < 11; ci++) if (!rw[ci]) rw[ci] = { v: null, s: 5 };
+        rows.push(rw);
+      });
+
+      var xr = [];
+      rows.forEach(function (rw, ri) {
+        var cells = [];
+        for (var ci = 0; ci < NC; ci++) {
+          var c = rw[ci]; if (!c) continue;
+          var ref = xCol(ci + 1) + (ri + 1);
+          if (c.v === null || c.v === undefined || c.v === "") { cells.push('<c r="' + ref + '" s="' + c.s + '"/>'); continue; }
+          if (c.n) cells.push('<c r="' + ref + '" s="' + c.s + '"><v>' + c.v + '</v></c>');
+          else cells.push('<c r="' + ref + '" s="' + c.s + '" t="inlineStr"><is><t xml:space="preserve">' + xEsc(c.v) + '</t></is></c>');
+        }
+        var h = ri === 0 ? 32 : (ri === 1 ? 22 : ((ri === 2 || ri === 3) ? 24 : 19));
+        xr.push('<row r="' + (ri + 1) + '" ht="' + h + '" customHeight="1">' + cells.join("") + '</row>');
+      });
+
+      var W = [6, 20, 9, 11, 10, 11, 13, 13, 12, 13, 12];
+      var cols = W.map(function (w, i) {
+        return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>';
+      }).join("");
+
+      var sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        + '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><cols>' + cols + '</cols>'
+        + '<sheetData>' + xr.join("") + '</sheetData>'
+        + '<mergeCells count="' + merges.length + '">'
+        + merges.map(function (m) { return '<mergeCell ref="' + m + '"/>'; }).join("")
+        + '</mergeCells>'
+        + '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>'
+        + '<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>'
+        + '</worksheet>';
+
+      var styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        + '<numFmts count="3"><numFmt numFmtId="164" formatCode="0"/><numFmt numFmtId="165" formatCode="0.00"/>'
+        + '<numFmt numFmtId="166" formatCode="0.0%"/></numFmts>'
+        + '<fonts count="3"><font><sz val="10"/><name val="宋体"/><charset val="134"/></font>'
+        + '<font><b/><sz val="10"/><name val="宋体"/><charset val="134"/></font>'
+        + '<font><b/><sz val="15"/><name val="宋体"/><charset val="134"/></font></fonts>'
+        + '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
+        + '<fill><patternFill patternType="solid"><fgColor rgb="FFDCE6F1"/><bgColor indexed="64"/></patternFill></fill></fills>'
+        + '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>'
+        + '<border><left style="thin"><color rgb="FF93A7BE"/></left><right style="thin"><color rgb="FF93A7BE"/></right>'
+        + '<top style="thin"><color rgb="FF93A7BE"/></top><bottom style="thin"><color rgb="FF93A7BE"/></bottom><diagonal/></border></borders>'
+        + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+        + '<cellXfs count="10">'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+        + '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'
+        + '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '<xf numFmtId="166" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '</cellXfs><cellStyles count="1"><cellStyle name="常规" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+
+      var ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+        + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+        + '<Default Extension="xml" ContentType="application/xml"/>'
+        + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+        + '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+        + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+        + '</Types>';
+
+      var rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+        + '</Relationships>';
+
+      var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+        + 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+        + '<sheets><sheet name="形象进度" sheetId="1" r:id="rId1"/></sheets></workbook>';
+
+      var wbr = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+        + '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+        + '</Relationships>';
+
+      function part(name, txt) { return { name: name, bytes: new TextEncoder().encode(txt) }; }
+      return zipPack([
+        part("[Content_Types].xml", ct),
+        part("_rels/.rels", rels),
+        part("xl/workbook.xml", wb),
+        part("xl/_rels/workbook.xml.rels", wbr),
+        part("xl/styles.xml", styles),
+        part("xl/worksheets/sheet1.xml", sheet)
+      ]);
+    }
+    function exportShapeXlsx() {
+      try {
+        var bytes = buildXlsx();
+        var blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "形象进度完成情况汇总_" + YM.replace("-", "年") + "月.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { try { URL.revokeObjectURL(a.href); a.remove(); } catch (e) {} }, 4000);
+      } catch (err) { alert("导出失败：" + (err && err.message ? err.message : err)); }
+    }
+    window.__pgXlsx = buildXlsx;
+
+    function renderShape() {
+      var rows = aggShape(YM).map(function (g) {
+        var nd = ndOf(g.sec), f = function (v) { return fnum(v, nd); };
+        if (g.lv === 1 && !g.leaf) {
+          return '<tr><td class="c sec">' + (g.secno || "") + '</td><td class="sec" colspan="7">' + g.name + "</td></tr>";
+        }
+        if (!g.leaf) {
+          var gcls = g.lv === 3 ? "grp" : "ind1";
+          return '<tr><td></td><td class="' + gcls + '" colspan="7">' + g.name + "</td></tr>";
+        }
+        var lv1leaf = g.lv === 1;
+        var cls = g.lv <= 2 ? (lv1leaf ? "sec" : "ind1") : (g.lv === 3 ? "ind2" : "ind3");
+        var no = g.lv <= 2 ? (g.no || "") : "";
+        var rowo = lv1leaf ? ' class="rowband"' : "";
+        if (!g.has) {
+          return "<tr" + rowo + "><td class='c sec'>" + no + "</td><td class='" + cls + "'>" + g.name + "</td>"
+            + '<td class="c unit">' + (g.unit || "") + "</td>"
+            + '<td class="c">' + (g.total ? f(g.total) : "") + "</td>"
+            + '<td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td></tr>';
+        }
+        return "<tr" + rowo + "><td class='c sec'>" + no + "</td><td class='" + cls + "'>" + g.name + "</td>"
+          + '<td class="c unit">' + (g.unit || "") + "</td>"
+          + '<td class="c">' + (g.total ? f(g.total) : "") + "</td>"
+          + '<td class="c">' + f(g.prev) + "</td>"
+          + '<td class="c">' + f(g.mon) + "</td>"
+          + '<td class="c">' + f(g.cum) + "</td>"
+          + '<td class="c">' + (g.total ? pct(g.cum / g.total) : "") + "</td></tr>";
+      }).join("");
+      q("#pg-shape").innerHTML = head("形象进度完成情况汇总表", YM.replace("-", " 年 ") + " 月　全项目",
+          '<button class="pg-xls" id="pg-xls" type="button">导出 Excel</button>')
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th style="width:5.5%" class="c">序号</th><th style="width:19%">工程名称</th><th style="width:10%" class="c">单位</th>'
+        + '<th style="width:12%" class="c">总数量</th><th style="width:14%" class="c">上月末累计</th>'
+        + '<th style="width:12.5%" class="c">本月完成</th><th style="width:14%" class="c">本月底累计</th>'
+        + '<th style="width:13%" class="c">完成比例</th>'
+        + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
+        + '<div class="note">土建 1—10 标、机电 1 标、交安 1 标数据合计；单位为 % 的项目按各标段平均值统计，总数量按 100 计。</div>';
+      var xb = q("#pg-xls");
+      if (xb) xb.addEventListener("click", exportShapeXlsx);
+    }
 
     function renderOut() {
       var rows = aggOut(YM).map(function (r) {
@@ -3614,15 +4012,15 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     function renderPpl() {
       var rows = BASE.tenders.map(function (t) {
         var p = pplAt(t, YM);
-        return "<tr><td>" + t.name + "</td><td class='r'>" + fmt(p.mgr, 0) + "</td><td class='r'>" + fmt(p.worker, 0) + "</td></tr>";
+        return "<tr><td class='c'>" + t.name + "</td><td class='c'>" + fmt(p.mgr, 0) + "</td><td class='c'>" + fmt(p.worker, 0) + "</td></tr>";
       }).join("");
       var m = 0, w = 0;
       BASE.tenders.forEach(function (t) { var p = pplAt(t, YM); m += p.mgr; w += p.worker; });
       q("#pg-ppl").innerHTML = head("人员情况汇总", YM.replace("-", " 年 ") + " 月")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-        + '<th>标段</th><th style="width:170px" class="r">管理人员数</th><th style="width:190px" class="r">农民工用工人数</th>'
+        + '<th class="c">标段</th><th style="width:33%" class="c">管理人员数</th><th style="width:40%" class="c">农民工用工人数</th>'
         + "</tr></thead><tbody>" + rows
-        + '<tr class="total"><td>合计</td><td class="r">' + fmt(m, 0) + '</td><td class="r">' + fmt(w, 0) + "</td></tr>"
+        + '<tr class="total"><td class="c">合计</td><td class="c">' + fmt(m, 0) + '</td><td class="c">' + fmt(w, 0) + "</td></tr>"
         + "</tbody></table></div>";
     }
 
@@ -3712,15 +4110,29 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (nav) { renderStatus(); pullAll(); }
     });
 
-    /* ---- 月份选择 ---- */
-    var sel = q("#pg-month");
-    if (sel) {
-      sel.innerHTML = BASE.months.map(function (y) {
-        var a = y.split("-");
-        return '<option value="' + y + '">' + a[0] + " 年 " + parseInt(a[1], 10) + " 月</option>";
-      }).join("");
-      sel.value = YM;
-      sel.addEventListener("change", function () { YM = sel.value; render(); });
+    /* ---- 月份选择：年 / 月 分开 ---- */
+    var YSEL = q("#pg-year"), MSEL = q("#pg-mon");
+    function fillMon() {
+      var y = YSEL.value, opts = [];
+      BASE.months.forEach(function (m) {
+        if (m.split("-")[0] !== y) return;
+        opts.push('<option value="' + m.split("-")[1] + '">' + parseInt(m.split("-")[1], 10) + " 月</option>");
+      });
+      MSEL.innerHTML = opts.join("");
+    }
+    if (YSEL && MSEL) {
+      var ys = [];
+      BASE.months.forEach(function (m) { var y = m.split("-")[0]; if (ys.indexOf(y) < 0) ys.push(y); });
+      YSEL.innerHTML = ys.map(function (y) { return '<option value="' + y + '">' + y + " 年</option>"; }).join("");
+      YSEL.value = YM.split("-")[0];
+      fillMon();
+      MSEL.value = YM.split("-")[1];
+      YSEL.addEventListener("change", function () {
+        fillMon();
+        if (MSEL.options.length) MSEL.value = MSEL.options[0].value;
+        YM = YSEL.value + "-" + MSEL.value; render();
+      });
+      MSEL.addEventListener("change", function () { YM = YSEL.value + "-" + MSEL.value; render(); });
     }
 
     /* ---- 云端：读取填报数据 / 台账 ---- */
@@ -3742,54 +4154,28 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           var rep = parseFile(files[CLOUD.report]);
           if (rep && rep.data && rep.data.reports) {
             DB = { ts: rep.ts, reports: rep.data.reports };
+            window.__REPDB = DB;
             try { localStorage.setItem(RKEY, JSON.stringify(DB)); } catch (e) {}
             render(); renderStatus();
+            if (window.__faReload) { try { window.__faReload(); } catch (er1) {} }
             var s = q("#pg-src");
             if (s) s.textContent = "已同步填报数据 · " + new Date(rep.ts).toLocaleString();
           }
           var led = parseFile(files[CLOUD.ledger]);
-          var localTs = Number(localStorage.getItem(CLOUD.ledgerTsKey) || 0);
-          if (led && led.ts && led.data && led.ts > localTs) {
+          if (led && led.data) {
+            /* 线下版本只读：每次打开都以线上为准覆盖本机；同一线上版本在本标签页只重载一次 */
             localStorage.setItem(KEY, JSON.stringify(led.data));
-            localStorage.setItem(CLOUD.ledgerTsKey, String(led.ts));
-            location.reload();
+            localStorage.setItem(CLOUD.ledgerTsKey, String(led.ts || 0));
+            var mark = "hyhx-led-" + String(led.ts || 0), seen = "";
+            try { seen = sessionStorage.getItem("hyhx-led-applied") || ""; } catch (e1) {}
+            if (seen !== mark) {
+              try { sessionStorage.setItem("hyhx-led-applied", mark); } catch (e2) {}
+              location.reload();
+            }
           }
         }).catch(function (e) { console.warn("云端读取失败", e); });
     }
-    function pushLedger() {
-      var ts = Date.now();
-      var body = { files: {} };
-      body.files[CLOUD.ledger] = { content: JSON.stringify({ ts: ts, data: S }) };
-      return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) })
-        .then(function (r) { if (!r.ok) throw new Error(r.status); localStorage.setItem(CLOUD.ledgerTsKey, String(ts)); })
-        .catch(function (e) { console.warn("台账云端写入失败", e && e.message ? e.message : e); });
-    }
-    window.__pgPushLedger = pushLedger;
-
-    /* ---- 自动保存：停止输入 1.5 秒后本机落盘并推送云端 ---- */
-    var AS_T = null, AS_BUSY = false;
-    function autoSave() {
-      if (AS_T) clearTimeout(AS_T);
-      AS_T = setTimeout(function () {
-        AS_T = null;
-        if (AS_BUSY) { autoSave(); return; }
-        var btn = document.getElementById("btn-save");
-        if (!btn) return;
-        AS_BUSY = true;
-        try { btn.click(); } catch (e) {}
-        setTimeout(function () { AS_BUSY = false; }, 300);
-      }, 1500);
-    }
-    ["input", "change"].forEach(function (ev) {
-      document.addEventListener(ev, function (e) {
-        var t = e.target;
-        if (!t) return;
-        var tag = (t.tagName || "").toLowerCase();
-        if (tag !== "input" && tag !== "select" && tag !== "textarea") return;
-        if (t.id === "import-file") return;
-        autoSave();
-      }, true);
-    });
+    /* 线下版本只读：不再向线上写入台账（原 pushLedger 已取消） */
 
     render();
     pullAll();
@@ -3809,12 +4195,27 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       <button id="pg-go" type="button">查看</button>
     </div>
     <div class="pg-gate-err" id="pg-err"></div>
+    <div class="pg-gate-tip" id="pg-tip">本机输入一次密码后，7 天内无需重复输入</div>
   </div>
 </div>
 
 <script>
 (function () {
   var GATE_PW = "aaa";
+  var GATE_KEY = "hyhx-a-gate-ts";
+  var GATE_TTL = 7 * 24 * 60 * 60 * 1000;
+  function gateLeft() {
+    try {
+      var t = Number(localStorage.getItem(GATE_KEY) || 0);
+      if (!t) return 0;
+      var d = Date.now() - t;
+      if (d < 0) return GATE_TTL;
+      return d < GATE_TTL ? (GATE_TTL - d) : 0;
+    } catch (e) { return 0; }
+  }
+  function gateRemember() {
+    try { localStorage.setItem(GATE_KEY, String(Date.now())); } catch (e) {}
+  }
   function gateSet(on) {
     document.body.classList.toggle("is-masked", !!on);
     var g = document.getElementById("pg-gate");
@@ -3831,6 +4232,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     var i = document.getElementById("pg-pw"), e = document.getElementById("pg-err");
     var v = ((i && i.value) || "").trim();
     if (v === GATE_PW) {
+      gateRemember();
       gateSet(false);
       if (i) i.value = "";
       if (e) e.textContent = "";
@@ -3849,7 +4251,66 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (document.body.classList.contains("is-masked")) { if (pw) { try { pw.focus(); } catch (e1) {} } }
       else gateSet(true);
     });
-    gateSet(true);
+    var left = gateLeft();
+    var tip = document.getElementById("pg-tip");
+    if (tip) {
+      if (left > 0) {
+        var dd = Math.ceil(left / 86400000);
+        tip.textContent = "本机已验证，剩余 " + dd + " 天内无需再次输入";
+      }
+    }
+    gateSet(left <= 0);
+  });
+})();
+</script>
+
+<style>
+.rail nav .nav-sec{display:flex;align-items:center;justify-content:space-between;padding:15px 14px;
+  color:var(--navy);font-weight:700;font-size:15px;letter-spacing:.02em;cursor:pointer;user-select:none;
+  background:transparent;border-bottom:1px solid var(--hair);transition:background .16s ease}
+.rail nav .nav-sec::after{content:"\25BE";font-size:9px;line-height:1;color:#9AA7B8;
+  transition:transform .18s ease,color .16s ease}
+.rail nav .nav-sec:hover{background:var(--mist)}
+.rail nav .nav-sec.is-fold::after{transform:rotate(-90deg)}
+.rail nav .nav-item.sub.is-fold{display:none}
+</style>
+<script>
+(function () {
+  var nav = document.querySelector(".rail nav");
+  if (!nav) return;
+  var groups = [], cur = null;
+  Array.prototype.forEach.call(nav.children, function (el) {
+    if (el.classList && el.classList.contains("nav-sec")) {
+      cur = { sec: el, mem: [] };
+      groups.push(cur);
+    } else if (cur && el.classList && el.classList.contains("sub")) {
+      cur.mem.push(el);
+      el.__grp = cur;
+    }
+  });
+  function fold(g, on) {
+    g.sec.classList.toggle("is-fold", on);
+    g.mem.forEach(function (m) { m.classList.toggle("is-fold", on); });
+  }
+  function openActive() {
+    var on = nav.querySelector(".nav-item.is-on"), g = on && on.__grp;
+    groups.forEach(function (x) { fold(x, x !== g); });
+  }
+  groups.forEach(function (g) { fold(g, false); });
+  openActive();
+  nav.addEventListener("click", function (e) {
+    var sec = e.target.closest ? e.target.closest(".nav-sec") : null;
+    if (sec) {
+      var g = null;
+      groups.forEach(function (x) { if (x.sec === sec) g = x; });
+      if (!g) return;
+      var wasOpen = !sec.classList.contains("is-fold");
+      groups.forEach(function (x) { fold(x, true); });
+      if (wasOpen) fold(g, true); else fold(g, false);
+      return;
+    }
+    var a = e.target.closest ? e.target.closest("[data-view]") : null;
+    if (a) setTimeout(openActive, 0);
   });
 })();
 </script>
