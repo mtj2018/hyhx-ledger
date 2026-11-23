@@ -459,7 +459,6 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
       <button id="btn-import" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导入数据</button>
       <input type="file" id="import-file" accept=".json,application/json" style="display:none">
-      <button id="btn-save" type="button" style="font-family:inherit;font-size:13px;line-height:1;padding:8px 18px;border-radius:6px;cursor:pointer;border:1px solid #FFFFFF;background:#FFFFFF;color:#16407F;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.18)">保存</button>
     </div>
   </div>
 </header>
@@ -516,7 +515,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
             3. 产值：只需填写「本月完成」，「累计完成」与「完成比例」自动计算。<br>
             4. 人员情况：填写管理人员数、农民工用工人数。<br>
             5. 土建1标、机电1标、交安1标另有「分地市州」板块，按地市州填写。<br>
-            6. 点右上角「保存」写入本机并同步云端；换设备打开自动拉取最新数据。
+            6. 停止录入约 1 秒自动保存并同步云端；换设备打开自动拉取最新数据。
           </p>
         </div>
       </div>
@@ -1152,7 +1151,20 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   }
   function persistLocal() { try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) {} }
 
-  $("#btn-save").addEventListener("click", function () { persist(); pushCloud(); });
+  var AS_T = null, AS_BUSY = false;
+  function autoSave() {
+    if (AS_T) clearTimeout(AS_T);
+    AS_T = setTimeout(function () {
+      AS_T = null;
+      if (AS_BUSY) { autoSave(); return; }
+      AS_BUSY = true;
+      persist();
+      pushCloud().then(function () { AS_BUSY = false; });
+      flag("已自动保存", true);
+    }, 1000);
+  }
+  document.addEventListener("input", autoSave, true);
+  document.addEventListener("change", autoSave, true);
   $("#btn-export").addEventListener("click", function () {
     var blob = new Blob([JSON.stringify({ ts: DB.ts, data: { reports: DB.reports } }, null, 1)], { type: "application/json" });
     var a = document.createElement("a");
