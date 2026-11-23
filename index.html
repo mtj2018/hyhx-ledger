@@ -108,7 +108,7 @@ main{min-width:0}
 .kpi .u{font-size:12px;color:var(--muted);margin-left:5px;font-weight:400}
 .kpi input.v{width:100%;border:0;border-bottom:1px dashed var(--line);background:transparent;font-family:inherit;font-size:21px}
 .kpi input.v:focus{outline:none;border-bottom-color:var(--blue);background:#F8FAFE}
-.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px;white-space:pre-line;line-height:1.55}
 
 /* ---------- 完成条 ---------- */
 .bars{padding:14px 18px 6px}
@@ -134,7 +134,7 @@ main{min-width:0}
 .mrow .mt b{font-size:15px;color:var(--navy);font-variant-numeric:tabular-nums}
 
 /* ---------- 进度测算 ---------- */
-.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr);gap:0;border:1px solid var(--line);margin-top:4px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);margin-top:4px}
 .tile{padding:15px 18px;border-right:1px solid var(--hair)}
 .tile:last-child{border-right:0}
 .tile .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
@@ -287,6 +287,68 @@ main{min-width:0}
 .tw .land-tbl{min-width:640px}
 .tw .files-tbl{min-width:960px}
 
+/* ---------- 固定资产投资 ---------- */
+.fa-tab{flex:0 0 auto;white-space:nowrap;font-family:inherit;font-size:13px;line-height:1;letter-spacing:.02em;
+  padding:8px 15px;border:1px solid var(--line);background:#fff;color:#3C4A5E;cursor:pointer;border-radius:6px;font-weight:500}
+.fa-tab:hover{background:var(--mist)}
+.fa-tab.on{background:#16407F;border-color:#16407F;color:#fff;font-weight:700;box-shadow:0 2px 6px rgba(22,64,127,.22)}
+.fa-tbl{min-width:0;table-layout:fixed;width:100%}
+.fa-tbl th{white-space:nowrap}
+.fa-tbl th.c{text-align:center}
+.fa-tbl td.nm{color:var(--navy);font-weight:600;letter-spacing:.02em}
+.fa-tbl td.mut{color:#AEB8C6}
+.fcr-head{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:0 10px 10px;border-bottom:1px solid #E4EAF3;overflow:hidden;box-sizing:border-box}
+.fcr-top{font-size:13.5px;font-weight:600;color:#4A5566;letter-spacing:.04em;white-space:nowrap;line-height:1.3}
+.fcr-sub{font-size:11.5px;line-height:1.62;color:#8590A2;text-align:center;letter-spacing:.01em}
+.fcr-tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+.fcr-tbl th{background:#F5F7FB;border-bottom:1px solid #DCE3EF;padding:8px 6px;font-size:12.5px;font-weight:600;color:#0F2C5C;text-align:center;white-space:nowrap}
+.fcr-tbl td{border-bottom:1px solid #EEF2F8;padding:4px 6px;font-size:12.5px;color:#0F2C5C;text-align:right}
+.fcr-tbl td:first-child{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fcr-in{width:100%;box-sizing:border-box;border:1px solid #F4EBD5;background:#FFFDF6;border-radius:4px;font-family:inherit;font-size:12.5px;line-height:1.5;color:#B3591A;padding:2px 6px;text-align:right;font-variant-numeric:tabular-nums}
+.fcr-in:focus{outline:none;border-color:#2F6FEB;background:#fff}
+.fcr-in[readonly]{background:transparent;border-color:transparent;color:#0F2C5C}
+.fa-tbl td.faint{color:#93A0B0}
+.fa-tbl tr.fa-band td.faint,
+.fa-tbl tr.fa-other td.faint,
+.fa-tbl tr.total td.faint{color:#93A0B0}
+.fa-tbl tr.fa-other td.nw{font-weight:400}
+.fa-tbl tr.fa-band td{background:#F3F7FD;font-weight:700;color:var(--navy);border-bottom:1px solid var(--line)}
+.fa-tbl tr.fa-other td{background:#FAFCFF;font-weight:400;color:var(--navy)}
+.fa-tbl th.hlm{color:#A85614}
+.fa-tbl td.hlm,.fa-tbl tr.fa-band td.hlm,.fa-tbl tr.fa-other td.hlm,.fa-tbl tr.total td.hlm{color:#B3591A}
+.fa-tbl td.hlm input.fa-in{color:#B3591A}
+.fa-tbl td.ratio{white-space:nowrap}
+.fa-tbl tbody tr:hover td{background:#F6F9FE}
+.fa-tbl tbody tr.fa-band:hover td{background:#EEF4FD}
+.fa-tbl td input.fa-in{width:100%;border:1px solid transparent;border-radius:4px;background:transparent;
+  font-family:inherit;font-size:14px;line-height:1.5;color:var(--ink);text-align:right;padding:3px 0;
+  font-variant-numeric:tabular-nums;box-sizing:border-box}
+.fa-tbl tbody td{height:40px}
+.fa-tbl td input.fa-in::-webkit-input-placeholder{color:#C2CAD6}
+.fa-tbl td input.fa-in:not([readonly]){background:#FFFDF6;border-color:#F4EBD5}
+.fa-tbl td input.fa-in:not([readonly]):focus{background:#FFFDF6;border-color:#2F6FEB;outline:none;
+  box-shadow:0 0 0 3px rgba(47,111,235,.12)}
+.fa-panel .card-body{padding-top:4px}
+.fa-sel{display:flex;gap:8px;margin-top:12px}
+.fa-sel-in{margin-top:0}
+.fa-sel-in select{flex:0 0 auto;padding:4px 8px;font-size:12px;min-width:74px}.fa-sel-in select[data-sy]{min-width:88px}
+.fa-sel-in select[data-sm]{min-width:74px}
+.kpi .krow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fa-tbl thead th{height:36px}
+.fcr-tbl thead th{height:38px;padding:0 6px}
+.fcr-tbl tbody td{height:42px;padding:0 6px;vertical-align:middle}
+.fcr-tbl tbody tr.sum td{background:#F3F7FD;font-weight:700;color:var(--navy)}
+.fcr-tbl tbody tr.sum td .fcr-in{font-weight:700}
+.fa-tbl tbody tr.fa-hov td,.fcr-tbl tbody tr.fa-hov td{background:#EDF3FD}
+.fa-sel select{flex:1 1 0;min-width:0;font-family:inherit;font-size:13px;color:var(--navy);
+  padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:#fff;cursor:pointer;
+  font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none;text-align:center}
+.fa-sel select:hover{background:var(--mist)}
+.fa-sel select:focus{outline:none;border-color:#2F6FEB;box-shadow:0 0 0 2px rgba(47,111,235,.12)}
+.fa-tbl.ctr th,.fa-tbl.ctr td{text-align:center}
+.fa-tbl.ctr td input.fa-in{text-align:center}
+.fa-tbl.ctr tbody td{height:42px}
+
 /* ---------- 响应式 ---------- */
 @media (max-width:980px){
   .shell{grid-template-columns:minmax(0,1fr);gap:14px;padding:14px 12px 0}
@@ -326,6 +388,65 @@ main{min-width:0}
   .card-head{padding:12px 12px 9px}
   .tbl th,.tbl td{padding:6px 7px;font-size:12.5px}
 }
+
+/* ===== 填报页 / 形象进度页 追加样式 ===== */
+.pg-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 18px 14px}
+.pg-tabs{display:flex;border:1px solid var(--line);background:#fff}
+.pg-tab{font-family:inherit;font-size:13px;font-weight:600;padding:7px 16px;border:0;border-right:1px solid var(--hair);
+  background:#fff;color:var(--navy);cursor:pointer;letter-spacing:.02em}
+.pg-tab:last-child{border-right:0}
+.pg-tab.is-on{background:var(--navy);color:#fff}
+.pg-sel{font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);background:#fff;
+  color:var(--navy);border-radius:3px;min-width:110px}
+.pg-sel:focus{outline:none;border-color:var(--blue)}
+.pg-hint{font-size:12px;color:var(--muted);margin-left:auto}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1.18fr);gap:14px;align-items:start}
+.pg-right{display:flex;flex-direction:column;gap:14px}
+@media (max-width:1180px){.pg-cols{grid-template-columns:1fr}}
+.pg-tbl{width:100%;table-layout:auto}
+.pg-tbl th{white-space:nowrap;font-size:12.5px;padding:6px 6px}
+.pg-tbl td{padding:5px 6px;font-size:13px}
+.pg-tbl td.c.unit,.pg-tbl th.c.unit{white-space:nowrap}
+.pg-tbl td.nmcell{white-space:normal;word-break:break-all}
+td.c input.pgi,input.pgc{text-align:center}
+.card-head .hint{margin-left:auto}
+.pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pg-lk:hover{background:#28508F}
+.pg-lk.is-on{background:#fff;color:#1E3A6E;border-color:#C9D2E0}
+.pg-lk.is-on:hover{background:#F3F6FB}
+.card.is-locked input.pgi{background:#F1F3F7;color:#5B6675;cursor:not-allowed}
+.tbl th.c{text-align:center}
+th.nmc,td.nmc{white-space:nowrap;font-size:12px}
+.pg-tbl td.sec{font-weight:700;color:var(--navy);background:#F7FAFF}
+.pg-tbl td.ind1{padding-left:16px}
+.pg-tbl td.ind2{padding-left:30px;color:var(--muted)}
+.pg-tbl td.ind3{padding-left:16px;color:var(--muted)}
+.pg-tbl td.grp{font-weight:600;color:#5B6B82;background:#FBFCFE}
+.pg-tbl td .pgi{width:100%;border:1px solid #EFE6C6;border-radius:2px;background:#FFFDF0;
+  font-family:inherit;font-size:13px;line-height:1.4;color:var(--navy);padding:2px 4px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.pg-tbl td .pgi:hover{background:#FFF9E0;border-color:#E6D9A8}
+.pg-tbl td .pgi:focus{outline:none;background:#FFF6D4;border-color:#D9C77A;box-shadow:inset 0 -2px 0 var(--blue)}
+.pg-tbl td .pgi.txt{text-align:left}
+.pg-scroll{overflow-x:auto}
+.pg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 0}
+.pg-num{font-variant-numeric:tabular-nums}
+.pg-st-ok{display:inline-block;padding:2px 10px;border-radius:11px;background:#E7F4EC;color:#1E7B43;font-size:12px;font-weight:600}
+.pg-st-no{display:inline-block;padding:2px 10px;border-radius:11px;background:#FBEAEA;color:#A72B2B;font-size:12px;font-weight:600}
+.pg-st-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.pg-st-ok .pg-st-dot{background:#2E9159}
+.pg-st-no .pg-st-dot{background:#C14343}
+.pg-st-na{color:#B9C0CC}
+.pg-tbl .fixv{color:#0F2C5C;background:transparent;border:0;padding:0 4px;display:block;min-width:0;font-variant-numeric:tabular-nums;text-align:right}
+.pg-ctr td,.pg-ctr th{text-align:center!important}
+.pg-ctr .pgi{text-align:center!important}
+
+.pg-st-ok{display:inline-block;padding:2px 10px;border-radius:11px;background:#E7F4EC;color:#1E7B43;font-size:12px;font-weight:600}
+.pg-st-no{display:inline-block;padding:2px 10px;border-radius:11px;background:#FBEAEA;color:#A72B2B;font-size:12px;font-weight:600}
+.pg-st-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.pg-st-ok .pg-st-dot{background:#2E9159}
+.pg-st-no .pg-st-dot{background:#C14343}
+
 </style>
 </head>
 <body>
@@ -357,13 +478,32 @@ main{min-width:0}
     <nav>
       <a class="nav-item is-on" href="#overview" data-view="overview"><span>项目总览</span></a>
       <a class="nav-item" href="#investment" data-view="investment"><span>投资与进度</span></a>
+      <a class="nav-item" href="#progress" data-view="progress"><span>形象进度情况</span></a>
       <a class="nav-item" href="#exec" data-view="exec"><span>概算执行情况</span></a>
+      <a class="nav-item" href="#fixedasset" data-view="fixedasset"><span>固定资产投资</span></a>
       <a class="nav-item" href="#files" data-view="files"><span>重要文件台账</span></a>
       <a class="nav-item" href="#other" data-view="other"><span>其他信息</span></a>
     </nav>
   </aside>
 
   <main>
+
+    <!-- ===== 视图：形象进度情况（汇总） ===== -->
+    <section class="view" id="view-progress">
+      <div class="card">
+        <div class="card-head"><h2>形象进度情况</h2><span class="hint">由各标段工程月报填报自动汇总</span></div>
+        <div class="pg-bar">
+          <select class="pg-sel" id="pg-month"></select>
+          <span class="pg-hint" id="pg-src">数据来源：工程月报填报页</span>
+        </div>
+      </div>
+      <div class="card" id="pg-shape"></div>
+      <div class="card" id="pg-out"></div>
+      <div class="card" id="pg-ppl"></div>
+      <div class="card" id="pg-gs"></div>
+      <div class="card" id="pg-city"></div>
+    </section>
+
     <!-- ===== 视图：项目总览 ===== -->
     <section class="view is-on" id="view-overview">
       <div class="card">
@@ -786,6 +926,18 @@ main{min-width:0}
     </section>
     <!-- ===== /视图：概算执行情况 ===== -->
 
+    <!-- ===== 视图：固定资产投资 ===== -->
+    <section class="view" id="view-fixedasset">
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 18px">
+          <div id="fa-tabs" style="display:flex;flex-wrap:wrap;gap:8px;flex:1 1 auto"></div>
+          <span id="fa-hint" style="font-size:12px;color:#68727F">单位：万元</span>
+        </div>
+      </div>
+      <div id="fa-wrap"></div>
+    </section>
+    <!-- ===== /视图：固定资产投资 ===== -->
+
     <!-- ===== 视图：重要文件台账 ===== -->
     <section class="view" id="view-files">
       <div class="card" style="padding:0;overflow:hidden">
@@ -868,6 +1020,7 @@ main{min-width:0}
       var k = m.getAttribute("data-mirror");
       if (S[k] != null) m.textContent = S[k];
     });
+    if (typeof faSync === "function") faSync();
   }
 
   /* 固化分区：项目总览 / 融资与测算 只读（直接转为静态文本） */
@@ -1046,7 +1199,7 @@ main{min-width:0}
       if (s) { s.textContent = "最后修改时间 " + stamp; s.style.color = ""; }
       try { localStorage.setItem(KEY + "-ts", stamp); } catch (e) {}
       DIRTY = false;
-      try { pushCloud(); } catch (e2) {}
+      try { if (window.__pgPushLedger) window.__pgPushLedger(); } catch (e0) {}
       var b = el("btn-save");
       if (b) { b.style.background = "#FFFFFF"; b.style.color = "#16407F"; b.style.borderColor = "#FFFFFF"; }
     } catch (e) {
@@ -2061,6 +2214,7 @@ main{min-width:0}
     recalc();
     applyInvestLock();
     markEditable();
+    if (typeof faApplyLock === "function") faApplyLock();
     touch();
   }
   paintLock();
@@ -2083,7 +2237,7 @@ main{min-width:0}
     touch();
   });
 
-  window.addEventListener("resize", function () { syncRail(); });
+  window.addEventListener("resize", function () { syncRail(); try { faAlignRail(); } catch (e) {} });
 
   /* 其他视图的数据区宽度与 V67 保持一致（1042px） */
   ["view-overview", "view-investment", "view-files", "view-other"].forEach(function (vid) {
@@ -2513,151 +2667,6 @@ main{min-width:0}
     return e.returnValue;
   });
 
-  /* ================= 云端同步（GitHub Gist 直连） ================= */
-  var CLOUD = {
-    token: localStorage.getItem("hyhx-cloud-token") || (function () {
-      /* 分段存放：整串不出现在仓库文本里，避免 GitHub 对公开仓库的 token 扫描自动吊销 */
-      return ["gh", "p_rzbm0wOAJ6", "FZFFgxRfMO", "B33Snm1piw1Wybw9"].join("");
-    })(),
-    gistId: "2e29599c80a9553e78c81670de9342fd",
-    file: "hyhx-ledger.json",
-    raw: "https://gist.githubusercontent.com/mtj2018/2e29599c80a9553e78c81670de9342fd/raw/hyhx-ledger.json"
-  };
-  var CLOUD_TS_KEY = KEY + "-cloudts";
-  var CLOUD_BUSY = false;
-
-  function cloudFlag(suffix) {
-    var s = el("saved");
-    if (!s) return;
-    var base = String(s.textContent || "").split(" · ")[0];
-    s.textContent = base + suffix;
-    if (suffix.indexOf("未同步") >= 0) s.style.color = "#FFD9A8";
-  }
-
-  function cloudHeaders() {
-    var h = {
-      "Accept": "application/vnd.github+json",
-      "Content-Type": "application/json"
-    };
-    if (CLOUD.token) h["Authorization"] = "Bearer " + CLOUD.token;
-    return h;
-  }
-  function cloudApi() { return "https://api.github.com/gists/" + CLOUD.gistId; }
-  function cloudWhy(r, act) {
-    if (r.status === 401) return act + "失败：token 无效或已被撤销（401）";
-    if (r.status === 404) return act + "失败：Gist 不存在或 token 无 gist 权限（404）";
-    if (r.status === 403) return act + "失败：请求过于频繁（403）";
-    return act + "失败：GitHub 返回 " + r.status;
-  }
-  function cloudParse(text) {
-    try {
-      var o = JSON.parse(text);
-      return { ts: Number(o && o.ts) || 0, data: (o && o.data) || null };
-    } catch (e) { return { ts: 0, data: null }; }
-  }
-  function cloudGet() {
-    if (!CLOUD.token) {
-      /* 只读模式：直接读公开的 raw 文件，不携带任何凭证 */
-      return fetch(CLOUD.raw + "?t=" + Date.now(), { cache: "no-store" })
-        .then(function (r) {
-          if (!r.ok) throw new Error("读取云端失败：" + r.status);
-          return r.text();
-        })
-        .then(cloudParse);
-    }
-    return fetch(cloudApi() + "?t=" + Date.now(), { headers: cloudHeaders(), cache: "no-store" })
-      .then(function (r) {
-        if (!r.ok) throw new Error(cloudWhy(r, "读取云端"));
-        return r.json();
-      })
-      .then(function (j) {
-        var f = (j.files || {})[CLOUD.file];
-        if (!f) return { ts: 0, data: null };
-        if (f.truncated && f.raw_url) {
-          return fetch(f.raw_url, { cache: "no-store" })
-            .then(function (r2) { return r2.text(); })
-            .then(cloudParse);
-        }
-        return cloudParse(f.content || "");
-      });
-  }
-  function cloudPut(data, ts) {
-    var payload = JSON.stringify({ ts: ts, data: data });
-    var body = { files: {} };
-    body.files[CLOUD.file] = { content: payload };
-    return fetch(cloudApi(), {
-      method: "PATCH", headers: cloudHeaders(), body: JSON.stringify(body)
-    }).then(function (r) {
-      if (!r.ok) throw new Error(cloudWhy(r, "写入云端"));
-      return { ts: ts, bytes: payload.length };
-    });
-  }
-
-  /* 写入云端：先比对版本，云端被别人改过就问一句 */
-  function pushCloud(force) {
-    if (CLOUD_BUSY) return Promise.resolve();
-    CLOUD_BUSY = true;
-    var ts = Date.now();
-    var known = Number(localStorage.getItem(CLOUD_TS_KEY) || 0);
-    return cloudGet().then(function (cur) {
-      if (!force && cur.ts && known && cur.ts !== known && cur.data) {
-        CLOUD_BUSY = false;
-        if (confirm("云端数据已被更新（" + new Date(cur.ts).toLocaleString()
-          + "）。\n确定＝用云端数据覆盖本机；取消＝用本机数据覆盖云端。")) {
-          localStorage.setItem(KEY, JSON.stringify(cur.data));
-          localStorage.setItem(CLOUD_TS_KEY, String(cur.ts));
-          location.reload();
-          return;
-        }
-        return pushCloud(true);
-      }
-      return cloudPut(S, ts).then(function (r) {
-        CLOUD_BUSY = false;
-        try { localStorage.setItem(CLOUD_TS_KEY, String(ts)); } catch (e) {}
-        cloudFlag(" · 云端已同步");
-        return r;
-      });
-    }).catch(function (e) {
-      CLOUD_BUSY = false;
-      var msg = e && e.message ? e.message : "";
-      if (msg.indexOf("401") >= 0 || msg.indexOf("404") >= 0) {
-        /* 兜底：万一内置凭证失效，允许临时粘贴一次 */
-        CLOUD.token = "";
-        try { localStorage.removeItem("hyhx-cloud-token"); } catch (e2) {}
-        var t = prompt("云端凭证失效，需临时粘贴一次 GitHub token 才能继续保存：", "");
-        if (t) {
-          CLOUD.token = String(t).trim();
-          try { localStorage.setItem("hyhx-cloud-token", CLOUD.token); } catch (e3) {}
-          return pushCloud(true);
-        }
-      }
-      cloudFlag(" · 云端未同步");
-      console.warn("云端写入失败：", msg);
-    });
-  }
-
-  /* 读取云端：云端更新就覆盖本机并刷新；云端为空则首次上传 */
-  function pullCloud(manual) {
-    return cloudGet().then(function (res) {
-      var localTs = Number(localStorage.getItem(CLOUD_TS_KEY) || 0);
-      if (res.ts && res.data && res.ts > localTs) {
-        localStorage.setItem(KEY, JSON.stringify(res.data));
-        localStorage.setItem(CLOUD_TS_KEY, String(res.ts));
-        if (manual) { location.reload(); return; }
-        location.reload();
-        return;
-      }
-      if (!res.ts) { pushCloud(true); return; }
-      try { localStorage.setItem(CLOUD_TS_KEY, String(res.ts)); } catch (e) {}
-    }).catch(function (e) {
-      console.warn("云端读取失败：", e && e.message ? e.message : e);
-      if (manual) alert("云端读取失败：\n" + (e && e.message ? e.message : e));
-    });
-  }
-
-  /* 启动时自动拉一次 */
-  pullCloud();
-
   /* 投资与进度：各分组按钮控制自身可编辑状态 */
   applyInvestLock();
   (function () {
@@ -2667,6 +2676,1098 @@ main{min-width:0}
       b.addEventListener("click", function () { setInvestLock(g, !INV_LOCK[g]); });
     });
   })();
+
+  /* ---------- 固定资产投资：汇总 + 六地市州分表（武汉段按月录入，2026-11 → 2029-12） ---------- */
+  var FA_Y0 = 2026, FA_Y1 = 2029, FA_M0 = 11;
+  var FA_YEARS = [];
+  function faTag(y, m) { return String(y).slice(2) + (m < 10 ? "0" + m : "" + m); }
+  function faTagYear(t) { return 2000 + parseInt(String(t).slice(0, 2), 10); }
+  function faTagMonth(t) { return parseInt(String(t).slice(2), 10); }
+  var FA_TAGS = (function () {
+    var a = [], y, m;
+    for (y = FA_Y0; y <= FA_Y1; y++) {
+      FA_YEARS.push(y);
+      for (m = (y === FA_Y0 ? FA_M0 : 1); m <= 12; m++) a.push(faTag(y, m));
+    }
+    return a;
+  })();
+
+  var FA_CITIES = [
+    { k: "caidian", city: "武汉市", seg: "蔡甸段", invest: 608200, gsJ: 427020, htJ: 319726, htAll: 500902,
+      months: FA_TAGS,
+      jian: [["土建1标", 71782, 142047], ["交安1标", 0, 0], ["机电1标", 0, 6554], ["房建1标", 0, 0],
+             ["加油站", 0, 0, 319726], ["房建2标(估)", 0, 0]],
+      ord: [0, 1, 2, 3, 5, 4],
+      other: [["其他费", 44195, 27596]] },
+    { k: "hanchuan", city: "孝感市", seg: "汉川段", invest: 116600, gsJ: 83022, htJ: 84742, htAll: 118287,
+      months: FA_TAGS,
+      jian: [["土建1标", 13607, 36003], ["机电1标", 0, 0], ["交安1标", 0, 0], ["房建2标(估)", 0, 0]],
+      other: [["其他费", 5823, 723]] },
+    { k: "xiantao", city: "仙桃市", seg: "", invest: 1235100, gsJ: 941019, htJ: 799318, htAll: 1093388,
+      months: FA_TAGS,
+      jian: [["土建1标", 21737, 39097], ["土建2标", 13745, 64410], ["土建3标", 14081, 61688],
+             ["土建4标", 11065, 45114], ["机电1标", 0, 0], ["交安1标", 0, 0], ["交安2标", 0, 0], ["房建3标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
+      ord: [0, 1, 2, 3, 4, 5, 6, 9, 7, 8],
+      other: [["其他费", 30857, 3748]] },
+    { k: "qianjiang", city: "潜江市", seg: "", invest: 662700, gsJ: 497652, htJ: 428825, htAll: 593921,
+      months: FA_TAGS,
+      jian: [["土建5标", 22930, 47910], ["土建6标", 19040, 46078], ["机电1标", 0, 0], ["交安3标", 0, 0], ["房建4标(估)", 0, 0]],
+      other: [["其他费", 28248, 1743]] },
+    { k: "jingzhou", city: "荆州市", seg: "", invest: 802400, gsJ: 571778, htJ: 499897, htAll: 730537,
+      months: FA_TAGS,
+      jian: [["土建7标", 25438, 33443], ["土建8标", 32067, 53970], ["机电2标", 0, 0], ["交安4标", 0, 0], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
+      ord: [0, 1, 3, 2, 6, 4, 5],
+      other: [["其他费", 47271, 29890]] },
+    { k: "yichang", city: "宜昌市", seg: "", invest: 798500, gsJ: 552056, htJ: 380001, htAll: 626492,
+      months: FA_TAGS,
+      jian: [["土建9标", 8745, 59585], ["土建10标", 8337, 47370], ["机电3标", 0, 0], ["交安5标", 0, 0], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["加油站", 0, 0]],
+      ord: [0, 1, 3, 2, 4, 6, 5],
+      other: [["其他费", 42980, 9755]] }
+  ];
+  var FA_READY = false, FA_REBUILDING = false;
+
+  function faGet(k) { var v = S[k]; return (v == null || String(v).trim() === "") ? null : num(v); }
+  function faPre(c, g, i, dflt) { var v = faGet("fap_" + c.k + "_" + g + "_" + i); return v == null ? dflt : v; }
+  /* 行合同额：自填优先，未填时用行内默认值（加油站默认携带差额） */
+  function faRowHt(c, i) {
+    var v = faGet("fah_" + c.k + "_0_" + i), d = c.jian[i] ? c.jian[i][3] : null;
+    if (v != null) return v;
+    return d == null ? null : d;
+  }
+  function faHtBand(c) {
+    var v, i, s = 0, has = false;
+    if (c.months) {
+      for (i = 0; i < c.jian.length; i++) { v = faRowHt(c, i); if (v != null) { s += v; has = true; } }
+      return has ? s : c.htJ;
+    }
+    v = faGet("fah_" + c.k + "_b");
+    return v == null ? c.htJ : v;
+  }
+  function faHtOther(c) {
+    var v = c.other.length ? faGet("fah_" + c.k + "_1_0") : null;
+    return v == null ? (c.htAll - c.htJ) : v;
+  }
+  /* 概算总投资口径：建安费概算 + 其他费（与合同额的其他费同值） */
+  function faInv(c) {
+    return c.gsJ + faHtOther(c);
+  }
+  function faCurVal(c, g, i, t) {
+    return c.months ? faGet("fa_" + c.k + "_" + g + "_" + i + "_m" + t) : faGet("fa_" + c.k + "_" + g + "_" + i);
+  }
+  function faCurAll(c, g, i) {
+    var s = 0, k;
+    if (!c.months) return faCurVal(c, g, i) || 0;
+    for (k = 0; k < c.months.length; k++) s += (faCurVal(c, g, i, c.months[k]) || 0);
+    return s;
+  }
+  function faCurUpTo(c, g, i, cm) {
+    var s = 0, k, idx;
+    if (!c.months) return faCurVal(c, g, i) || 0;
+    idx = c.months.indexOf(cm);
+    for (k = 0; k <= idx; k++) s += (faCurVal(c, g, i, c.months[k]) || 0);
+    return s;
+  }
+  /* 系统当前年月，落在可选范围内即用它；早于首月取首月，晚于末月取末月 */
+  function faNowTag(c) {
+    var d = new Date(), tag = String((d.getFullYear() % 100) * 100 + (d.getMonth() + 1));
+    var first = c.months[0], last = c.months[c.months.length - 1], k, v = first;
+    if (tag <= first) return first;
+    if (tag >= last) return last;
+    for (k = 0; k < c.months.length; k++) if (c.months[k] <= tag) v = c.months[k];
+    return v;
+  }
+  function faMonthOf(c) {
+    if (!c.months) return "";
+    var m = String(S["fam_" + c.k] == null ? "" : S["fam_" + c.k]), now = faNowTag(c);
+    if (c.months.indexOf(m) < 0) return now;
+    return (m < now) ? now : m;   /* 手选月份只在当前月份之后才保留，跨月自动前移到当月 */
+  }
+  function faYearFirstIdx(c, y) {
+    var k;
+    for (k = 0; k < c.months.length; k++) if (faTagYear(c.months[k]) === y) return k;
+    return -1;
+  }
+  /* 当年年初基数：2026 年取原「本年已报送」（截至 10 月末），2027 起默认 0，可自填 */
+  function faYtdBase(c, g, i, y, dflt) {
+    var key = "fay_" + c.k + "_" + g + "_" + i + (y === FA_Y0 ? "" : "_y" + y);
+    var v = faGet(key);
+    return v == null ? (y === FA_Y0 ? dflt : 0) : v;
+  }
+  function faYtdShown(c, g, i, dflt, cm) {
+    var y = faTagYear(cm), s = faYtdBase(c, g, i, y, dflt), k, t, idx;
+    if (!c.months) return s;
+    idx = c.months.indexOf(cm);
+    for (k = 0; k < idx; k++) { t = c.months[k]; if (faTagYear(t) === y) s += (faCurVal(c, g, i, t) || 0); }
+    return s;
+  }
+  /* 跨年后「截止上年末」随年份滚动：2026 视图为 2025 年末，2027 视图为 2026 年末 */
+  function faPreShown(c, g, i, cm) {
+    var dpre = g === 0 ? c.jian[i][1] : c.other[i][1];
+    var dytd = g === 0 ? c.jian[i][2] : c.other[i][2];
+    var y = c.months ? faTagYear(cm) : FA_Y0;
+    var s = faPre(c, g, i, dpre), yy, k, t;
+    for (yy = FA_Y0; yy < y; yy++) s += faYtdBase(c, g, i, yy, dytd);
+    if (c.months) {
+      for (k = 0; k < c.months.length; k++) {
+        t = c.months[k];
+        if (faTagYear(t) < y) s += (faCurVal(c, g, i, t) || 0);
+      }
+    }
+    return s;
+  }
+  function faCum(c, g, i, cm) {
+    var dytd = g === 0 ? c.jian[i][2] : c.other[i][2];
+    return faPreShown(c, g, i, cm) + faYtdShown(c, g, i, dytd, cm) + (faCurVal(c, g, i, cm) || 0);
+  }
+
+  function faMonYearSum(c, g, i, y) {
+    var k, s = 0, t;
+    if (!c.months) return (y === FA_Y0 ? (faCurVal(c, g, i) || 0) : 0);
+    for (k = 0; k < c.months.length; k++) {
+      t = c.months[k];
+      if (faTagYear(t) === y) s += (faCurVal(c, g, i, t) || 0);
+    }
+    return s;
+  }
+  function faMonAllSum(c, g, i) {
+    var k, s = 0;
+    if (!c.months) return faCurVal(c, g, i) || 0;
+    for (k = 0; k < c.months.length; k++) s += (faCurVal(c, g, i, c.months[k]) || 0);
+    return s;
+  }
+  function faYtdTotal(c, g, i, dflt) {
+    var y, s = 0;
+    for (y = FA_Y0; y <= FA_Y1; y++) s += faYtdBase(c, g, i, y, dflt);
+    return s;
+  }
+  /* 汇总口径：2026 已报送＝10 月末基数＋2026 各月录入；当月＝各市当前所选月；累计＝各年基数＋全部月份录入 */
+  function faCalc(c) {
+    var i, cm = faMonthOf(c);
+    var jp = 0, jy = 0, jn = 0, jt = 0, op = 0, oy = 0, on = 0, ot = 0;
+    for (i = 0; i < c.jian.length; i++) {
+      jp += faPre(c, 0, i, c.jian[i][1]);
+      jy += faYtdBase(c, 0, i, FA_Y0, c.jian[i][2]) + faMonYearSum(c, 0, i, FA_Y0);
+      jn += faCurVal(c, 0, i, cm) || 0;
+      jt += faPre(c, 0, i, c.jian[i][1]) + faYtdTotal(c, 0, i, c.jian[i][2]) + faMonAllSum(c, 0, i);
+    }
+    for (i = 0; i < c.other.length; i++) {
+      op += faPre(c, 1, i, c.other[i][1]);
+      oy += faYtdBase(c, 1, i, FA_Y0, c.other[i][2]) + faMonYearSum(c, 1, i, FA_Y0);
+      on += faCurVal(c, 1, i, cm) || 0;
+      ot += faPre(c, 1, i, c.other[i][1]) + faYtdTotal(c, 1, i, c.other[i][2]) + faMonAllSum(c, 1, i);
+    }
+    return { jp: jp, jc: jy, jn: jn, jt: jt,
+             op: op, oc: oy, on: on, ot: ot,
+             p: jp + op, cu: jy + oy, n: jn + on,
+             t: jt + ot };
+  }
+  function faPut(id, txt) { var n = el(id); if (n) n.textContent = txt; }
+  function faTd(txt, cls, id) {
+    return '<td class="fa-ctd' + (cls ? " " + cls : "") + '"' + (id ? ' id="' + id + '"' : "") + '>' + txt + '</td>';
+  }
+  function faInp(k, val, ph, cls) {
+    return '<td class="fa-ctd' + (cls ? " " + cls : "") + '"><input type="text" class="fa-in" data-int="1" placeholder="' + (ph || "") +
+      '" data-k="' + k + '"' + (val == null ? '' : ' data-def="' + fmt(val) + '" value="' + fmt(val) + '"') + '></td>';
+  }
+
+  function faSummaryPanel() {
+    var rows = "", tx = { inv: 0, jp: 0, op: 0, p: 0, jc: 0, oc: 0, cu: 0, n: 0, t: 0 };
+    FA_CITIES.forEach(function (c, i) {
+      var v = faCalc(c);
+      tx.inv += faInv(c); tx.jp += v.jp; tx.op += v.op; tx.p += v.p;
+      tx.jc += v.jc; tx.oc += v.oc; tx.cu += v.cu; tx.n += v.n; tx.t += v.t;
+      rows += '<tr><td class="c">' + (i + 1) + '</td><td class="nm">' + c.city + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_inv">' + fmt(faInv(c)) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_jp">' + fmt(v.jp) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_op">' + fmt(v.op) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_sp">' + fmt(v.p) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_jc">' + fmt(v.jc) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_oc">' + fmt(v.oc) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_sc">' + fmt(v.cu) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_n">' + fmt(v.n) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_c">' + fmt(v.t) + '</td>'
+        + '<td class="r ratio">'
+        + '<span id="fs_' + c.k + '_p">' + pctTxt(v.t / faInv(c)) + '</span></td></tr>';
+    });
+    rows += '<tr class="total"><td class="c">—</td><td>总计</td><td class="r num" id="fs_T_inv">' + fmt(tx.inv) + '</td>'
+      + '<td class="r num" id="fs_T_jp">' + fmt(tx.jp) + '</td>'
+      + '<td class="r num" id="fs_T_op">' + fmt(tx.op) + '</td>'
+      + '<td class="r num" id="fs_T_sp">' + fmt(tx.p) + '</td>'
+      + '<td class="r num" id="fs_T_jc">' + fmt(tx.jc) + '</td>'
+      + '<td class="r num" id="fs_T_oc">' + fmt(tx.oc) + '</td>'
+      + '<td class="r num" id="fs_T_sc">' + fmt(tx.cu) + '</td>'
+      + '<td class="r num" id="fs_T_n">' + fmt(tx.n) + '</td>'
+      + '<td class="r num" id="fs_T_c">' + fmt(tx.t) + '</td>'
+      + '<td class="r ratio">'
+      + '<span id="fs_T_p">' + pctTxt(tx.t / tx.inv) + '</span></td></tr>';
+
+    var cols = '<col style="width:46px"><col style="width:98px"><col style="width:90px">'
+      + '<col style="width:76px"><col style="width:70px"><col style="width:84px">'
+      + '<col style="width:76px"><col style="width:70px"><col style="width:84px">'
+      + '<col style="width:84px"><col style="width:100px"><col style="width:104px">';
+
+    return '<div class="fa-panel card" id="fa-p-sum" style="padding:0;overflow:hidden">'
+      + '<div class="kpi">'
+      + '<div><div class="k">投资总额</div><div class="v"><span id="fa-kpi-inv">' + fmt(tx.inv) + '</span><span class="u">万元</span></div><div class="sub">六地市州合计</div></div>'
+      + '<div><div class="k">截至上年末报送</div><div class="v">' + fmt(tx.p) + '<span class="u">万元</span></div><div class="sub" id="fa-kpi-presub">占投资总额 ' + pctTxt(tx.p / tx.inv) + '</div></div>'
+      + '<div><div class="k">本年已报送</div><div class="v"><span id="fa-kpi-cu">' + fmt(tx.cu) + '</span><span class="u">万元</span></div><div class="sub">2026 年（含 11、12 月录入）</div></div>'
+      + '<div><div class="k">累计报送</div><div class="v"><span id="fa-kpi-cum">' + fmt(tx.t) + '</span><span class="u">万元</span></div>'
+      + '<div class="sub" id="fa-kpi-sub">占投资总额 ' + pctTxt(tx.t / tx.inv) + '</div></div>'
+      + '</div>'
+      + '<div class="card-body" style="padding-top:12px">'
+      + '<div class="tw"><table class="tbl fa-tbl"><colgroup>' + cols + '</colgroup>'
+      + '<thead><tr>'
+      + '<th rowspan="2">序号</th><th rowspan="2">地市州</th><th rowspan="2" class="r">投资额</th>'
+      + '<th colspan="3" class="c">截至上年末报送</th><th colspan="3" class="c">2026 年已报送</th>'
+      + '<th rowspan="2" class="r">当月投资</th><th rowspan="2" class="r">累计报送</th><th rowspan="2" class="r">占比</th>'
+      + '</tr><tr>'
+      + '<th class="r">建安费</th><th class="r">其他费</th><th class="r">小计</th>'
+      + '<th class="r">建安费</th><th class="r">其他费</th><th class="r">小计</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table></div>'
+      + '<div class="note" style="padding:9px 0 0;border-top:0">说明：2026 年已报送＝截至 10 月末基数＋2026 年各月录入；当月投资＝各地市州当前所选月份的当月数；累计报送＝各年基数＋全部月份录入。</div>'
+      + '</div></div>';
+  }
+
+  function faPeriodSel(c, cm, inl) {
+    var cy = faTagYear(cm), k, mopts = "", yopts = "";
+    for (k = 0; k < c.months.length; k++) {
+      if (faTagYear(c.months[k]) !== cy) continue;
+      mopts += '<option value="' + c.months[k] + '"' + (c.months[k] === cm ? " selected" : "") + '>'
+        + faTagMonth(c.months[k]) + ' 月</option>';
+    }
+    FA_YEARS.forEach(function (y) {
+      yopts += '<option value="' + y + '"' + (y === cy ? " selected" : "") + '>' + y + ' 年</option>';
+    });
+    return '<div class="fa-sel' + (inl ? ' fa-sel-in' : '') + '"><select data-fk="' + c.k + '" data-sy="1" aria-label="年份">' + yopts + '</select>'
+      + '<select data-fk="' + c.k + '" data-sm="1" aria-label="月份">' + mopts + '</select></div>';
+  }
+
+  /* 武汉段右侧「实际投资情况」卡片 */
+  /* 显示顺序：交安标段排在机电标段之前，数据索引保持原样 */
+  function faJianIdx(c) {
+    if (c.ord) return c.ord.slice();
+    var idx = [], i, j, m, tmp;
+    for (i = 0; i < c.jian.length; i++) idx.push(i);
+    for (i = 0; i < idx.length; i++) {
+      if (!/^机电/.test(c.jian[idx[i]][0])) continue;
+      j = i + 1;
+      while (j < idx.length && /^交安/.test(c.jian[idx[j]][0])) j++;
+      if (j === i + 1) continue;
+      tmp = idx[i];
+      for (m = i; m < j - 1; m++) idx[m] = idx[m + 1];
+      idx[j - 1] = tmp;
+      i = j - 1;
+    }
+    return idx;
+  }
+
+  function faCheckRail(c, cm) {
+    var rows = "", k, act, cum, diff, sumAct = null, sumCum = 0;
+    var sumAll = 0, htAllSum = faHtBand(c) + faHtOther(c);
+    for (k = 0; k < c.jian.length; k++) sumAll += faCum(c, 0, k, cm);
+    for (k = 0; k < c.other.length; k++) sumAll += faCum(c, 1, k, cm);
+    for (k = 0; k < c.jian.length; k++) sumCum += faCum(c, 0, k, cm);
+    var jx = faJianIdx(c);
+    for (var q = 0; q < jx.length; q++) {
+      k = jx[q];
+      act = faGet("fak_" + c.k + "_0_" + k);
+      cum = faCum(c, 0, k, cm);
+      if (act != null) sumAct = (sumAct == null ? act : sumAct + act);
+      diff = act == null ? null : act - cum;
+      rows += '<tr data-farow="fr_' + k + '"><td>' + c.jian[k][0] + '</td>'
+        + '<td><input class="fcr-in" type="text" data-int="1" data-k="fak_' + c.k + '_0_' + k + '"'
+        + (act == null ? ' placeholder="—"' : ' data-def="' + fmt(act) + '" value="' + fmt(act) + '"')
+        + '></td>'
+        + '<td id="fq_' + c.k + '_0_' + k + '"' + (diff != null && diff < 0 ? ' style="color:#C0392B"' : '') + '>'
+        + (diff == null ? "—" : fmt(diff)) + '</td></tr>';
+    }
+    var sDiff = sumAct == null ? null : sumAct - sumCum;
+    rows = '<tr class="sum" data-farow="fr_b"><td>建安费</td>'
+      + '<td id="fsum_' + c.k + '">' + (sumAct == null ? "—" : fmt(sumAct)) + '</td>'
+      + '<td id="fqs_' + c.k + '"' + (sDiff != null && sDiff < 0 ? ' style="color:#C0392B"' : '') + '>'
+      + (sDiff == null ? "—" : fmt(sDiff)) + '</td></tr>' + rows;
+    return '<div class="fcr-head" id="fcp_' + c.k + '">'
+      + '<div class="fcr-top">实际投资情况</div>'
+      + '<div class="fcr-sub" id="fcr_sub_' + c.k + '">实际完成 ' + fmt(sumAll)
+      + ' 万元，占合同额 ' + pctTxt(htAllSum ? sumAll / htAllSum : 0)
+      + '，占概算投资 ' + pctTxt(faInv(c) ? sumAll / faInv(c) : 0) + '</div>'
+      + '</div>'
+      + '<table class="fcr-tbl"><colgroup><col><col style="width:70px"><col style="width:64px"></colgroup>'
+      + '<thead><tr><th>标段</th><th>实际投资</th><th>差额</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table>';
+  }
+
+  function faCityPanel(c) {
+    var cm = faMonthOf(c), y = faTagYear(cm), firstOfYear = c.months && c.months.indexOf(cm) === faYearFirstIdx(c, y);
+    var rows = "", i2;
+    var htB = faHtBand(c), htO = faHtOther(c), oP = faHtOther(c), invNow = faInv(c);
+    var jp = 0, jy = 0, jn = 0, jc2 = 0, op = 0, oy = 0, on = 0, oc2 = 0;
+
+    for (i2 = 0; i2 < c.jian.length; i2++) {
+      jp += faPreShown(c, 0, i2, cm);
+      jy += faYtdShown(c, 0, i2, c.jian[i2][2], cm);
+      jn += faCurVal(c, 0, i2, cm) || 0;
+      jc2 += faCum(c, 0, i2, cm);
+    }
+    for (i2 = 0; i2 < c.other.length; i2++) {
+      op += faPreShown(c, 1, i2, cm);
+      oy += faYtdShown(c, 1, i2, c.other[i2][2], cm);
+      on += faCurVal(c, 1, i2, cm) || 0;
+      oc2 += faCum(c, 1, i2, cm);
+    }
+
+    rows += '<tr class="fa-band" data-farow="fr_b"><td class="fa-ctd">—</td><td class="fa-ctd">建安费</td>'
+      + faTd(fmt(c.gsJ), "num")
+      + faTd(fmt(htB), "num", "fh_" + c.k + "_b")
+      + faTd(fmt(jc2), "num", "fj_" + c.k + "_t")
+      + faTd(fmt(jp), "num", "fj_" + c.k + "_p")
+      + faTd(fmt(jy), "num", "fy_" + c.k + "_b")
+      + faTd(fmt(jn), "num hlm", "fn_" + c.k + "_b")
+      + faTd(fmt(htB - jc2), "num faint", "fj_" + c.k + "_r") + '</tr>';
+
+    faJianIdx(c).forEach(function (i3, pos) {
+      var r = c.jian[i3];
+      var pre = faPreShown(c, 0, i3, cm), ytd = faYtdShown(c, 0, i3, r[2], cm);
+      var cur = faCurVal(c, 0, i3, cm), cum = faCum(c, 0, i3, cm);
+      var ht = faRowHt(c, i3);
+      var yKey = "fay_" + c.k + "_0_" + i3 + (y === FA_Y0 ? "" : "_y" + y);
+      var yCell = firstOfYear ? faInp(yKey, ytd, "0") : faTd(fmt(ytd), "num", "fy_" + c.k + "_0_" + i3);
+      rows += '<tr data-farow="fr_' + i3 + '"><td class="fa-ctd num">' + (pos + 1) + '</td><td class="fa-ctd">' + r[0] + '</td>'
+        + faTd("—", "mut")
+        + faInp("fah_" + c.k + "_0_" + i3, ht, "—")
+        + faTd(fmt(cum), "num", "fr_" + c.k + "_0_" + i3)
+        + (y === FA_Y0 ? faInp("fap_" + c.k + "_0_" + i3, pre, "0") : faTd(fmt(pre), "num"))
+        + yCell
+        + faInp("fa_" + c.k + "_0_" + i3 + (c.months ? "_m" + cm : ""), cur || null, "0", "hlm")
+        + faTd(ht == null ? "—" : fmt(ht - cum), "num faint", "fr_" + c.k + "_0_" + i3 + "_r") + '</tr>';
+    });
+
+    c.other.forEach(function (r, i3) {
+      var pre = faPreShown(c, 1, i3, cm), ytd = faYtdShown(c, 1, i3, r[2], cm);
+      var cur = faCurVal(c, 1, i3, cm), cum = faCum(c, 1, i3, cm);
+      var ht = faHtOther(c);
+      var yKey2 = "fay_" + c.k + "_1_" + i3 + (y === FA_Y0 ? "" : "_y" + y);
+      var yCell2 = firstOfYear ? faInp(yKey2, ytd, "0") : faTd(fmt(ytd), "num nw", "fy_" + c.k + "_1_" + i3);
+      rows += '<tr class="fa-other" data-farow="fr_o' + i3 + '"><td class="fa-ctd">—</td><td class="fa-ctd">' + r[0] + '</td>'
+        + faTd(fmt(oP), "num", "fgo_" + c.k)
+        + faInp("fah_" + c.k + "_1_" + i3, ht, "0")
+        + faTd(fmt(cum), "num", "fr_" + c.k + "_1_" + i3 + "_t")
+        + (y === FA_Y0 ? faInp("fap_" + c.k + "_1_" + i3, pre, "0") : faTd(fmt(pre), "num"))
+        + yCell2
+        + faInp("fa_" + c.k + "_1_" + i3 + (c.months ? "_m" + cm : ""), cur || null, "0", "hlm")
+        + faTd(fmt(ht - cum), "num faint", "fr_" + c.k + "_1_" + i3 + "_r") + '</tr>';
+    });
+
+    var tAll = jc2 + oc2;
+    rows += '<tr class="total"><td class="fa-ctd">—</td><td class="fa-ctd">合计</td>'
+      + faTd(fmt(invNow), "num", "fgt_" + c.k)
+      + faTd(fmt(htB + htO), "num", "ft_" + c.k + "_h")
+      + faTd(fmt(tAll), "num", "ft_" + c.k + "_t")
+      + faTd(fmt(jp + op), "num", "ft_" + c.k + "_p")
+      + faTd(fmt(jy + oy), "num", "ft_" + c.k + "_y")
+      + faTd(fmt(jn + on), "num hlm", "ft_" + c.k + "_n")
+      + faTd(fmt(htB + htO - tAll), "num faint", "ft_" + c.k + "_r") + '</tr>';
+
+    var cols = '<col style="width:4.8%"><col style="width:12.6%"><col style="width:10.4%">'
+      + '<col style="width:10.4%"><col style="width:12.6%"><col style="width:10.4%">'
+      + '<col style="width:10.6%"><col style="width:10.4%"><col style="width:10%">';
+
+    var kpi = c.months
+      ? ('<div class="kpi">'
+        + '<div><div class="krow"><div class="k">选择年月</div></div>' + faPeriodSel(c, cm) + '</div>'
+        + '<div><div class="krow"><div class="k">概算总投资</div></div>'
+        + '<div class="v"><span id="fk_' + c.k + '_inv">' + fmt(invNow) + '</span><span class="u">万元</span></div>'
+        + '<div class="sub" id="fk_' + c.k + '_s1">完成投资 ' + fmt(tAll) + ' 万元<br>占比 '
+        + pctTxt(invNow ? tAll / invNow : 0) + '</div></div>'
+        + '<div><div class="krow"><div class="k">实际合同额</div></div><div class="v"><span id="fk_' + c.k + '_tot">' + fmt(htB + htO)
+        + '</span><span class="u">万元</span></div>'
+        + '<div class="sub" id="fk_' + c.k + '_s2">完成投资 ' + fmt(tAll) + ' 万元<br>占比 '
+        + pctTxt((htB + htO) ? tAll / (htB + htO) : 0) + '</div></div>'
+        + '<div><div class="krow"><div class="k">其中建安费合同额</div></div><div class="v"><span id="fk_' + c.k + '_htj">' + fmt(htB)
+        + '</span><span class="u">万元</span></div>'
+        + '<div class="sub" id="fk_' + c.k + '_s3">完成投资 ' + fmt(jc2) + ' 万元<br>占比 '
+        + pctTxt(htB ? jc2 / htB : 0) + '</div></div>'
+        + '</div>')
+      : ('<div class="kpi">'
+        + '<div><div class="k">投资额</div><div class="v">' + fmt(faInv(c)) + '<span class="u">万元</span></div><div class="sub">'
+        + c.city + (c.seg ? ' · ' + c.seg : '') + '</div></div>'
+        + '<div><div class="k">合同金额</div><div class="v"><span id="fk_' + c.k + '_ht">' + fmt(htB)
+        + '</span><span class="u">万元</span></div><div class="sub">建安费合同额</div></div>'
+        + '<div><div class="k">完成投资</div><div class="v"><span id="fk_' + c.k + '_done">' + fmt(jc2)
+        + '</span><span class="u">万元</span></div><div class="sub" id="fk_' + c.k + '_dsub">含其他费 ' + fmt(tAll) + '</div></div>'
+        + '<div><div class="k">完成百分比</div><div class="v"><span id="fk_' + c.k + '_pct">'
+        + pctTxt(htB ? jc2 / htB : 0) + '</span></div><div class="sub">完成投资 ÷ 合同金额</div></div>'
+        + '</div>');
+
+    var twoCard = !!c.months;
+    return '<div class="fa-panel' + (twoCard ? '' : ' card') + '" id="fa-p-' + c.k + '"'
+      + ' style="display:none;' + (twoCard ? 'gap:14px' : 'padding:0;overflow:hidden') + '">'
+      + (twoCard ? '<div class="card" style="flex:1 1 auto;min-width:0;margin:0;padding:0;overflow:hidden">' : '')
+      + kpi
+      + '<div class="card-body" style="padding-top:12px">'
+
+      + '<div class="tw"><table class="tbl fa-tbl ctr"><colgroup>' + cols + '</colgroup>'
+      + '<thead><tr><th>序号</th><th>类型</th><th>概算</th><th>合同额</th>'
+      + '<th>累计报送投资</th><th>截止上年末</th><th>本年已报送</th><th class="hlm">本月投资</th><th>剩余投资</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table></div>'
+      + '</div>'
+      + (twoCard ? '</div><div class="card" style="flex:0 0 240px;margin:0;padding:0;overflow:hidden">'
+        + '<div style="height:100%;display:flex;flex-direction:column">' + faCheckRail(c, cm) + '</div>'
+        + '</div>' : '')
+      + '</div>';
+  }
+
+  function faCitySync(c) {
+    var cm = faMonthOf(c), i;
+    var jp = 0, jy = 0, jn = 0, jc2 = 0, op = 0, oy = 0, on = 0, oc2 = 0;
+    for (i = 0; i < c.jian.length; i++) {
+      var pre = faPreShown(c, 0, i, cm), ytd = faYtdShown(c, 0, i, c.jian[i][2], cm);
+      var cur = faCurVal(c, 0, i, cm) || 0, cum = faCum(c, 0, i, cm), ht = faRowHt(c, i);
+      faPut("fh_" + c.k + "_0_" + i, ht == null ? "—" : fmt(ht));
+      faPut("fy_" + c.k + "_0_" + i, fmt(ytd));
+      faPut("fr_" + c.k + "_0_" + i, fmt(cum));
+      faPut("fr_" + c.k + "_0_" + i + "_r", ht == null ? "—" : fmt(ht - cum));
+      var actK = faGet("fak_" + c.k + "_0_" + i), difK = actK == null ? null : actK - cum;
+      faPut("fq_" + c.k + "_0_" + i, difK == null ? "—" : fmt(difK));
+      var dEl = el("fq_" + c.k + "_0_" + i);
+      if (dEl) dEl.style.color = (difK != null && difK < 0) ? "#C0392B" : "";
+      jp += pre; jy += ytd; jn += cur; jc2 += cum;
+    }
+    for (i = 0; i < c.other.length; i++) {
+      var pre2 = faPreShown(c, 1, i, cm), ytd2 = faYtdShown(c, 1, i, c.other[i][2], cm);
+      var cur2 = faCurVal(c, 1, i, cm) || 0, cum2 = faCum(c, 1, i, cm), ht2 = faHtOther(c);
+      faPut("fy_" + c.k + "_1_" + i, fmt(ytd2));
+      faPut("fr_" + c.k + "_1_" + i + "_t", fmt(cum2));
+      faPut("fr_" + c.k + "_1_" + i + "_r", fmt(ht2 - cum2));
+      op += pre2; oy += ytd2; on += cur2; oc2 += cum2;
+    }
+    var htB = faHtBand(c), htO = faHtOther(c), tAll = jc2 + oc2, invNow = faInv(c);
+    faPut("fgo_" + c.k, fmt(htO));
+    faPut("fgt_" + c.k, fmt(invNow));
+    faPut("fk_" + c.k + "_inv", fmt(invNow));
+    faPut("fj_" + c.k + "_p", fmt(jp));
+    faPut("ft_" + c.k + "_p", fmt(jp + op));
+    faPut("fy_" + c.k + "_b", fmt(jy));
+    faPut("fn_" + c.k + "_b", fmt(jn));
+    faPut("fj_" + c.k + "_t", fmt(jc2));
+    faPut("fh_" + c.k + "_b", fmt(htB));
+    faPut("fj_" + c.k + "_r", fmt(htB - jc2));
+    faPut("ft_" + c.k + "_h", fmt(htB + htO));
+    faPut("ft_" + c.k + "_p", fmt(jp + op));
+    faPut("ft_" + c.k + "_y", fmt(jy + oy));
+    faPut("ft_" + c.k + "_n", fmt(jn + on));
+    faPut("ft_" + c.k + "_t", fmt(tAll));
+    faPut("ft_" + c.k + "_r", fmt(htB + htO - tAll));
+    var htAllNow = htB + htO;
+    faPut("fcr_sub_" + c.k, "实际完成 " + fmt(tAll) + " 万元，占合同额 " + pctTxt(htAllNow ? tAll / htAllNow : 0)
+      + "，占概算投资 " + pctTxt(invNow ? tAll / invNow : 0));
+    var sa = null, kk;
+    for (kk = 0; kk < c.jian.length; kk++) {
+      var ak = faGet("fak_" + c.k + "_0_" + kk);
+      if (ak != null) sa = (sa == null ? ak : sa + ak);
+    }
+    faPut("fsum_" + c.k, sa == null ? "—" : fmt(sa));
+    faPut("fqs_" + c.k, sa == null ? "—" : fmt(sa - jc2));
+    var sq = el("fqs_" + c.k);
+    if (sq) sq.style.color = (sa != null && sa - jc2 < 0) ? "#C0392B" : "";
+    if (c.months) {
+      faPut("fk_" + c.k + "_tot", fmt(htB + htO));
+      faPut("fk_" + c.k + "_htj", fmt(htB));
+      faPut("fk_" + c.k + "_s1", "完成投资 " + fmt(tAll) + " 万元\n占比 " + pctTxt(invNow ? tAll / invNow : 0));
+      faPut("fk_" + c.k + "_s2", "完成投资 " + fmt(tAll) + " 万元\n占比 " + pctTxt((htB + htO) ? tAll / (htB + htO) : 0));
+      faPut("fk_" + c.k + "_s3", "完成投资 " + fmt(jc2) + " 万元\n占比 " + pctTxt(htB ? jc2 / htB : 0));
+    } else {
+      faPut("fk_" + c.k + "_ht", fmt(htB));
+      faPut("fk_" + c.k + "_done", fmt(jc2));
+      faPut("fk_" + c.k + "_dsub", "含其他费 " + fmt(tAll));
+      faPut("fk_" + c.k + "_pct", pctTxt(htB ? jc2 / htB : 0));
+    }
+  }
+
+  function faAlignRail() {
+    document.querySelectorAll("#fa-wrap .fa-panel").forEach(function (p) {
+      if (p.style.display === "none") return;
+      var head = p.querySelector(".fcr-head"), tbl = p.querySelector(".fa-tbl");
+      if (!head || !tbl) return;
+      head.style.height = "0px";
+      var d = tbl.querySelector("thead tr").getBoundingClientRect().top - head.getBoundingClientRect().top;
+      head.style.height = (d > 0 ? Math.round(d) : 0) + "px";
+      var m0 = tbl.querySelector("tbody tr"), r0 = p.querySelector(".fcr-tbl tbody tr");
+      if (m0 && r0) {
+        var delta = Math.round(m0.getBoundingClientRect().top - r0.getBoundingClientRect().top);
+        if (delta) head.style.height = Math.max(0, Math.round(d) + delta) + "px";
+      }
+    });
+  }
+
+  function showFA(k) {
+    document.querySelectorAll("#fa-wrap .fa-panel").forEach(function (p) {
+      var on = (p.id === "fa-p-" + k);
+      p.style.display = on ? (p.querySelector(".fcr-head") ? "flex" : "block") : "none";
+    });
+    document.querySelectorAll("#fa-tabs [data-fatab]").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-fatab") === k);
+    });
+    var h = el("fa-hint"), c = null;
+    FA_CITIES.forEach(function (x) { if (x.k === k) c = x; });
+    if (h) h.textContent = "单位：万元";
+    setTimeout(faAlignRail, 0);
+  }
+
+  function faRefresh() {
+    if (!FA_READY) return;
+    var tx = { inv: 0, jp: 0, op: 0, p: 0, jc: 0, oc: 0, cu: 0, n: 0, t: 0 };
+    FA_CITIES.forEach(function (c) {
+      var v = faCalc(c);
+      faCitySync(c);
+      faPut("fs_" + c.k + "_jp", fmt(v.jp));
+      faPut("fs_" + c.k + "_op", fmt(v.op));
+      faPut("fs_" + c.k + "_sp", fmt(v.p));
+      faPut("fs_" + c.k + "_jc", fmt(v.jc));
+      faPut("fs_" + c.k + "_oc", fmt(v.oc));
+      faPut("fs_" + c.k + "_sc", fmt(v.cu));
+      faPut("fs_" + c.k + "_n", fmt(v.n));
+      faPut("fs_" + c.k + "_c", fmt(v.t));
+      faPut("fs_" + c.k + "_inv", fmt(faInv(c)));
+      faPut("fs_" + c.k + "_p", pctTxt(v.t / faInv(c)));
+      tx.inv += faInv(c); tx.jp += v.jp; tx.op += v.op; tx.p += v.p;
+      tx.jc += v.jc; tx.oc += v.oc; tx.cu += v.cu; tx.n += v.n; tx.t += v.t;
+    });
+    faPut("fs_T_inv", fmt(tx.inv));
+    faPut("fa-kpi-inv", fmt(tx.inv));
+    faPut("fa-kpi-presub", "占投资总额 " + pctTxt(tx.p / tx.inv));
+    faPut("fs_T_jp", fmt(tx.jp));
+    faPut("fs_T_op", fmt(tx.op));
+    faPut("fs_T_sp", fmt(tx.p));
+    faPut("fs_T_jc", fmt(tx.jc));
+    faPut("fs_T_oc", fmt(tx.oc));
+    faPut("fs_T_sc", fmt(tx.cu));
+    faPut("fs_T_n", fmt(tx.n));
+    faPut("fs_T_c", fmt(tx.t));
+    faPut("fs_T_p", pctTxt(tx.t / tx.inv));
+    faPut("fa-kpi-cu", fmt(tx.cu));
+    faPut("fa-kpi-cum", fmt(tx.t));
+    faPut("fa-kpi-sub", "占投资总额 " + pctTxt(tx.t / tx.inv));
+  }
+
+  function faApplyLock() {
+    document.querySelectorAll("#view-fixedasset input[data-k]").forEach(function (inp) {
+      inp.readOnly = LOCKED;
+      inp.setAttribute("aria-readonly", LOCKED ? "true" : "false");
+    });
+  }
+
+  function faSync() {
+    if (!FA_READY) return;
+    /* 导入数据后录入月份可能变化，按新月份重建面板 */
+    if (!FA_REBUILDING) {
+      FA_REBUILDING = true;
+      FA_CITIES.forEach(function (c) {
+        if (!c.months) return;
+        var p = el("fa-p-" + c.k);
+        if (!p) return;
+        var on = p.querySelector("[data-m].on");
+        if (on && on.getAttribute("data-m") !== faMonthOf(c)) faRebuild(c);
+      });
+      FA_REBUILDING = false;
+    }
+    document.querySelectorAll("#view-fixedasset input[data-k]").forEach(function (inp) {
+      var v = S[inp.dataset.k], def = inp.getAttribute("data-def");
+      inp.value = (v == null || String(v).trim() === "") ? (def || "") : fmt(num(v));
+    });
+    faRefresh();
+  }
+
+  function faRebuild(c) {
+    var old = el("fa-p-" + c.k);
+    if (!old) return;
+    var box = document.createElement("div");
+    box.innerHTML = faCityPanel(c);
+    old.parentNode.replaceChild(box.firstChild, old);
+    faSync();
+    faApplyLock();
+    showFA(c.k);
+  }
+
+  (function () {
+    var wrap = el("fa-wrap"), tabs = el("fa-tabs");
+    if (!wrap || !tabs) return;
+    /* 旧版键迁移：单期值 / 11、12 月 → 首年月份标签 */
+    var LEG = [{ s: "11", t: faTag(FA_Y0, 11) }, { s: "12", t: faTag(FA_Y0, 12) }];
+    FA_CITIES.forEach(function (c) {
+      if (!c.months) return;
+      var m = String(S["fam_" + c.k] == null ? "" : S["fam_" + c.k]), g, i, arr, base;
+      if (m && m.length === 2) S["fam_" + c.k] = faTag(FA_Y0, parseInt(m, 10));
+      for (g = 0; g < 2; g++) {
+        arr = g === 0 ? c.jian : c.other;
+        for (i = 0; i < arr.length; i++) {
+          base = "fa_" + c.k + "_" + g + "_" + i;
+          if (S[base + "_m" + faTag(FA_Y0, 11)] == null && S[base] != null) S[base + "_m" + faTag(FA_Y0, 11)] = S[base];
+          LEG.forEach(function (x) {
+            if (S[base + "_m" + x.t] == null && S[base + "_m" + x.s] != null) S[base + "_m" + x.t] = S[base + "_m" + x.s];
+          });
+        }
+      }
+    });
+    var th = '<button type="button" class="fa-tab on" data-fatab="sum">汇总</button>';
+    FA_CITIES.forEach(function (c) {
+      th += '<button type="button" class="fa-tab" data-fatab="' + c.k + '">' + c.city.replace("市", "") + '</button>';
+    });
+    tabs.innerHTML = th;
+    wrap.innerHTML = faSummaryPanel() + FA_CITIES.map(faCityPanel).join("");
+    FA_READY = true;
+    faSync();
+    faApplyLock();
+    showFA("sum");
+    tabs.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest("[data-fatab]") : null;
+      if (b) showFA(b.getAttribute("data-fatab"));
+    });
+    var hovKey = null, hovPanel = null;
+    function faHov(key, on, panel) {
+      if (!panel) return;
+      panel.querySelectorAll('tr[data-farow="' + key + '"]').forEach(function (x) {
+        x.classList.toggle("fa-hov", on);
+      });
+    }
+    wrap.addEventListener("mouseover", function (e) {
+      var tr = e.target && e.target.closest ? e.target.closest("tr[data-farow]") : null;
+      if (!tr) return;
+      var panel = tr.closest(".fa-panel"), key = tr.getAttribute("data-farow");
+      if (!panel) return;
+      if (key === hovKey && panel === hovPanel) return;
+      if (hovKey && hovPanel) faHov(hovKey, false, hovPanel);
+      hovKey = key;
+      hovPanel = panel;
+      faHov(key, true, panel);
+    });
+    wrap.addEventListener("mouseout", function (e) {
+      var tr = e.target && e.target.closest ? e.target.closest("tr[data-farow]") : null;
+      if (!tr) return;
+      if (e.relatedTarget && tr.contains(e.relatedTarget)) return;
+      if (hovKey && hovPanel) { faHov(hovKey, false, hovPanel); hovKey = null; hovPanel = null; }
+    });
+    wrap.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest("[data-fam]") : null;
+      if (!b) return;
+      var k = b.getAttribute("data-fam"), m = b.getAttribute("data-m"), yy = b.getAttribute("data-my"), c = null;
+      FA_CITIES.forEach(function (x) { if (x.k === k) c = x; });
+      if (!c) return;
+      if (yy) {
+        var cy = faTagYear(faMonthOf(c));
+        if (String(cy) === yy) return;
+        m = c.months[faYearFirstIdx(c, parseInt(yy, 10))];
+        if (!m) return;
+      }
+      if (!m) return;
+      S["fam_" + k] = m;
+      try { save(); } catch (err) {}
+      faRebuild(c);
+    });
+    wrap.addEventListener("change", function (e) {
+      var s = e.target;
+      if (!s || s.tagName !== "SELECT" || !s.getAttribute("data-fk")) return;
+      var k = s.getAttribute("data-fk"), c = null;
+      FA_CITIES.forEach(function (x) { if (x.k === k) c = x; });
+      if (!c || !c.months) return;
+      var m = s.getAttribute("data-sy") ? c.months[faYearFirstIdx(c, parseInt(s.value, 10))] : s.value;
+      if (!m || c.months.indexOf(m) < 0) return;
+      S["fam_" + k] = m;
+      try { save(); } catch (err) {}
+      faRebuild(c);
+    });
+    document.addEventListener("input", function (e) {
+      var t = e.target;
+      if (!t || !t.dataset) return;
+      if (!/^(fa_|fah_|fap_|fay_|fam_|fak_)/.test(String(t.dataset.k || ""))) return;
+      faRefresh();
+    });
+    document.addEventListener("focusout", function (e) {
+      var t = e.target;
+      if (!t || !t.dataset) return;
+      if (!/^(fa_|fah_|fap_|fay_|fam_|fak_)/.test(String(t.dataset.k || ""))) return;
+      faRefresh();
+    });
+  })();
+
+
+  /* ================= 形象进度汇总 + 云端同步 ================= */
+  (function () {
+    var BASE = {"months":["2026-11","2026-12","2027-01","2027-02","2027-03","2027-04","2027-05","2027-06","2027-07","2027-08","2027-09","2027-10","2027-11","2027-12","2028-01","2028-02","2028-03","2028-04","2028-05","2028-06","2028-07","2028-08","2028-09","2028-10","2028-11","2028-12","2029-01","2029-02","2029-03","2029-04","2029-05","2029-06","2029-07","2029-08","2029-09","2029-10","2029-11","2029-12"],"tenders":[{"tid":"t1","name":"1标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":70.0,"prev":70.0,"mon":0.0,"cum":70.0,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":149.154,"prev":69.15,"mon":0.0,"cum":69.15,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":158.6,"prev":28.35,"mon":0.2,"cum":28.55,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":219.1,"prev":128.48,"mon":1.74,"cum":130.22,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":252.03,"prev":124.58,"mon":4.95,"cum":129.53,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":66.684,"prev":3.2,"mon":0.0,"cum":3.2,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":107.2,"prev":10.02,"mon":6.15,"cum":16.17,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":76.6,"prev":10.46,"mon":5.39,"cum":15.85,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":76.6,"prev":9.9,"mon":5.65,"cum":15.55,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":76.6,"prev":8.87,"mon":6.28,"cum":15.15,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":107.2,"prev":2.1,"mon":6.45,"cum":8.55,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":107.2,"prev":3.02,"mon":5.85,"cum":8.87,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":107.2,"prev":0.3,"mon":7.49,"cum":7.79,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":143.0,"prev":99.0,"mon":1.0,"cum":100.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":4560.0,"prev":2236.0,"mon":14.0,"cum":2250.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":2216.0,"prev":2216.0,"mon":0.0,"cum":2216.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":539.0,"prev":262.0,"mon":19.0,"cum":281.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":2531.0,"prev":1142.0,"mon":51.0,"cum":1193.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":1730.0,"prev":1002.0,"mon":48.0,"cum":1050.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":12638.0,"prev":4863.0,"mon":499.0,"cum":5362.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":12638.0,"prev":3568.0,"mon":568.0,"cum":4136.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":70.0,"prev":0.0,"mon":1.0,"cum":1.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":34602.0,"prev":2673.4,"mon":927.0,"cum":3600.4,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":69204.0,"prev":5346.8,"mon":0.0,"cum":5346.8,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":107.2,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":36537.953,"mon":649.0,"cum":23957.0,"k":0},{"no":"2","nm":"路基工程","contract":103402.3337,"mon":1155.0,"cum":28779.0,"k":1},{"no":"3","nm":"路面工程","contract":61049.1038,"mon":4523.0,"cum":9232.0,"k":2},{"no":"4","nm":"桥梁工程","contract":102057.014,"mon":2530.0,"cum":44624.0,"k":3},{"no":"5","nm":"改扩建工程","contract":55327.7918,"mon":1627.0,"cum":8339.0,"k":4},{"no":"7","nm":"绿化工程","contract":7016.2925,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":148868.7664,"mon":1438.0,"cum":58092.0,"k":6}],"people":{"mgr":312.0,"worker":1244.0}},{"tid":"t2","name":"2标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":21.4,"prev":21.4,"mon":0.0,"cum":21.4,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":15.4728,"prev":2.972,"mon":0.0,"cum":2.972,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":9.8226,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":98.1,"prev":0.3266,"mon":0.0,"cum":0.3266,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":1.47,"prev":0.5155,"mon":0.0,"cum":0.5155,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":4.0775,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":13.3168,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":29.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":3012.0,"prev":1370.0,"mon":31.0,"cum":1401.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":729.0,"prev":254.0,"mon":68.0,"cum":322.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1658.0,"prev":669.0,"mon":30.0,"cum":699.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":702.0,"prev":278.0,"mon":14.0,"cum":292.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":5035.0,"prev":1549.0,"mon":148.0,"cum":1697.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":5035.0,"prev":1022.0,"mon":138.0,"cum":1160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":3040.916,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12163.664,"prev":680.0,"mon":30.0,"cum":710.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":63027.648,"prev":0.0,"mon":30.0,"cum":30.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":14629.7372,"mon":null,"cum":13575.54,"k":0},{"no":"2","nm":"路基工程","contract":29175.0728,"mon":213.0,"cum":4555.88,"k":1},{"no":"4","nm":"桥梁工程","contract":102164.6377,"mon":2385.0,"cum":46855.5096,"k":2},{"no":"5","nm":"改扩建工程","contract":7308.2719,"mon":null,"cum":null,"k":3},{"no":"7","nm":"绿化工程","contract":1129.4535,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":90341.0821,"mon":2872.0,"cum":18638.0,"k":5}],"people":{"mgr":85.0,"worker":554.0}},{"tid":"t3","name":"3标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":27.4,"prev":27.4,"mon":0.0,"cum":27.4,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":80.09,"prev":71.2,"mon":8.89,"cum":80.09,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":8.9,"prev":2.1,"mon":0.0,"cum":2.1,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":134.35,"prev":85.0,"mon":2.0,"cum":87.0,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":3.913,"prev":2.95,"mon":0.0,"cum":2.95,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":1.08,"prev":0.84,"mon":0.0,"cum":0.84,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":72.59,"prev":2.2,"mon":0.0,"cum":2.2,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":76.0,"prev":55.0,"mon":0.0,"cum":55.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":774.0,"prev":452.0,"mon":45.0,"cum":497.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":1800.0,"prev":1752.0,"mon":44.0,"cum":1796.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":51.0,"prev":19.0,"mon":1.0,"cum":20.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":248.0,"prev":36.0,"mon":4.0,"cum":40.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":643.0,"prev":477.0,"mon":40.0,"cum":517.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":5058.0,"prev":2172.0,"mon":1039.0,"cum":3211.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":5058.0,"prev":2009.0,"mon":913.0,"cum":2922.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":10935.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":21870.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":9562.4403,"mon":0.0,"cum":6746.0,"k":0},{"no":"2","nm":"路基工程","contract":39048.3456,"mon":546.0,"cum":15589.0,"k":1},{"no":"4","nm":"桥梁工程","contract":28658.6084,"mon":1514.0,"cum":16532.0,"k":2},{"no":"5","nm":"改扩建工程","contract":8837.4033,"mon":null,"cum":283.0,"k":3},{"no":"7","nm":"绿化工程","contract":1413.6889,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":40540.6642,"mon":943.0,"cum":31750.0,"k":5}],"people":{"mgr":72.0,"worker":319.0}},{"tid":"t4","name":"4标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":30.8,"prev":30.8,"mon":0.0,"cum":30.8,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":82.3,"prev":82.3,"mon":0.0,"cum":82.3,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":35.6,"prev":12.47,"mon":0.0,"cum":12.47,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":177.3,"prev":90.0,"mon":5.7,"cum":95.7,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":4.16,"prev":2.84,"mon":0.11,"cum":2.95,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":57.973,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":127.0,"prev":95.0,"mon":5.0,"cum":100.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":567.0,"prev":266.0,"mon":0.0,"cum":266.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":89.0,"prev":39.0,"mon":5.0,"cum":44.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":273.0,"prev":72.0,"mon":25.0,"cum":97.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":168.0,"prev":21.0,"mon":12.0,"cum":33.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1155.0,"prev":100.0,"mon":60.0,"cum":160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1155.0,"prev":0.0,"mon":34.0,"cum":34.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":0.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":2273.78,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":4185.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":8574.0,"mon":60.0,"cum":5733.0,"k":0},{"no":"2","nm":"路基工程","contract":43475.971,"mon":1134.0,"cum":20506.0,"k":1},{"no":"3","nm":"路面工程","contract":34867.0,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":16842.6882,"mon":264.0,"cum":4796.0,"k":3},{"no":"5","nm":"改扩建工程","contract":14918.0,"mon":353.0,"cum":2782.0,"k":4},{"no":"7","nm":"绿化工程","contract":1932.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":47008.0,"mon":777.0,"cum":18357.0,"k":6}],"people":{"mgr":94.0,"worker":291.0}},{"tid":"t5","name":"5标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":35.0,"prev":31.9,"mon":0.0,"cum":31.9,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":59.24,"prev":54.78,"mon":0.0,"cum":54.78,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":66.34,"prev":5.3,"mon":2.0,"cum":7.3,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":150.13,"prev":74.36,"mon":4.2,"cum":78.56,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.584,"prev":1.747,"mon":0.05,"cum":1.797,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":1.5,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":21.227,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":82.0,"prev":39.0,"mon":1.0,"cum":40.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":2060.0,"prev":1124.0,"mon":6.0,"cum":1130.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":426.0,"prev":426.0,"mon":0.0,"cum":426.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":329.0,"prev":73.0,"mon":1.0,"cum":74.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1318.0,"prev":669.0,"mon":35.0,"cum":704.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":648.0,"prev":318.0,"mon":34.0,"cum":352.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":4904.0,"prev":1543.0,"mon":264.0,"cum":1807.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":4904.0,"prev":1028.0,"mon":243.0,"cum":1271.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":3.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12927.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":25854.0,"prev":3136.0,"mon":310.54,"cum":3446.54,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":12683.3665,"mon":null,"cum":7969.25,"k":0},{"no":"2","nm":"路基工程","contract":46913.0,"mon":1641.0,"cum":15363.04,"k":1},{"no":"4","nm":"桥梁工程","contract":47231.0,"mon":914.0,"cum":11365.86,"k":2},{"no":"5","nm":"改扩建工程","contract":9084.0,"mon":341.0,"cum":1658.12,"k":3},{"no":"7","nm":"绿化工程","contract":1566.0,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":58485.0,"mon":1342.0,"cum":37121.83,"k":5}],"people":{"mgr":81.0,"worker":714.0}},{"tid":"t6","name":"6标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":28.92,"prev":28.92,"mon":0.0,"cum":28.92,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":52.29,"prev":52.29,"mon":0.0,"cum":52.29,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":0.6,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":190.06,"prev":94.73,"mon":4.57,"cum":99.3,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.3879,"prev":1.671,"mon":0.124,"cum":1.795,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":7.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":50.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":67.1,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":90.8,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":90.8,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":73.0,"prev":58.0,"mon":0.0,"cum":58.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1788.0,"prev":934.0,"mon":40.0,"cum":974.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":588.0,"prev":526.0,"mon":45.0,"cum":571.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":287.0,"prev":101.0,"mon":13.0,"cum":114.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":769.0,"prev":422.0,"mon":15.0,"cum":437.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":681.0,"prev":299.0,"mon":22.0,"cum":321.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":3319.0,"prev":1921.0,"mon":204.0,"cum":2125.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":3319.0,"prev":1500.0,"mon":183.0,"cum":1683.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":9687.0,"prev":470.0,"mon":722.0,"cum":1192.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":20041.0,"prev":4028.0,"mon":1132.0,"cum":5160.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":8254.39,"mon":126.54,"cum":5684.12,"k":0},{"no":"2","nm":"路基工程","contract":43859.72,"mon":1086.75,"cum":17106.33,"k":1},{"no":"3","nm":"路面工程","contract":42859.51,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":27095.0,"mon":1178.17,"cum":15883.0,"k":3},{"no":"5","nm":"改扩建工程","contract":9531.5,"mon":1172.35,"cum":2388.16,"k":4},{"no":"7","nm":"绿化工程","contract":1128.86,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":61014.0,"mon":2267.5,"cum":29662.5,"k":6}],"people":{"mgr":92.0,"worker":465.0}},{"tid":"t7","name":"7标 ","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":62.3,"prev":62.3,"mon":0.0,"cum":62.3,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":79.96,"prev":77.85,"mon":0.83,"cum":78.68,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":116.02,"prev":22.41,"mon":0.42,"cum":22.83,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":262.0,"prev":56.8,"mon":33.62,"cum":90.42,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":5.78,"prev":3.134,"mon":1.028,"cum":4.162,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":6.92,"prev":0.3,"mon":0.04,"cum":0.34,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":71.14,"prev":0.0,"mon":0.04,"cum":0.04,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":57.7,"prev":0.0,"mon":null,"cum":null,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":129.0,"prev":79.0,"mon":8.0,"cum":87.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":2668.0,"prev":797.0,"mon":40.0,"cum":837.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":678.0,"prev":169.0,"mon":46.0,"cum":215.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":1240.0,"prev":324.0,"mon":51.0,"cum":375.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":933.0,"prev":212.0,"mon":70.0,"cum":282.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":4988.0,"prev":964.0,"mon":388.0,"cum":1352.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":4988.0,"prev":434.0,"mon":465.0,"cum":899.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":0.0,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":12410.234,"prev":0.0,"mon":526.47,"cum":526.47,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":12410.234,"prev":0.0,"mon":1656.0,"cum":1656.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":12000.0,"mon":193.0,"cum":6941.0,"k":0},{"no":"2","nm":"路基工程","contract":53657.0,"mon":1985.0,"cum":19325.0,"k":1},{"no":"3","nm":"路面工程","contract":54488.0,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":42331.0,"mon":274.0,"cum":12556.0,"k":3},{"no":"5","nm":"改扩建工程","contract":25767.0,"mon":50.0,"cum":3857.0,"k":4},{"no":"7","nm":"绿化工程","contract":3182.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":60885.0,"mon":1335.0,"cum":8426.0,"k":6}],"people":{"mgr":95.0,"worker":527.0}},{"tid":"t8","name":"8标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":35.6,"prev":35.6,"mon":0.0,"cum":35.6,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":162.0,"prev":162.0,"mon":0.0,"cum":162.0,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":78.0,"prev":29.0,"mon":3.0,"cum":32.0,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":377.0,"prev":162.0,"mon":10.0,"cum":172.0,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.1,"prev":1.91,"mon":0.1,"cum":2.01,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":4.2,"prev":3.7,"mon":0.2,"cum":3.9,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":50.0,"prev":4.2,"mon":3.0,"cum":7.2,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":202.0,"prev":135.0,"mon":5.0,"cum":140.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"2","nm":"引江济汉桥特大桥","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":108.0,"prev":108.0,"mon":0.0,"cum":108.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"承台","unit":"座","total":5.0,"prev":5.0,"mon":0.0,"cum":5.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|承台","k":16},{"lv":4,"no":"","nm":"系梁","unit":"道","total":17.0,"prev":17.0,"mon":0.0,"cum":17.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|系梁","k":17},{"lv":4,"no":"","nm":"索塔","unit":"节","total":26.0,"prev":26.0,"mon":0.0,"cum":26.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|索塔","k":18},{"lv":4,"no":"","nm":"墩柱","unit":"个","total":59.0,"prev":59.0,"mon":0.0,"cum":59.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|墩柱","k":19},{"lv":4,"no":"","nm":"盖梁","unit":"道","total":19.0,"prev":19.0,"mon":0.0,"cum":19.0,"leaf":true,"grp":"桥梁基础及下构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|桥梁基础及下构|盖梁","k":20},{"lv":3,"no":"","nm":"上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构","k":21},{"lv":4,"no":"","nm":"桥面板","unit":"米","total":897.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|桥面板","k":22},{"lv":4,"no":"","nm":"斜拉索","unit":"道","total":72.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|斜拉索","k":23},{"lv":4,"no":"","nm":"箱梁预制","unit":"片","total":114.0,"prev":114.0,"mon":0.0,"cum":114.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|箱梁预制","k":24},{"lv":4,"no":"","nm":"箱梁安装","unit":"片","total":114.0,"prev":0.0,"mon":114.0,"cum":114.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|箱梁安装","k":25},{"lv":4,"no":"","nm":"护栏","unit":"米","total":1794.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"上构","parent":"引江济汉桥特大桥","agg":"桥梁工程|引江济汉桥特大桥|上构|护栏","k":26},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":27},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":28},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1603.0,"prev":812.0,"mon":60.0,"cum":872.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":29},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":30},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":257.0,"prev":170.0,"mon":10.0,"cum":180.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":31},{"lv":4,"no":"","nm":"墩台","unit":"个","total":800.0,"prev":464.0,"mon":26.0,"cum":490.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":32},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":281.0,"prev":180.0,"mon":10.0,"cum":190.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":33},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":34},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":2658.0,"prev":1030.0,"mon":150.0,"cum":1180.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":35},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":2658.0,"prev":624.0,"mon":130.0,"cum":754.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":36},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":51.0,"prev":16.0,"mon":4.0,"cum":20.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":37},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":7351.0,"prev":140.0,"mon":120.0,"cum":260.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":38},{"lv":4,"no":"","nm":"护栏","unit":"米","total":9756.19,"prev":0.0,"mon":300.0,"cum":300.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":39},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":40}],"out":[{"no":"1","nm":"临时工程与设施","contract":15207.2,"mon":157.0,"cum":12102.0,"k":0},{"no":"2","nm":"路基工程","contract":56531.6,"mon":1314.0,"cum":30000.0,"k":1},{"no":"4","nm":"桥梁工程","contract":47795.0,"mon":2347.0,"cum":26873.0,"k":2},{"no":"5","nm":"改扩建工程","contract":10218.5,"mon":667.0,"cum":2390.0,"k":3},{"no":"7","nm":"绿化工程","contract":0,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":35268.5,"mon":1511.0,"cum":20168.0,"k":5}],"people":{"mgr":88.0,"worker":875.0}},{"tid":"t9","name":"9标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":28.0,"prev":28.0,"mon":0.0,"cum":28.0,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":94.0,"prev":89.0,"mon":0.0,"cum":89.0,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":97.31,"prev":42.81,"mon":35.07,"cum":77.88,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":354.67,"prev":147.13,"mon":11.64,"cum":158.77,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":2.3,"prev":2.195,"mon":0.045,"cum":2.24,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":9.3,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":28.2,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"三","nm":"路面工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路面工程","k":11},{"lv":2,"no":"1","nm":"基层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"基层","agg":"路面工程|基层","k":12},{"lv":3,"no":"","nm":"底基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|底基层","k":13},{"lv":3,"no":"","nm":"下基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|下基层","k":14},{"lv":3,"no":"","nm":"上基层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"基层","agg":"路面工程|基层|上基层","k":15},{"lv":2,"no":"2","nm":"面层","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"面层","agg":"路面工程|面层","k":16},{"lv":3,"no":"","nm":"下面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|下面层","k":17},{"lv":3,"no":"","nm":"中面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|中面层","k":18},{"lv":3,"no":"","nm":"上面层","unit":"公里/单幅","total":58.66,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":"面层","agg":"路面工程|面层|上面层","k":19},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":20},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":147.0,"prev":80.0,"mon":2.0,"cum":82.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":21},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":22},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":23},{"lv":4,"no":"","nm":"桩基","unit":"根","total":647.0,"prev":309.0,"mon":27.0,"cum":336.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":24},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":0.0,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":25},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":115.0,"prev":47.0,"mon":1.0,"cum":48.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":26},{"lv":4,"no":"","nm":"墩台","unit":"个","total":222.0,"prev":126.0,"mon":2.0,"cum":128.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":27},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":228.0,"prev":58.0,"mon":12.0,"cum":70.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":28},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":29},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1544.0,"prev":420.0,"mon":117.0,"cum":537.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":30},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1544.0,"prev":157.0,"mon":0.0,"cum":157.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":31},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":32},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":2040.19,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":33},{"lv":4,"no":"","nm":"护栏","unit":"米","total":2040.19,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":34},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":58.6,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":35}],"out":[{"no":"1","nm":"临时工程与设施","contract":10427.68,"mon":262.0,"cum":6727.0,"k":0},{"no":"2","nm":"路基工程","contract":43672.86,"mon":2143.0,"cum":33137.0,"k":1},{"no":"3","nm":"路面工程","contract":48212.25,"mon":null,"cum":null,"k":2},{"no":"4","nm":"桥梁工程","contract":12690.87,"mon":251.0,"cum":8980.0,"k":3},{"no":"5","nm":"改扩建工程","contract":15660.29,"mon":679.0,"cum":1950.0,"k":4},{"no":"7","nm":"绿化工程","contract":3177.0,"mon":0,"cum":0,"k":5},{"no":"8","nm":"集采材料到工地价","contract":56503.49,"mon":null,"cum":null,"k":6}],"people":{"mgr":68.0,"worker":310.0}},{"tid":"t10","name":"10标","type":"civil","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.1","nm":"施工便道","unit":"公里","total":17.6,"prev":17.18,"mon":0.0,"cum":17.18,"leaf":true,"grp":null,"parent":"施工便道","agg":"临时工程与设施|施工便道","k":1},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":2},{"lv":2,"no":"1.3","nm":"标准化工地建设","unit":"%","total":100.0,"prev":100.0,"mon":0.0,"cum":100.0,"leaf":true,"grp":null,"parent":"标准化工地建设","agg":"临时工程与设施|标准化工地建设","k":3},{"lv":1,"no":"二","nm":"路基工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"路基工程","k":4},{"lv":2,"no":"1","nm":"场地清表","unit":"万平米","total":176.7,"prev":174.78,"mon":0.0,"cum":174.78,"leaf":true,"grp":null,"parent":"场地清表","agg":"路基工程|场地清表","k":5},{"lv":2,"no":"2","nm":"路基挖方","unit":"万方","total":446.0,"prev":198.05,"mon":5.66,"cum":203.71,"leaf":true,"grp":null,"parent":"路基挖方","agg":"路基工程|路基挖方","k":6},{"lv":2,"no":"3","nm":"路基填方","unit":"万方","total":395.0,"prev":153.84,"mon":1.21,"cum":155.05,"leaf":true,"grp":null,"parent":"路基填方","agg":"路基工程|路基填方","k":7},{"lv":2,"no":"4","nm":"特殊路基处理","unit":"万米","total":1.05,"prev":0.94,"mon":0.0,"cum":0.94,"leaf":true,"grp":null,"parent":"特殊路基处理","agg":"路基工程|特殊路基处理","k":8},{"lv":2,"no":"5","nm":"防护工程","unit":"万方","total":18.9,"prev":2.17,"mon":0.42,"cum":2.59,"leaf":true,"grp":null,"parent":"防护工程","agg":"路基工程|防护工程","k":9},{"lv":2,"no":"6","nm":"排水工程","unit":"公里","total":87.9,"prev":11.2,"mon":2.9,"cum":14.1,"leaf":true,"grp":null,"parent":"排水工程","agg":"路基工程|排水工程","k":10},{"lv":1,"no":"四","nm":"桥梁工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"桥梁工程","k":11},{"lv":2,"no":"1","nm":"通道涵洞","unit":"道","total":158.0,"prev":45.0,"mon":4.0,"cum":49.0,"leaf":true,"grp":null,"parent":"通道涵洞","agg":"桥梁工程|通道涵洞","k":12},{"lv":2,"no":"3","nm":"全部桥梁","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":"全部桥梁","agg":"桥梁工程|全部桥梁","k":13},{"lv":3,"no":"","nm":"桥梁基础及下构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构","k":14},{"lv":4,"no":"","nm":"桩基","unit":"根","total":1048.0,"prev":332.0,"mon":26.0,"cum":358.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|桩基","k":15},{"lv":4,"no":"","nm":"管桩","unit":"套","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|管桩","k":16},{"lv":4,"no":"","nm":"系梁/承台","unit":"个","total":256.0,"prev":92.0,"mon":7.0,"cum":99.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|系梁/承台","k":17},{"lv":4,"no":"","nm":"墩台","unit":"个","total":505.0,"prev":155.0,"mon":1.0,"cum":156.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|墩台","k":18},{"lv":4,"no":"","nm":"盖梁","unit":"个","total":179.0,"prev":52.0,"mon":9.0,"cum":61.0,"leaf":true,"grp":"桥梁基础及下构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁基础及下构|盖梁","k":19},{"lv":3,"no":"","nm":"桥梁上构","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构","k":20},{"lv":4,"no":"","nm":"梁板预制","unit":"片","total":1576.0,"prev":541.0,"mon":48.0,"cum":589.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板预制","k":21},{"lv":4,"no":"","nm":"梁板安装","unit":"片","total":1576.0,"prev":293.0,"mon":24.0,"cum":317.0,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|梁板安装","k":22},{"lv":4,"no":"","nm":"现浇箱梁","unit":"孔","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|现浇箱梁","k":23},{"lv":4,"no":"","nm":"桥面铺装","unit":"米","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|桥面铺装","k":24},{"lv":4,"no":"","nm":"护栏","unit":"米","total":null,"prev":null,"mon":null,"cum":null,"leaf":true,"grp":"桥梁上构","parent":"全部桥梁","agg":"桥梁工程|全部桥梁|桥梁上构|护栏","k":25},{"lv":1,"no":"八","nm":"绿化工程","unit":"公里","total":0.0,"prev":0.0,"mon":0.0,"cum":0.0,"leaf":true,"grp":null,"parent":null,"agg":"绿化工程","k":26}],"out":[{"no":"1","nm":"临时工程与设施","contract":7620.76,"mon":39.96,"cum":5075.63,"k":0},{"no":"2","nm":"路基工程","contract":45082.16,"mon":503.69,"cum":14861.93,"k":1},{"no":"4","nm":"桥梁工程","contract":21222.29,"mon":363.13,"cum":4230.28,"k":2},{"no":"5","nm":"改扩建工程","contract":18094.74,"mon":399.28,"cum":5826.49,"k":3},{"no":"7","nm":"绿化工程","contract":4491.15,"mon":0,"cum":0,"k":4},{"no":"8","nm":"集采材料到工地价","contract":17553.6,"mon":356.74,"cum":4796.03,"k":5}],"people":{"mgr":59.0,"worker":286.0}},{"tid":"m1","name":"机电1标","type":"me","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":33.0,"mon":0.0,"cum":33.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":1},{"lv":1,"no":"九","nm":"机电工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"机电工程","k":2},{"lv":2,"no":"1","nm":"设备购置","unit":"%","total":100.0,"prev":3.45,"mon":0.51,"cum":3.96,"leaf":true,"grp":null,"parent":"设备购置","agg":"机电工程|设备购置","k":3},{"lv":2,"no":"2","nm":"设备安装","unit":"%","total":100.0,"prev":4.49,"mon":0.16,"cum":4.65,"leaf":true,"grp":null,"parent":"设备安装","agg":"机电工程|设备安装","k":4}],"out":[{"no":"1","nm":"临时工程与设施","contract":1944.6695,"mon":null,"cum":727.6695,"k":0},{"no":"9","nm":"机电工程","contract":62699.0,"mon":295.6681,"cum":2587.1306,"k":1}],"people":{"mgr":32.0,"worker":55.0}},{"tid":"j1","name":"交安1标","type":"jt","rows":[{"lv":1,"no":"一","nm":"临时工程与设施","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"临时工程与设施","k":0},{"lv":2,"no":"1.2","nm":"驻地建设","unit":"%","total":100.0,"prev":20.0,"mon":0.0,"cum":20.0,"leaf":true,"grp":null,"parent":"驻地建设","agg":"临时工程与设施|驻地建设","k":1},{"lv":1,"no":"七","nm":"交安工程","unit":"","total":null,"prev":null,"mon":null,"cum":null,"leaf":false,"grp":null,"parent":null,"agg":"交安工程","k":2},{"lv":2,"no":"1","nm":"隔离栅","unit":"公里","total":111.9,"prev":5.0,"mon":4.0,"cum":9.0,"leaf":true,"grp":null,"parent":"隔离栅","agg":"交安工程|隔离栅","k":3},{"lv":2,"no":"2","nm":"护栏","unit":"公里","total":125.7,"prev":6.0,"mon":5.0,"cum":11.0,"leaf":true,"grp":null,"parent":"护栏","agg":"交安工程|护栏","k":4},{"lv":2,"no":"3","nm":"标志标牌","unit":"个","total":1310.0,"prev":0.0,"mon":18.0,"cum":18.0,"leaf":true,"grp":null,"parent":"标志标牌","agg":"交安工程|标志标牌","k":5}],"out":[{"no":"1","nm":"临时工程与设施","contract":273.0,"mon":0.0,"cum":50.8,"k":0},{"no":"6","nm":"交安工程","contract":12501.0,"mon":212.0,"cum":471.0,"k":1}],"people":{"mgr":12.0,"worker":40.0}}],"regions":{"t1":{"kind":"simple","rows":[{"city":"蔡甸","plan":null,"done":null},{"city":"汉川","plan":null,"done":null},{"city":"仙桃","plan":null,"done":null}]},"m1":{"kind":"simple","rows":[{"city":"蔡甸","plan":null,"done":12312.2469},{"city":"汉川","plan":null,"done":2966.3169},{"city":"仙桃","plan":null,"done":30028.8795},{"city":"潜江","plan":null,"done":17391.5567}]},"j1":{"kind":"jt","rows":[{"city":"蔡甸","outPlan":7066,"outDone":38,"glPlan":69,"glDone":5,"fhPlan":80,"fhDone":6,"bzPlan":204,"bzDone":0},{"city":"汉川","outPlan":1702,"outDone":0,"glPlan":20,"glDone":0,"fhPlan":10,"fhDone":0,"bzPlan":112,"bzDone":0},{"city":"仙桃","outPlan":3731,"outDone":0,"glPlan":23,"glDone":0,"fhPlan":35,"fhDone":0,"bzPlan":75,"bzDone":0}]}},"summary":{"gaisuan":[{"name":"路基","plan":577743.2372,"done":349739.83078,"pct":0.605355127088972},{"name":"桥梁","plan":843181.6914,"done":395678.63892,"pct":0.469268537203439},{"name":"路面","plan":321932,"done":42925.078248,"pct":0.133335854304636},{"name":"交叉","plan":658626,"done":36989.58135,"pct":0.0561617387561378},{"name":"交安","plan":287099,"done":3837.953903,"pct":0.013368050404216},{"name":"绿化","plan":94029,"done":0,"pct":0},{"name":"建安费","plan":3072546,"done":949136.781729963,"pct":0.308908892407132}],"road":[{"city":"蔡甸","plan":63551.756092,"done":20587.05765,"pct":0.323941601553817},{"city":"汉川","plan":17332.297116,"done":5056.4703,"pct":0.291736880931507},{"city":"仙桃","plan":155990.674044,"done":61852.1479,"pct":0.396511831742925},{"city":"潜江","plan":92438.917952,"done":40749.05935,"pct":0.440821466248225},{"city":"荆州","plan":115548.64744,"done":61902.875,"pct":0.53572998361702},{"city":"宜昌","plan":132880.944556,"done":60238.65715,"pct":0.453328032482593}],"bridge":[{"city":"蔡甸","plan":92749.986054,"done":null,"pct":null},{"city":"汉川","plan":25295.450742,"done":null,"pct":null},{"city":"仙桃","plan":227659.056678,"done":null,"pct":null},{"city":"潜江","plan":134909.070624,"done":34197.3193,"pct":null},{"city":"荆州","plan":168636.33828,"done":null,"pct":null},{"city":"宜昌","plan":193931.789022,"done":null,"pct":null}]}};
+    var RKEY = "hyhx-report-v1";
+    var DB = { ts: 0, reports: {} };
+    try { var raw = localStorage.getItem(RKEY); if (raw) { var o = JSON.parse(raw); if (o && o.reports) DB = o; } } catch (e) {}
+    var YM = BASE.months[0];
+
+    var CLOUD = {
+      token: ["gh", "p_rzbm0wOAJ6", "FZFFgxRfMO", "B33Snm1piw1Wybw9"].join(""),
+      gistId: "2e29599c80a9553e78c81670de9342fd",
+      ledger: "hyhx-ledger.json",
+      report: "hyhx-report.json",
+      ledgerTsKey: KEY + "-cloudts"
+    };
+
+    function q(s) { return document.querySelector(s); }
+    function fmt(v, d) {
+      if (v === null || v === undefined || v === "") return "";
+      var n = Number(v); if (!isFinite(n)) return "";
+      var s = n.toFixed(d === null || d === undefined ? 2 : d);
+      if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+      var p = s.split(".");
+      if (p[0] !== "-" && p[0].length > 3) p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return p.join(".");
+    }
+    function fmtz(v, d) {
+    if (v === null || v === undefined || v === "") return "";
+    var n = Number(v);
+    if (!isFinite(n)) return "";
+    var s = n.toFixed(d || 2), p = s.split(".");
+    if (p[0] !== "-" && p[0].length > 3) p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return p.join(".");
+  }
+  function pct(v) { return v === null || v === undefined || !isFinite(v) ? "" : (v * 100).toFixed(1) + "%"; }
+    function rep(tid, ym) { var t = DB.reports[tid] || {}; return t[ym] || { shape: {}, out: {}, ppl: {}, reg: {} }; }
+    function ev(tid, ym, kind, key) {
+      var r = rep(tid, ym), bag = r[kind] || {}, v = bag[key];
+      return (v === null || v === undefined || v === "") ? null : Number(v);
+    }
+    function shapeAt(t, row, ym) {
+      var idx = BASE.months.indexOf(ym), prev = row.prev || 0;
+      for (var k = 0; k < idx; k++) {
+        var v = ev(t.tid, BASE.months[k], "shape", row.k);
+        if (v === null && k === 0 && row.mon !== null && row.mon !== undefined) v = row.mon;
+        if (v !== null) prev += v;
+      }
+      var mon = ev(t.tid, ym, "shape", row.k);
+      if (mon === null && idx === 0 && row.mon !== null && row.mon !== undefined) mon = row.mon;
+      if (mon === null) mon = 0;
+      return { prev: prev, mon: mon, cum: prev + mon };
+    }
+    function outAt(t, row, ym) {
+      var idx = BASE.months.indexOf(ym), cum = row.cum || 0, mon = 0;
+      for (var k = 1; k <= idx; k++) { var v = ev(t.tid, BASE.months[k], "out", row.k); if (v !== null) cum += v; }
+      mon = ev(t.tid, ym, "out", row.k);
+      if (mon === null && idx === 0 && row.mon !== null && row.mon !== undefined) mon = row.mon;
+      if (mon === null) mon = 0;
+      if (idx === 0) cum = row.cum || 0;
+      return { mon: mon, cum: cum };
+    }
+    function pplAt(t, ym) {
+      var mgr = ev(t.tid, ym, "ppl", "mgr"), wkr = ev(t.tid, ym, "ppl", "worker");
+      if (mgr === null) mgr = t.people.mgr || 0;
+      if (wkr === null) wkr = t.people.worker || 0;
+      return { mgr: mgr, worker: wkr };
+    }
+
+    /* ---- 汇总：形象进度 ---- */
+    function aggShape(ym) {
+      var map = {}, order = [];
+      BASE.tenders.forEach(function (t) {
+        t.rows.forEach(function (r, i) { r.k = "r" + i; });
+      });
+      var seqT = BASE.tenders.slice().sort(function (x, y) {
+        return (x.tid === "t8" ? 0 : 1) - (y.tid === "t8" ? 0 : 1);
+      });
+      seqT.forEach(function (t) {
+        var curSec = "", curSecno = "";
+        t.rows.forEach(function (row) {
+          if (row.lv === 1) { curSec = row.nm; curSecno = row.no; }
+          var key = row.agg || curSec;
+          var g = map[key];
+          if (!g) {
+            g = map[key] = { name: row.nm, unit: row.unit, no: row.no, lv: row.lv,
+                             sec: curSec, secno: curSecno, total: 0, prev: 0, mon: 0, cum: 0, n: 0,
+                             pctRow: row.unit === "%", has: false };
+            order.push(key);
+          }
+          if (!(row.leaf && row.total !== null && row.total !== undefined)) return;
+          var st = shapeAt(t, row, ym);
+          g.has = true;
+          if (g.pctRow) { g.n++; g.prev += st.prev; g.mon += st.mon; g.cum += st.cum; g.total = 100; }
+          else { g.total += (row.total || 0); g.prev += st.prev; g.mon += st.mon; g.cum += st.cum; }
+        });
+      });
+      var SECORD = ["临时工程与设施","路基工程","路面工程","桥梁工程","房建工程","交安工程","绿化工程","机电工程"];
+      order.sort(function (x, y) {
+        var ix = SECORD.indexOf(map[x].sec), iy = SECORD.indexOf(map[y].sec);
+        if (ix < 0) ix = 99; if (iy < 0) iy = 99;
+        return ix - iy;
+      });
+      return order.map(function (k) {
+        var g = map[k];
+        if (g.pctRow && g.n) { g.prev = g.prev / g.n; g.mon = g.mon / g.n; g.cum = g.cum / g.n; }
+        return g;
+      });
+    }
+
+    /* ---- 汇总：产值 ---- */
+    function aggOut(ym) {
+      var map = {}, order = [];
+      BASE.tenders.forEach(function (t) {
+        t.out.forEach(function (row) {
+          if (row.nm === "合计") return;
+          if (!map[row.nm]) { map[row.nm] = { name: row.nm, no: row.no, contract: 0, mon: 0, cum: 0 }; order.push(row.nm); }
+          var g = map[row.nm], o = outAt(t, row, ym);
+          g.contract += (row.contract || 0); g.mon += o.mon; g.cum += o.cum;
+        });
+      });
+      var FIX = ["临时工程与设施", "路基工程", "路面工程", "桥梁工程", "改扩建工程", "交安工程", "绿化工程", "集采材料到工地价", "机电工程"];
+      var ordered = [];
+      FIX.forEach(function (n, i) { if (map[n]) { map[n].no = String(i + 1); ordered.push(map[n]); } });
+      order.forEach(function (k) { if (FIX.indexOf(k) < 0) ordered.push(map[k]); });
+      var rows = ordered;
+      var tot = { name: "合计", no: "", contract: 0, mon: 0, cum: 0 };
+      rows.forEach(function (r) { tot.contract += r.contract; tot.mon += r.mon; tot.cum += r.cum; });
+      rows.push(tot);
+      return rows;
+    }
+
+    function head(title, hint) {
+      return '<div class="card-head"><h2>' + title + '</h2><span class="hint">' + (hint || "") + '</span></div>';
+    }
+
+    function renderShape() {
+      var rows = aggShape(YM).map(function (g) {
+        var sec = (g.sec || "");
+        var nd = (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : 4;
+        var nf = function (v) { return nd === 2 ? fmtz(v, 2) : fmt(v, nd); };
+        if (g.lv === 1 && !g.has) {
+          return '<tr><td class="c sec">' + (g.secno || "") + '</td><td class="sec" colspan="7">' + g.name + "</td></tr>";
+        }
+        if (g.lv === 1 && g.has) {
+          return '<tr><td class="c sec">' + (g.secno || "") + '</td><td class="sec">' + g.name + "</td>"
+            + '<td class="c unit">' + (g.unit || "") + "</td><td class='c'>" + nf(g.total) + "</td>"
+            + '<td class="c">' + nf(g.prev) + "</td><td class='c'>" + nf(g.mon) + "</td>"
+            + '<td class="c">' + nf(g.cum) + "</td>"
+            + '<td class="c">' + (g.total ? pct(g.cum / g.total) : "") + "</td></tr>";
+        }
+        if (g.lv === 3 && !g.has) {
+          return '<tr><td></td><td class="grp" colspan="7">' + g.name + "</td></tr>";
+        }
+        if (!g.has) {
+          return '<tr><td class="c sec">' + (g.no || "") + "</td><td class='ind1'>" + g.name + "</td>"
+            + '<td class="c unit">' + (g.unit || "") + "</td><td class='c'>" + (g.total ? nf(g.total) : "") + "</td>"
+            + '<td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td></tr>';
+        }
+        var cls = g.lv <= 2 ? "ind1" : (g.lv === 3 ? "ind2" : "ind3");
+        return "<tr><td class='c sec'>" + (g.lv <= 2 ? (g.no || "") : "") + "</td><td class='" + cls + "'>" + g.name + "</td>"
+          + '<td class="c unit">' + (g.unit || "") + "</td>"
+          + '<td class="c">' + (g.pctRow ? "" : nf(g.total)) + "</td>"
+          + '<td class="c">' + nf(g.prev) + (g.pctRow ? "%" : "") + "</td>"
+          + '<td class="c">' + nf(g.mon) + (g.pctRow ? "%" : "") + "</td>"
+          + '<td class="c">' + nf(g.cum) + (g.pctRow ? "%" : "") + "</td>"
+          + '<td class="c">' + (g.total ? pct(g.cum / g.total) : "") + "</td></tr>";
+      }).join("");
+      q("#pg-shape").innerHTML = head("形象进度完成情况汇总表", YM.replace("-", " 年 ") + " 月　全项目")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th style="width:52px" class="c">序号</th><th>工程名称</th><th style="width:96px" class="c unit">单位</th>'
+        + '<th style="width:112px" class="c">总数量</th><th style="width:132px" class="c">上月末累计</th>'
+        + '<th style="width:116px" class="c">本月完成</th><th style="width:132px" class="c">本月底累计</th>'
+        + '<th style="width:96px" class="c">完成比例</th>'
+        + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
+        + '<div class="note">土建 1—10 标、机电 1 标、交安 1 标数据合计；百分比项目为各标段平均值。</div>';
+    }
+
+
+    function renderOut() {
+      var rows = aggOut(YM).map(function (r) {
+        return "<tr" + (r.name === "合计" ? ' class="total"' : "") + '><td class="c">' + (r.no || "") + "</td><td>" + r.name + "</td>"
+          + '<td class="r">' + fmt(r.contract, 0) + "</td><td class=\"r\">" + fmt(r.mon, 2) + "</td>"
+          + '<td class="r">' + fmt(r.cum, 2) + "</td>"
+          + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
+      }).join("");
+      q("#pg-out").innerHTML = head("产值完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th style="width:52px">序号</th><th>项目</th><th style="width:140px" class="r">合同额</th>'
+        + '<th style="width:126px" class="r">本月完成</th><th style="width:140px" class="r">累计完成</th>'
+        + '<th style="width:104px" class="r">完成比例</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+    }
+
+    function renderPpl() {
+      var rows = BASE.tenders.map(function (t) {
+        var p = pplAt(t, YM);
+        return "<tr><td>" + t.name + "</td><td class='r'>" + fmt(p.mgr, 0) + "</td><td class='r'>" + fmt(p.worker, 0) + "</td></tr>";
+      }).join("");
+      var m = 0, w = 0;
+      BASE.tenders.forEach(function (t) { var p = pplAt(t, YM); m += p.mgr; w += p.worker; });
+      q("#pg-ppl").innerHTML = head("人员情况汇总", YM.replace("-", " 年 ") + " 月")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th>标段</th><th style="width:170px" class="r">管理人员数</th><th style="width:190px" class="r">农民工用工人数</th>'
+        + "</tr></thead><tbody>" + rows
+        + '<tr class="total"><td>合计</td><td class="r">' + fmt(m, 0) + '</td><td class="r">' + fmt(w, 0) + "</td></tr>"
+        + "</tbody></table></div>";
+    }
+
+    function renderGs() {
+      var rows = (BASE.summary.gaisuan || []).map(function (g) {
+        return "<tr><td>" + g.name + "</td><td class='r'>" + fmt(g.plan, 2) + "</td><td class='r'>" + fmt(g.done, 2)
+          + "</td><td class='r'>" + pct(g.pct) + "</td></tr>";
+      }).join("");
+      q("#pg-gs").innerHTML = head("概算完成情况（万元）", "模板整理，待修订")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th>项目</th><th style="width:200px" class="r">概算</th><th style="width:200px" class="r">完成</th><th style="width:120px" class="r">完成比例</th>'
+        + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+    }
+
+    function renderCity() {
+      var road = BASE.summary.road || [], br = BASE.summary.bridge || [];
+      var h1 = '<table class="tbl pg-tbl"><thead><tr><th>地市州</th><th class="r">路基概算</th><th class="r">完成</th><th class="r">比例</th></tr></thead><tbody>'
+        + road.map(function (r) {
+          return "<tr><td>" + r.city + "</td><td class='r'>" + fmt(r.plan, 2) + "</td><td class='r'>" + fmt(r.done, 2) + "</td><td class='r'>" + pct(r.pct) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+      var h2 = '<table class="tbl pg-tbl"><thead><tr><th>地市州</th><th class="r">桥梁概算</th><th class="r">完成</th><th class="r">比例</th></tr></thead><tbody>'
+        + br.map(function (r) {
+          return "<tr><td>" + r.city + "</td><td class='r'>" + fmt(r.plan, 2) + "</td><td class='r'>" + fmt(r.done, 2) + "</td><td class='r'>" + pct(r.pct) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+      q("#pg-city").innerHTML = head("按地市州测算（万元）", "模板整理，待修订")
+        + '<div class="card-body" style="padding:10px 0 14px;display:grid;grid-template-columns:1fr 1fr;gap:0 18px">'
+        + "<div>" + h1 + "</div><div>" + h2 + "</div></div>";
+    }
+
+    function render() { renderShape(); renderOut(); renderPpl(); renderGs(); renderCity(); }
+
+    /* ---- 数据填报情况 ---- */
+    var STM = YM;
+    var KINDNAME = { shape: "形象进度", out: "产值", ppl: "人员", reg: "分地市州" };
+    function stRep(tid, ym) {
+      var t = (DB.reports || {})[tid] || {};
+      return t[ym] || {};
+    }
+    function renderStatus() {
+      var host = q("#pg-st");
+      if (!host) return;
+      var rows = BASE.tenders.map(function (t, i) {
+        var r = stRep(t.tid, STM), lk = r.lock || {};
+        var kinds = ["shape", "out", "ppl"];
+        if (BASE.regions && BASE.regions[t.tid]) kinds.push("reg");
+        var done = 0;
+        kinds.forEach(function (k) { if (lk[k]) done++; });
+        var all = done === kinds.length;
+        var cells = kinds.map(function (k) {
+          return '<td class="c">' + (lk[k]
+            ? '<span style="color:#2E9159;font-weight:600">✓</span>'
+            : '<span style="color:#C7CDD8">—</span>') + "</td>";
+        }).join("");
+        var status = all
+          ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已填报</span>'
+          : '<span class="pg-st-no"><span class="pg-st-dot"></span>未填报</span>';
+        return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td><td>" + (t.type === "civil" ? "土建" : (t.type === "me" ? "机电" : "交安")) + "</td>"
+          + cells + '<td class="c">' + status + "</td>"
+          + '<td style="color:#6B7684;font-size:12px">已提交 ' + done + " / " + kinds.length + "</td></tr>";
+      }).join("");
+      var ths = ['<th style="width:52px" class="c">序号</th>', '<th style="width:104px">标段</th>', '<th style="width:80px" class="c">类型</th>',
+                 '<th style="width:96px" class="c">形象进度</th>', '<th style="width:96px" class="c">产值</th>',
+                 '<th style="width:96px" class="c">人员</th>', '<th style="width:104px" class="c">分地市州</th>',
+                 '<th style="width:104px" class="c">状态</th>', '<th style="width:120px" class="c">已提交表格</th>'].join("");
+      var sum = BASE.tenders.filter(function (t) {
+        var lk = (stRep(t.tid, STM).lock || {}), kinds = ["shape", "out", "ppl"];
+        if (BASE.regions && BASE.regions[t.tid]) kinds.push("reg");
+        return kinds.every(function (k) { return !!lk[k]; });
+      }).length;
+      host.innerHTML = head("各标段工程月报填报情况", STM.replace("-", " 年 ") + " 月　已填报 " + sum + " / " + BASE.tenders.length + " 个标段")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + ths + "</thead><tbody>" + rows + "</tbody></table></div>"
+        + '<div class="note">已填报 = 该标段当月形象进度、产值、人员（及分地市州）表格均已点击“提交”并锁定。</div>';
+    }
+    var stSel = q("#pg-st-month");
+    if (stSel) {
+      stSel.innerHTML = BASE.months.map(function (y) {
+        var a = y.split("-");
+        return '<option value="' + y + '">' + a[0] + " 年 " + parseInt(a[1], 10) + " 月</option>";
+      }).join("");
+      stSel.value = STM;
+      stSel.addEventListener("change", function () { STM = stSel.value; renderStatus(); });
+    }
+    renderStatus();
+    document.addEventListener("click", function (e) {
+      var nav = e.target.closest ? e.target.closest('[data-view="status"]') : null;
+      if (nav) { renderStatus(); pullAll(); }
+    });
+
+    /* ---- 月份选择 ---- */
+    var sel = q("#pg-month");
+    if (sel) {
+      sel.innerHTML = BASE.months.map(function (y) {
+        var a = y.split("-");
+        return '<option value="' + y + '">' + a[0] + " 年 " + parseInt(a[1], 10) + " 月</option>";
+      }).join("");
+      sel.value = YM;
+      sel.addEventListener("change", function () { YM = sel.value; render(); });
+    }
+
+    /* ---- 云端：读取填报数据 / 台账 ---- */
+    function api() { return "https://api.github.com/gists/" + CLOUD.gistId; }
+    function hdr() {
+      return { "Authorization": "Bearer " + CLOUD.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" };
+    }
+    function parseFile(f) {
+      if (!f) return null;
+      var c = f.content;
+      if (f.truncated && f.raw_url) return fetch(f.raw_url).then(function (r) { return r.text(); }).then(function (t) { return JSON.parse(t); });
+      try { return JSON.parse(c); } catch (e) { return null; }
+    }
+    function pullAll() {
+      return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (j) {
+          var files = j.files || {};
+          var rep = parseFile(files[CLOUD.report]);
+          if (rep && rep.data && rep.data.reports) {
+            DB = { ts: rep.ts, reports: rep.data.reports };
+            try { localStorage.setItem(RKEY, JSON.stringify(DB)); } catch (e) {}
+            render(); renderStatus();
+            var s = q("#pg-src");
+            if (s) s.textContent = "已同步填报数据 · " + new Date(rep.ts).toLocaleString();
+          }
+          var led = parseFile(files[CLOUD.ledger]);
+          var localTs = Number(localStorage.getItem(CLOUD.ledgerTsKey) || 0);
+          if (led && led.ts && led.data && led.ts > localTs) {
+            localStorage.setItem(KEY, JSON.stringify(led.data));
+            localStorage.setItem(CLOUD.ledgerTsKey, String(led.ts));
+            location.reload();
+          }
+        }).catch(function (e) { console.warn("云端读取失败", e); });
+    }
+    function pushLedger() {
+      var ts = Date.now();
+      var body = { files: {} };
+      body.files[CLOUD.ledger] = { content: JSON.stringify({ ts: ts, data: S }) };
+      return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); localStorage.setItem(CLOUD.ledgerTsKey, String(ts)); })
+        .catch(function (e) { console.warn("台账云端写入失败", e && e.message ? e.message : e); });
+    }
+    window.__pgPushLedger = pushLedger;
+
+    /* ---- 自动保存：停止输入 1.5 秒后本机落盘并推送云端 ---- */
+    var AS_T = null, AS_BUSY = false;
+    function autoSave() {
+      if (AS_T) clearTimeout(AS_T);
+      AS_T = setTimeout(function () {
+        AS_T = null;
+        if (AS_BUSY) { autoSave(); return; }
+        var btn = document.getElementById("btn-save");
+        if (!btn) return;
+        AS_BUSY = true;
+        try { btn.click(); } catch (e) {}
+        setTimeout(function () { AS_BUSY = false; }, 300);
+      }, 1500);
+    }
+    ["input", "change"].forEach(function (ev) {
+      document.addEventListener(ev, function (e) {
+        var t = e.target;
+        if (!t) return;
+        var tag = (t.tagName || "").toLowerCase();
+        if (tag !== "input" && tag !== "select" && tag !== "textarea") return;
+        if (t.id === "import-file") return;
+        autoSave();
+      }, true);
+    });
+
+    render();
+    pullAll();
+  })();
+
+
 })();
 </script>
 </body>
