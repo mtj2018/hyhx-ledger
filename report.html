@@ -461,8 +461,6 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     </div>
     <div class="top-meta">
       <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
-      <button id="btn-import" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导入数据</button>
-      <input type="file" id="import-file" accept=".json,application/json" style="display:none">
     </div>
   </div>
 </header>
@@ -1197,19 +1195,6 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     a.href = URL.createObjectURL(blob);
     a.download = "工程月报填报_" + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + ".json";
     a.click();
-  });
-  $("#btn-import").addEventListener("click", function () { $("#import-file").click(); });
-  $("#import-file").addEventListener("change", function (e) {
-    var f = e.target.files && e.target.files[0]; if (!f) return;
-    var rd = new FileReader();
-    rd.onload = function () {
-      try {
-        var o = JSON.parse(rd.result);
-        var rep0 = (o.data && o.data.reports) || o.reports;
-        if (rep0) { DB = { ts: Date.now(), reports: rep0 }; persist(); renderAll(); flag("导入成功", true); }
-      } catch (er) { alert("文件格式不正确"); }
-    };
-    rd.readAsText(f);
   });
   window.addEventListener("beforeunload", function (e) { if (!DIRTY) return; e.preventDefault(); e.returnValue = "有未保存的修改，是否离开？"; });
 
