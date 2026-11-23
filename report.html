@@ -400,7 +400,7 @@ main{min-width:0}
   color:var(--navy);border-radius:3px;min-width:110px}
 .pg-sel:focus{outline:none;border-color:var(--blue)}
 .pg-hint{font-size:12px;color:var(--muted);margin-left:auto}
-.pg-cols{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1.18fr);gap:14px;align-items:start}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1.90fr) minmax(0,1.10fr);gap:14px;align-items:start}
 .pg-right{display:flex;flex-direction:column;gap:14px}
 @media (max-width:1180px){.pg-cols{grid-template-columns:1fr}}
 .pg-tbl{width:100%;table-layout:auto}
@@ -410,6 +410,9 @@ main{min-width:0}
 .pg-tbl td.nmcell{white-space:normal;word-break:break-all}
 td.c input.pgi,input.pgc{text-align:center}
 .card-head .hint{margin-left:auto}
+.card-head .hint.pg-flag{margin-left:14px;margin-right:auto;display:inline-flex;align-items:center;gap:6px;background:#FDECEA;border:1px solid #F2C3BC;border-left:3px solid #C0392B;border-radius:4px;padding:5px 11px;font-size:12.5px;line-height:1;color:#9E2B21;letter-spacing:.3px;white-space:nowrap;box-shadow:0 1px 2px rgba(192,57,43,.08)}
+.pg-flag b{color:#B3261E;font-weight:800}
+.pg-flag i{font-style:normal;color:#D58B82}
 .pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap}
 .pg-lk:hover{background:#28508F}
 .pg-lk.is-on{background:#fff;color:#1E3A6E;border-color:#C9D2E0}
@@ -475,7 +478,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   <main>
     <section class="view is-on" id="view-report">
       <div class="card">
-        <div class="card-head"><h2>工程月报填报</h2><span class="hint" id="rep-hint" style="color:#C0392B;font-weight:700">每月20日更新，完成填报后点击“提交”</span></div>
+        <div class="card-head"><h2>工程月报填报</h2><span class="hint pg-flag" id="rep-hint"><b>每月20日更新</b><i>·</i>填报完成后点击「提交」</span></div>
         <div class="pg-bar">
           <div class="pg-tabs" id="type-tabs"></div>
           <select class="pg-sel" id="sel-tender"></select>
