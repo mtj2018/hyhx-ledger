@@ -415,10 +415,12 @@ td.c input.pgi,input.pgc{text-align:center}
 .card-head .hint.pg-flag{margin-left:14px;margin-right:auto;display:inline-flex;align-items:center;gap:6px;background:#FDECEA;border:1px solid #F2C3BC;border-left:3px solid #C0392B;border-radius:4px;padding:5px 11px;font-size:12.5px;line-height:1;color:#9E2B21;letter-spacing:.3px;white-space:nowrap;box-shadow:0 1px 2px rgba(192,57,43,.08)}
 .pg-flag b{color:#B3261E;font-weight:800}
 .pg-flag i{font-style:normal;color:#D58B82}
-.pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
 .pg-lk:hover{background:#28508F}
-.pg-lk.is-on{background:#fff;color:#1E3A6E;border-color:#C9D2E0}
-.pg-lk.is-on:hover{background:#F3F6FB}
+.pg-lk.is-on{width:30px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#1E3A6E;border-color:#C9D2E0}
+.pg-lk.is-on:hover{background:#F3F6FB;border-color:#9FB2CC}
+.pg-lk svg{width:13px;height:13px;display:block}
+.pg-money{margin-left:auto;font-size:12px;color:#5F7086;letter-spacing:.4px;white-space:nowrap}
 .card.is-locked input.pgi{background:#F1F3F7;color:#5B6675;cursor:not-allowed}
 .tbl th.c{text-align:center}
 th.nmc,td.nmc{white-space:nowrap;font-size:12px}
@@ -477,7 +479,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   <main>
     <section class="view is-on" id="view-report">
       <div class="card">
-        <div class="card-head"><h2>工程月报填报</h2><span class="hint pg-flag" id="rep-hint"><b>每月20日更新</b><i>·</i>填报完成后点击「提交」</span></div>
+        <div class="card-head"><h2>工程月报填报</h2><span class="hint pg-flag" id="rep-hint"><b>每月20日更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">货币单位：万元</span></div>
         <div class="pg-bar">
           <div class="pg-tabs" id="type-tabs"></div>
           <select class="pg-sel" id="sel-tender"></select>
@@ -492,8 +494,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         </div>
         <div id="pane-right" class="pg-right">
           <div class="card" id="card-out"></div>
-          <div class="card" id="card-ppl"></div>
           <div class="card" id="card-reg"></div>
+          <div class="card" id="card-ppl"></div>
         </div>
       </div>
     </section>
@@ -517,7 +519,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
             3. 产值：填写「本月完成」，「累计完成」默认按上月末累计+本月完成自动计算，也可直接修改；手工填写的累计完成以填报值为准。<br>
             4. 人员情况：填写管理人员数、农民工用工人数。<br>
             5. 土建1标、机电1标、交安1标另有「分地市州」板块，按地市州填写。<br>
-            6. 停止录入约 1 秒自动保存并同步云端；换设备打开自动拉取最新数据。
+            6. 线下版本为只读演示：停止录入约 1 秒自动保存到本机；每次打开页面都以线上数据为准覆盖本机，本机数据不再上传。
           </p>
         </div>
       </div>
@@ -532,7 +534,16 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   var LS = "hyhx-report-v1";
   var DB = { ts: 0, reports: {} };
   try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); if (o && o.reports) DB = o; } } catch (e) {}
-  var CUR = { type: "civil", tid: "t1", ym: BASE.months[0] };
+  /* 默认定位当前自然月（今月不在可选范围内则取最近的已开始月份） */
+  function nowYm(list) {
+    var d = new Date(), ym = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2), i, v = (list && list[0]) || ym;
+    if (!list || !list.length) return ym;
+    if (ym <= list[0]) return list[0];
+    if (ym >= list[list.length - 1]) return list[list.length - 1];
+    for (i = 0; i < list.length; i++) if (list[i] <= ym) v = list[i];
+    return v;
+  }
+  var CUR = { type: "civil", tid: "t1", ym: nowYm(BASE.months) };
   var STM = CUR.ym;
   var DIRTY = false;
 
@@ -725,8 +736,11 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   }
   function lockBtn(name) {
     var on = isLocked(name);
-    return '<button type="button" class="pg-lk' + (on ? " is-on" : "") + '" data-lk="' + name + '">'
-      + (on ? "锁定" : "提交") + "</button>";
+    var svg = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
+    var tip = on ? "已锁定，点击解锁修改" : "点击提交并锁定本月数据";
+    return '<button type="button" class="pg-lk' + (on ? " is-on" : "") + '" data-lk="' + name + '"'
+      + ' title="' + tip + '" aria-label="' + tip + '" aria-pressed="' + (on ? "true" : "false") + '">'
+      + (on ? svg : "提交") + "</button>";
   }
   function head(title, hint, lk) {
     return '<div class="card-head"><h2>' + title + '</h2><span class="hint">' + (hint || "") + '</span>'
@@ -778,10 +792,10 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     }).join("");
     host.innerHTML = head("形象进度完成情况一览表", subTitle(t), "shape")
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-      + '<th style="width:5.5%" class="c">序号</th><th style="width:16%" class="nm">工程名称</th><th style="width:11%" class="c unit">单位</th>'
-      + '<th style="width:12.5%" class="c">总数量</th><th style="width:15%" class="c">上月末累计</th>'
-      + '<th style="width:13.5%" class="c">本月完成</th><th style="width:14%" class="c">本月底累计</th>'
-      + '<th style="width:11.5%" class="c">完成比例</th>'
+      + '<th style="width:5.5%" class="c">序号</th><th style="width:20%" class="nm">工程名称</th><th style="width:11%" class="c unit">单位</th>'
+      + '<th style="width:12.7%" class="c">总数量</th><th style="width:12.7%" class="c">上月末累计</th>'
+      + '<th style="width:12.7%" class="c">本月完成</th><th style="width:12.7%" class="c">本月底累计</th>'
+      + '<th style="width:12.7%" class="c">完成比例</th>'
       + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
       + '<div class="note">本月完成：本月新增工程量（百分比项目填百分点）；其余为固定值，累计自动计算。</div>';
   }
@@ -807,7 +821,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       + '<td class="r" data-otot="1">' + fmt(tot.mon, 0) + "</td>"
       + '<td class="r" data-ocumtot="1">' + fmt(tot.cum, 0) + "</td>"
       + '<td class="r" style="display:none" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
-    host.innerHTML = head("产值完成情况（万元）", subTitle(t), "out")
+    host.innerHTML = head("分项产值情况", subTitle(t), "out")
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
       + '<th style="width:40px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none" class="r">合同额</th>'
       + '<th style="width:90px" class="r">本月完成</th><th style="width:90px" class="r">累计完成</th>'
@@ -844,7 +858,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         return '<tr><td>' + r.city + "</td>" + planCell
           + '<td class="r"><input class="pgi" data-reg="' + r.city + '|done" value="' + fmt(done, 0) + '"></td></tr>';
       }).join("");
-      host.innerHTML = head("分地市州产值填报（万元）", subTitle(t), "reg")
+      host.innerHTML = head("地市州产值", subTitle(t), "reg")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr><th>地市州</th>'
         + '<th style="width:200px" class="r">总投资计划</th><th style="width:200px" class="r">完成产值</th></tr></thead><tbody>'
         + rows + "</tbody></table></div>";
@@ -965,8 +979,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         lockOf(CUR.tid, CUR.ym)[name] = 1;
         DIRTY = false;
         persist();
-        pushCloud();
         flag("已提交并锁定：" + LKNAME[name], true);
+        renderAll();
       } else {
         var pw = prompt("该表格已锁定。请输入修改密码：");
         if (pw === null) return;
@@ -974,8 +988,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         delete lockOf(CUR.tid, CUR.ym)[name];
         DIRTY = false;
         persist();
-        pushCloud();
         flag("已解锁：" + LKNAME[name] + "，可以修改", true);
+        renderAll();
       }
       return;
     }
@@ -1122,7 +1136,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     if (t.id === "sel-month") { CUR.ym = t.value; renderAll(); }
     if (t.id === "sel-year") {
       var yv = t.value, mm = BASE.months.filter(function (k) { return k.slice(0, 4) === yv; });
-      CUR.ym = mm[0] || (yv + "-01");
+      CUR.ym = (yv === String((new Date()).getFullYear()) && mm.length) ? nowYm(mm) : (mm[0] || (yv + "-01"));
       renderAll();
     }
   });
@@ -1140,22 +1154,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     var h = $("#pg-hint");
     if (h) { h.textContent = s; h.style.color = ok ? "#2F6B3C" : "#A24A18"; }
   }
-  var pushQueue = Promise.resolve();
-  function doPush(retry) {
-    var ts = DB.ts, reports = DB.reports;
-    return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify({ files: (function () { var o = {}; o[CLOUD.file] = { content: JSON.stringify({ ts: ts, data: { reports: reports } }) }; return o; })() }) })
-      .then(function (r) {
-        if (r.status === 409 && (retry || 0) < 3) return doPush((retry || 0) + 1);
-        if (!r.ok) throw new Error(r.status);
-        return r.json();
-      })
-      .then(function () { flag("已保存并同步云端", true); })
-      .catch(function (e) { flag("云端未同步（" + (e && e.message ? e.message : e) + "）", false); });
-  }
-  function pushCloud() {
-    pushQueue = pushQueue.then(function () { return doPush(0); }, function () { return doPush(0); });
-    return pushQueue;
-  }
+  /* 线下版本只读：本机数据不再上传线上（原 doPush / pushCloud 已取消） */
   function pullCloud() {
     return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -1169,7 +1168,9 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   function applyRemote(c) {
     try {
       var o = JSON.parse(c); if (!o || !o.data || !o.data.reports) return;
-      if ((o.ts || 0) > (DB.ts || 0)) { DB = { ts: o.ts, reports: o.data.reports }; persistLocal(); renderAll(); flag("已拉取云端最新数据", true); }
+      /* 线下版本只读：以线上为准，直接覆盖本机数据 */
+      DB = { ts: o.ts || 0, reports: o.data.reports };
+      persistLocal(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true);
     } catch (e) {}
   }
   function persistLocal() { try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) {} }
@@ -1182,8 +1183,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       if (AS_BUSY) { autoSave(); return; }
       AS_BUSY = true;
       persist();
-      pushCloud().then(function () { AS_BUSY = false; });
-      flag("已自动保存", true);
+      AS_BUSY = false;
+      flag("已自动保存（本机）", true);
     }, 1000);
   }
   document.addEventListener("input", autoSave, true);
