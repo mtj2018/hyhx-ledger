@@ -454,15 +454,6 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 
 
 /* ---------- 页面查看锁 ---------- */
-#top-eye{flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;justify-content:center;
-  width:30px;height:30px;padding:0;margin:0;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.10);
-  border-radius:6px;cursor:pointer;color:#FFFFFF;box-sizing:border-box}
-#top-eye:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.8)}
-#top-eye:focus-visible{outline:2px solid #8FB4FF;outline-offset:2px}
-#top-eye .eye-open{display:none}
-body.is-masked #top-eye{background:rgba(255,120,110,.20);border-color:#E4796E;color:#FFD9D4}
-body.is-masked #top-eye .eye-open{display:block}
-body.is-masked #top-eye .eye-off{display:none}
 body.is-masked .shell{filter:blur(9px) saturate(.92);pointer-events:none;user-select:none}
 body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,body.is-masked #top-lock{opacity:.4;pointer-events:none}
 .pg-gate{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
@@ -498,7 +489,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     </div>
     <div class="top-meta">
       <span class="saved" id="saved">最后修改时间 —</span>
-      <button id="top-eye" type="button" title="点击输入密码查看页面信息" aria-label="查看 / 隐藏页面信息" aria-pressed="false"><svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12s3.6-6.5 9.8-6.5S21.8 12 21.8 12s-3.6 6.5-9.8 6.5S2.2 12 2.2 12z"/><circle cx="12" cy="12" r="3.2"/><path d="M3.5 3.5l17 17"/></svg><svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12s3.6-6.5 9.8-6.5S21.8 12 21.8 12s-3.6 6.5-9.8 6.5S2.2 12 2.2 12z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
       <button id="top-lock" type="button" title="已锁定，点击解锁编辑" aria-label="锁定 / 解锁"
         style="flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;margin:0;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.10);border-radius:6px;cursor:pointer;color:#FFFFFF;box-sizing:border-box">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
@@ -3813,7 +3803,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   <div class="pg-gate-box">
     <div class="pg-gate-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="15.6" r="1.4" fill="currentColor" stroke="none"/></svg></div>
     <h3 id="pg-gate-title">页面信息已隐藏</h3>
-    <p>为保护项目数据，除顶部标题外全部内容默认隐藏。<br>输入查看密码即可显示，或点击右上角眼睛图标。</p>
+    <p>本页面涉及项目数据，为保护数据隐私，需输入查看密码后方可显示。</p>
     <div class="pg-gate-row">
       <input id="pg-pw" type="password" autocomplete="off" placeholder="请输入查看密码">
       <button id="pg-go" type="button">查看</button>
