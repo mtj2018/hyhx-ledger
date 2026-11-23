@@ -517,7 +517,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
           <p class="note" style="border:0;padding:0">
             1. 每月 20 日前报送；先选标段类型（土建 / 机电 / 交安 / 房建），再选具体标段与年月。<br>
             2. 形象进度：「总数量」「上月末累计」「本月完成」均可修改，本月底累计自动计算；单位为 % 的项目总数量固定为 100 且不可录入。<br>
-            3. 产值：只需填写「本月完成」，「累计完成」与「完成比例」自动计算。<br>
+            3. 产值：填写「本月完成」，「累计完成」默认按上月末累计+本月完成自动计算，也可直接修改；手工填写的累计完成以填报值为准。<br>
             4. 人员情况：填写管理人员数、农民工用工人数。<br>
             5. 土建1标、机电1标、交安1标另有「分地市州」板块，按地市州填写。<br>
             6. 停止录入约 1 秒自动保存并同步云端；换设备打开自动拉取最新数据。
@@ -646,18 +646,27 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     var pcell = document.querySelector('[data-pct="' + row.k + '"]');
     if (pcell) pcell.textContent = row.leaf ? pct(st.total ? st.cum / st.total : 0) : "";
   }
-  function outAt(t, row, ym) {
-    var idx = BASE.months.indexOf(ym);
-    var cum = row.cum || 0, mon = 0;
-    for (var k = 1; k <= idx; k++) {
-      var v = ev(t.tid, BASE.months[k], "out", row.k);
+  function outPrevCum(t, row, ym) {
+    var idx = BASE.months.indexOf(ym), cum = row.cum || 0;
+    for (var k = 1; k < idx; k++) {
+      var mo = BASE.months[k];
+      var ov = ev(t.tid, mo, "outcum", row.k);
+      if (ov !== null) { cum = ov; continue; }
+      var v = ev(t.tid, mo, "out", row.k);
       if (v !== null) cum += v;
     }
+    return cum;
+  }
+  function outAt(t, row, ym) {
+    var idx = BASE.months.indexOf(ym);
+    var cum = outPrevCum(t, row, ym), mon;
+    var oc = ev(t.tid, ym, "outcum", row.k);
+    if (oc !== null) cum = oc;
+    else if (idx > 0) { var v = ev(t.tid, ym, "out", row.k); if (v !== null) cum += v; }
     mon = ev(t.tid, ym, "out", row.k);
     if (mon === null && idx === 0 && row.mon !== null && row.mon !== undefined) mon = row.mon;
     if (mon === null) mon = 0;
-    if (idx === 0) cum = row.cum || 0;
-    return { mon: mon, cum: cum };
+    return { mon: mon, cum: cum, ov: (oc !== null) };
   }
   function pplAt(t, ym) {
     var idx = BASE.months.indexOf(ym);
@@ -794,7 +803,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       return '<tr><td class="c">' + (r.no || "") + "</td><td class=\"nmc\">" + r.nm + "</td>"
         + '<td class="r" style="display:none">' + fmt(r.contract, 0) + "</td>"
         + '<td class="r"><input class="pgi" data-out="' + i + '" value="' + fmt(o.mon, 0) + '"></td>'
-        + '<td class="r" data-ocum="' + r.k + '">' + fmt(o.cum, 0) + "</td>"
+        + '<td class="r"><input class="pgi" data-ocumin="' + i + '" value="' + fmt(o.cum, 0) + '"></td>'
         + '<td class="r" style="display:none" data-opct="' + r.k + '">' + (pctv === null ? "" : pct(pctv)) + "</td></tr>";
     }).join("");
     body += '<tr class="total"><td class="c"></td><td class="nmc">合计</td><td class="r" style="display:none">' + fmt(tot.contract, 0) + "</td>"
@@ -1061,12 +1070,24 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       r1.k = "o" + Number(t.dataset.out);
       v = (v === null) ? null : Math.round(v);
       setEv(CUR.tid, CUR.ym, "out", r1.k, v);
+      /* 本月完成一改，本月的累计完成回到自动计算（清掉手工值） */
+      if (ev(CUR.tid, CUR.ym, "outcum", r1.k) !== null) setEv(CUR.tid, CUR.ym, "outcum", r1.k, null);
       var o = outAt(t1, r1, CUR.ym);
-      var c1 = document.querySelector('[data-ocum="' + r1.k + '"]'), p1 = document.querySelector('[data-opct="' + r1.k + '"]');
-      if (c1) c1.textContent = fmt(o.cum, 0);
+      var c1 = document.querySelector('[data-ocumin="' + Number(t.dataset.out) + '"]'), p1 = document.querySelector('[data-opct="' + r1.k + '"]');
+      if (c1) c1.value = fmt(o.cum, 0);
       if (p1) p1.textContent = r1.contract ? pct(o.cum / r1.contract) : "";
-      var tot = document.querySelector('[data-out="' + r1.k + '"]');
-      if (tot) { /* noop */ }
+      refreshTotal();
+      $("#pg-hint").textContent = "有未保存的修改";
+      return;
+    }
+    if (t.dataset.ocumin !== undefined) {
+      var t2 = tenderOf(CUR.tid), r2 = t2.out[Number(t.dataset.ocumin)];
+      r2.k = "o" + Number(t.dataset.ocumin);
+      v = (v === null) ? null : Math.round(v);
+      setEv(CUR.tid, CUR.ym, "outcum", r2.k, v);
+      var o2 = outAt(t2, r2, CUR.ym);
+      var p2 = document.querySelector('[data-opct="' + r2.k + '"]');
+      if (p2) p2.textContent = r2.contract ? pct(o2.cum / r2.contract) : "";
       refreshTotal();
       $("#pg-hint").textContent = "有未保存的修改";
       return;
