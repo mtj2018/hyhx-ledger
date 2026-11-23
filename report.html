@@ -400,7 +400,7 @@ main{min-width:0}
   color:var(--navy);border-radius:3px;min-width:110px}
 .pg-sel:focus{outline:none;border-color:var(--blue)}
 .pg-hint{font-size:12px;color:var(--muted);margin-left:auto}
-.pg-cols{display:grid;grid-template-columns:minmax(0,1.90fr) minmax(0,1.10fr);gap:14px;align-items:start}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1.98fr) minmax(0,1.02fr);gap:14px;align-items:start}
 .pg-right{display:flex;flex-direction:column;gap:14px}
 @media (max-width:1180px){.pg-cols{grid-template-columns:1fr}}
 .pg-tbl{width:100%;table-layout:auto}
@@ -409,7 +409,9 @@ main{min-width:0}
 .pg-tbl td.c.unit,.pg-tbl th.c.unit{white-space:nowrap}
 .pg-tbl td.nmcell{white-space:normal;word-break:break-all}
 td.c input.pgi,input.pgc{text-align:center}
-.card-head .hint{margin-left:auto}
+.card-head .hint{margin-left:auto;white-space:nowrap;font-size:11.5px}
+.card-head h2{white-space:nowrap}
+.card-head .pg-lk{white-space:nowrap;flex:0 0 auto}
 .card-head .hint.pg-flag{margin-left:14px;margin-right:auto;display:inline-flex;align-items:center;gap:6px;background:#FDECEA;border:1px solid #F2C3BC;border-left:3px solid #C0392B;border-radius:4px;padding:5px 11px;font-size:12.5px;line-height:1;color:#9E2B21;letter-spacing:.3px;white-space:nowrap;box-shadow:0 1px 2px rgba(192,57,43,.08)}
 .pg-flag b{color:#B3261E;font-weight:800}
 .pg-flag i{font-style:normal;color:#D58B82}
@@ -426,7 +428,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-tbl td.ind3{padding-left:16px;color:var(--muted)}
 .pg-tbl td.grp{font-weight:600;color:#5B6B82;background:#FBFCFE}
 .pg-tbl td .pgi{width:100%;border:1px solid #EFE6C6;border-radius:2px;background:#FFFDF0;
-  font-family:inherit;font-size:13px;line-height:1.4;color:var(--navy);padding:2px 4px;text-align:right;
+  font-family:inherit;font-size:13px;line-height:1.4;color:var(--navy);padding:2px 7px;text-align:right;
   font-variant-numeric:tabular-nums}
 .pg-tbl td .pgi:hover{background:#FFF9E0;border-color:#E6D9A8}
 .pg-tbl td .pgi:focus{outline:none;background:#FFF6D4;border-color:#D9C77A;box-shadow:inset 0 -2px 0 var(--blue)}
@@ -770,10 +772,10 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     }).join("");
     host.innerHTML = head("形象进度完成情况一览表", subTitle(t), "shape")
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-      + '<th style="width:44px" class="c">序号</th><th style="min-width:120px">工程名称</th><th style="width:74px" class="c unit">单位</th>'
-      + '<th style="width:84px" class="c">总数量</th><th style="width:104px" class="c">上月末累计</th>'
-      + '<th style="width:92px" class="c">本月完成</th><th style="width:104px" class="c">本月底累计</th>'
-      + '<th style="width:84px" class="c">完成比例</th>'
+      + '<th style="width:5.5%" class="c">序号</th><th style="width:16%" class="nm">工程名称</th><th style="width:11%" class="c unit">单位</th>'
+      + '<th style="width:12.5%" class="c">总数量</th><th style="width:15%" class="c">上月末累计</th>'
+      + '<th style="width:13.5%" class="c">本月完成</th><th style="width:14%" class="c">本月底累计</th>'
+      + '<th style="width:11.5%" class="c">完成比例</th>'
       + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
       + '<div class="note">本月完成：本月新增工程量（百分比项目填百分点）；其余为固定值，累计自动计算。</div>';
   }
