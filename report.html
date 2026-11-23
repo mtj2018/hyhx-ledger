@@ -788,20 +788,20 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       tot.contract += (r.contract || 0); tot.mon += (o.mon || 0); tot.cum += (o.cum || 0);
       var pctv = r.contract ? (o.cum / r.contract) : null;
       return '<tr><td class="c">' + (r.no || "") + "</td><td class=\"nmc\">" + r.nm + "</td>"
-        + '<td class="r">' + fmt(r.contract, 0) + "</td>"
+        + '<td class="r" style="display:none">' + fmt(r.contract, 0) + "</td>"
         + '<td class="r"><input class="pgi" data-out="' + i + '" value="' + fmt(o.mon, 0) + '"></td>'
         + '<td class="r" data-ocum="' + r.k + '">' + fmt(o.cum, 0) + "</td>"
-        + '<td class="r" data-opct="' + r.k + '">' + (pctv === null ? "" : pct(pctv)) + "</td></tr>";
+        + '<td class="r" style="display:none" data-opct="' + r.k + '">' + (pctv === null ? "" : pct(pctv)) + "</td></tr>";
     }).join("");
-    body += '<tr class="total"><td class="c"></td><td class="nmc">合计</td><td class="r">' + fmt(tot.contract, 0) + "</td>"
+    body += '<tr class="total"><td class="c"></td><td class="nmc">合计</td><td class="r" style="display:none">' + fmt(tot.contract, 0) + "</td>"
       + '<td class="r" data-otot="1">' + fmt(tot.mon, 0) + "</td>"
       + '<td class="r" data-ocumtot="1">' + fmt(tot.cum, 0) + "</td>"
-      + '<td class="r" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
+      + '<td class="r" style="display:none" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
     host.innerHTML = head("产值完成情况（万元）", subTitle(t), "out")
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-      + '<th style="width:40px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px" class="r">合同额</th>'
+      + '<th style="width:40px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none" class="r">合同额</th>'
       + '<th style="width:90px" class="r">本月完成</th><th style="width:90px" class="r">累计完成</th>'
-      + '<th style="width:72px" class="r">完成比例</th></tr></thead><tbody>' + body + "</tbody></table></div>";
+      + '<th style="width:72px;display:none" class="r">完成比例</th></tr></thead><tbody>' + body + "</tbody></table></div>";
   }
 
   /* ---------- 人员 ---------- */
