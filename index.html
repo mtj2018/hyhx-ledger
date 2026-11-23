@@ -1259,6 +1259,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (s) { s.textContent = "最后修改时间 " + stamp; s.style.color = ""; }
       try { localStorage.setItem(KEY + "-ts", stamp); } catch (e) {}
       DIRTY = false;
+      try { if (window.__pgPushLedger) window.__pgPushLedger(); } catch (e0) {}
       var b = el("btn-save");
       if (b) { b.style.background = "#FFFFFF"; b.style.color = "#16407F"; b.style.borderColor = "#FFFFFF"; }
     } catch (e) {
@@ -2698,6 +2699,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   } catch (e) {}
 
   /* ---------- 手动保存 ---------- */
+  window.__pgSaveNow = function () { save(); };
   var btnSave = el("btn-save");
   if (btnSave) btnSave.addEventListener("click", function () { save(); });
 
@@ -3603,6 +3605,10 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       report: "hyhx-report.json",
       ledgerTsKey: KEY + "-cloudts"
     };
+    /* 线上访问（http/https）自动写回云端；本机 file:// 打开完全只读，改了也不影响线上 */
+    var ONLINE = (location.protocol === "http:" || location.protocol === "https:");
+    /* 读通云端后才允许写回，避免初次打开网络没通时把默认数据覆盖上去 */
+    var SYNC_OK = false;
 
     function q(s) { return document.querySelector(s); }
     function fmt(v, d) {
@@ -4152,7 +4158,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         .then(function (j) {
           var files = j.files || {};
           var rep = parseFile(files[CLOUD.report]);
-          if (rep && rep.data && rep.data.reports) {
+          /* 线上版：云端更新时才覆盖；本机文件版：一直以云端为准 */
+          if (rep && rep.data && rep.data.reports && (!ONLINE || (rep.ts || 0) >= (DB.ts || 0))) {
             DB = { ts: rep.ts, reports: rep.data.reports };
             window.__REPDB = DB;
             try { localStorage.setItem(RKEY, JSON.stringify(DB)); } catch (e) {}
@@ -4163,19 +4170,64 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           }
           var led = parseFile(files[CLOUD.ledger]);
           if (led && led.data) {
-            /* 线下版本只读：每次打开都以线上为准覆盖本机；同一线上版本在本标签页只重载一次 */
-            localStorage.setItem(KEY, JSON.stringify(led.data));
-            localStorage.setItem(CLOUD.ledgerTsKey, String(led.ts || 0));
-            var mark = "hyhx-led-" + String(led.ts || 0), seen = "";
-            try { seen = sessionStorage.getItem("hyhx-led-applied") || ""; } catch (e1) {}
-            if (seen !== mark) {
-              try { sessionStorage.setItem("hyhx-led-applied", mark); } catch (e2) {}
-              location.reload();
+            var lt = String(led.ts || 0);
+            var localTs = Number(localStorage.getItem(CLOUD.ledgerTsKey) || 0);
+            if (ONLINE) {
+              /* 云端比你本机更新时才覆盖，避免冲掉正在填的内容 */
+              if (Number(led.ts || 0) > localTs) {
+                localStorage.setItem(KEY, JSON.stringify(led.data));
+                localStorage.setItem(CLOUD.ledgerTsKey, lt);
+                location.reload();
+              }
+            } else {
+              /* 本机文件版：每次打开都以线上为准覆盖本机，同一版本只重载一次 */
+              localStorage.setItem(KEY, JSON.stringify(led.data));
+              localStorage.setItem(CLOUD.ledgerTsKey, lt);
+              var mark = "hyhx-led-" + lt, seen = "";
+              try { seen = sessionStorage.getItem("hyhx-led-applied") || ""; } catch (e1) {}
+              if (seen !== mark) {
+                try { sessionStorage.setItem("hyhx-led-applied", mark); } catch (e2) {}
+                location.reload();
+              }
             }
           }
-        }).catch(function (e) { console.warn("云端读取失败", e); });
+        }).then(function () { SYNC_OK = true; }).catch(function (e) { console.warn("云端读取失败", e); });
     }
-    /* 线下版本只读：不再向线上写入台账（原 pushLedger 已取消） */
+    var pushQueue = Promise.resolve();
+    function doPush() {
+      var ts = Date.now();
+      var body = { files: {} };
+      body.files[CLOUD.ledger] = { content: JSON.stringify({ ts: ts, data: S }) };
+      return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); localStorage.setItem(CLOUD.ledgerTsKey, String(ts)); })
+        .catch(function (e) { console.warn("台账写入失败", e && e.message ? e.message : e); });
+    }
+    function pushLedger() {
+      if (!ONLINE || !SYNC_OK) return Promise.resolve();
+      pushQueue = pushQueue.then(doPush, doPush);
+      return pushQueue;
+    }
+    window.__pgPushLedger = pushLedger;
+
+    /* ---- 自动保存：所有填报项停止输入约 1.2 秒后落盘（线上同时写回云端） ---- */
+    var AS_T = null;
+    function autoSave() {
+      if (AS_T) clearTimeout(AS_T);
+      AS_T = setTimeout(function () {
+        AS_T = null;
+        try { if (window.__pgSaveNow) window.__pgSaveNow(); } catch (e) { console.warn("自动保存失败", e); }
+      }, 1200);
+    }
+    ["input", "change"].forEach(function (ev) {
+      document.addEventListener(ev, function (e) {
+        var t = e.target;
+        if (!t) return;
+        var tag = (t.tagName || "").toLowerCase();
+        if (tag !== "input" && tag !== "select" && tag !== "textarea") return;
+        if (t.id === "import-file" || t.id === "pg-pw") return;
+        autoSave();
+      }, true);
+    });
 
     render();
     pullAll();
