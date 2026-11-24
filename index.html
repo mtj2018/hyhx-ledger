@@ -461,6 +461,14 @@ td.nmc{white-space:nowrap;font-size:12px}
 #card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
 #card-ppl .pgi{max-width:112px;margin:0 auto}
 /* 地市州月报：紧凑表格与描述块 */
+.jr-sub2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.jr-sub2 .card{margin:0}
+.jr-sub2 .jr-lb{width:84px;font-size:12px;white-space:nowrap}
+.jr-sub2 .jr-ta{min-height:76px}
+.jr-sub2 .jr-blk-t{margin-top:2px}
+.jr-blk-t2{font-size:13px;font-weight:700;color:#16407F;background:#F1F5FB;border-left:3px solid #16407F;
+  padding:6px 10px;margin:8px 14px 0;letter-spacing:.03em}
+.jr-pcu{font-size:12px;color:#5B6779;margin-left:4px}
 .jr-mini th{font-size:12px;padding:5px 6px}
 .jr-mini td{font-size:12.5px;padding:4px 6px}
 .jr-sub-t{font-size:12px;color:#6B7684;padding:12px 14px 2px}
@@ -4123,16 +4131,30 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     }
 
     function render() { renderShape(); renderOut(); renderPpl(); applyModLock(); }
-    /* 页面小锁联动：未解锁时本模块所有录入框只读 */
+    /* 页面小锁联动：未解锁时全页录入框只读（点右上角小锁解锁后才能输入） */
+    var LOCK_TIP = "已锁定，点击右上角小锁解锁后可编辑";
+    function lockOne(t, locked) {
+      if (!t || t.dataset && t.dataset.nolock !== undefined) return;
+      var ty = (t.type || "").toLowerCase();
+      if (ty === "file" || ty === "search" || ty === "checkbox" || ty === "radio" || ty === "range" || ty === "button" || ty === "submit") return;
+      if (t.readOnly === undefined) return;
+      t.readOnly = locked;
+      t.setAttribute("aria-readonly", locked ? "true" : "false");
+      if (locked) { t.title = LOCK_TIP; t.classList.add("am-locked"); }
+      else { t.removeAttribute("title"); t.classList.remove("am-locked"); }
+    }
     function applyModLock() {
       var locked = false;
       try { locked = (typeof LOCKED !== "undefined") ? !!LOCKED : true; } catch (e) { locked = true; }
       Array.prototype.forEach.call(document.querySelectorAll('#pg-out input[data-k^="oc"]'), function (t) {
-        t.readOnly = locked;
-        t.setAttribute("aria-readonly", locked ? "true" : "false");
+        lockOne(t, locked);
         t.style.background = locked ? "#FFFFFF" : "#FFFDF1";
         t.style.border = locked ? "1px solid #E3E8EF" : "1px solid #F1E6C3";
         t.style.cursor = locked ? "default" : "text";
+      });
+      Array.prototype.forEach.call(document.querySelectorAll(".view input, .view textarea"), function (t) {
+        if (t.closest && t.closest("#pg-gate")) return;
+        lockOne(t, locked);
       });
     }
     try {
