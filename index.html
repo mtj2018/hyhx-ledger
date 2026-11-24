@@ -460,8 +460,8 @@ td.nmc{white-space:nowrap;font-size:12px}
 #card-reg .pg-ctr td .fixv{text-align:center}
 /* 全局口径：表头一律居中；金额类数据（td.r 及其录入框）一律左对齐 */
 .tbl th,.pg-tbl th{text-align:center!important}
-.pg-tbl td.r,.pg-ctr td.r{text-align:right!important}
-.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:right!important;margin:0}
+.pg-tbl td.r,.pg-ctr td.r{text-align:center!important}
+.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:center!important;margin:0}
 .pg-tbl .fixv{text-align:inherit!important}
 #card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
 #card-ppl .pgi{max-width:112px;margin:0 auto}
@@ -479,6 +479,15 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-sub-t{font-size:12px;color:#6B7684;padding:12px 14px 2px}
 .jr-blk{padding:8px 0 2px;border-top:1px dashed #E4EAF3}
 .jr-blk:first-child{border-top:0}
+.jr-pair{display:flex;gap:0;align-items:stretch}
+.jr-pair>.jr-blk{flex:1 1 0;min-width:0;border-top:0;padding:0 16px}
+.jr-pair>.jr-blk:first-child{padding-left:0;border-right:1px solid #E4EAF3}
+.jr-pair>.jr-blk:last-child{padding-right:0}
+.jr-pair .jr-blk-t{margin-top:0}
+.jr-mapnote{margin:8px 0 2px;padding:7px 12px;background:#F1F5FB;border-left:3px solid #16407F;border-radius:2px;font-size:12.5px;line-height:1.6;color:#16407F;font-weight:600}
+.jr-map-t td.nm{font-weight:600;color:#16407F}
+.jr-pair .jr-lb{width:84px;font-size:12px;white-space:nowrap}
+.jr-ta.jr-inh{color:#9AA6B5!important}
 .jr-blk-t{font-size:13px;font-weight:600;color:#1E3A6E;padding:2px 2px 5px;letter-spacing:.02em}
 .jr-blk .pg-tbl td{padding:4px 6px}
 .jr-lb{width:150px;color:#5B6779;font-size:12.5px}
@@ -521,13 +530,12 @@ td.nmc{white-space:nowrap;font-size:12px}
 .rail .nav-jump:hover{background:var(--mist)}
 .rail .nav-jump::after{content:"\2197";font-size:13px;color:#8FA1B8;font-weight:600;line-height:1}
 @media (max-width:980px){.rail nav .nav-sec{display:none}.rail nav .nav-item.sub::before{display:none}}
-/* 全局口径：表头一律居中；金额类数据右对齐；锁定态与普通数据外观一致 */
+/* 全局口径：表头一律居中；金额类数据居中；锁定态与普通数据外观一致 */
 .tbl th,.pg-tbl th,.fa-tbl th,.fcr-tbl th{text-align:center!important}
-td.r,.pg-tbl td.r{text-align:right!important}
-.pg-tbl td.r .pgi{text-align:right!important;margin-left:0!important}
-#view-investment .tbl td.c,#view-investment .tbl td.c input{text-align:right!important}
-#view-investment .tbl td.c:first-child,#view-investment .tbl td.c:first-child input{text-align:left!important}
-#view-fixedasset .fa-tbl td,#view-fixedasset .fa-tbl td input{text-align:right!important}
+td.r,.pg-tbl td.r{text-align:center!important}
+.pg-tbl td.r .pgi{text-align:center!important;margin-left:0!important}
+#view-investment .tbl td.c,#view-investment .tbl td.c input{text-align:center!important}
+#view-fixedasset .fa-tbl td,#view-fixedasset .fa-tbl td input{text-align:center!important}
 #view-fixedasset .fa-tbl td.nm,#view-fixedasset .fa-tbl td.nm input,#view-fixedasset .fa-tbl td.nmc,#view-fixedasset .fa-tbl td.nmc input{text-align:left!important}
 #pg-out .pgi:read-only{border:0!important;background:transparent!important;box-shadow:none!important;padding:0 4px!important;color:inherit!important}
 
@@ -4069,7 +4077,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         var ctCell = (r.name === "合计")
           ? '<td class="r">' + fmt(r.contract, 0) + "</td>"
           : '<td class="r"><input class="pgi" data-k="oct' + r.ci + '" data-int="1" value="' + fmt(r.contract, 0)
-            + '" style="width:100%;max-width:118px;text-align:right" aria-label="合同额（万元）"></td>';
+            + '" style="width:100%;max-width:118px;text-align:center" aria-label="合同额（万元）"></td>';
         return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + outLabel(r.name) + "</td>"
           + ctCell + '<td class="r">' + fmt(r.mon, 0) + "</td>"
           + '<td class="r">' + fmt(r.cum, 0) + "</td>"
