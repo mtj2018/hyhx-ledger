@@ -415,15 +415,17 @@ td.c input.pgi,input.pgc{text-align:center}
 .card-head .hint.pg-flag{margin-left:14px;margin-right:auto;display:inline-flex;align-items:center;gap:6px;background:#FDECEA;border:1px solid #F2C3BC;border-left:3px solid #C0392B;border-radius:4px;padding:5px 11px;font-size:12.5px;line-height:1;color:#9E2B21;letter-spacing:.3px;white-space:nowrap;box-shadow:0 1px 2px rgba(192,57,43,.08)}
 .pg-flag b{color:#B3261E;font-weight:800}
 .pg-flag i{font-style:normal;color:#D58B82}
-.pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
-.pg-lk:hover{background:#28508F}
+.pg-lk{margin-left:12px;padding:7px 22px;border:1px solid #16407F;border-radius:6px;background:#16407F;color:#fff;font-size:13px;font-weight:700;letter-spacing:.6px;line-height:1.45;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto;box-shadow:0 2px 7px rgba(22,64,127,.32);transition:background .15s,box-shadow .15s,transform .12s}
+.pg-lk:hover{background:#1F5AA8;box-shadow:0 3px 10px rgba(22,64,127,.4)}
+.pg-lk:active{transform:translateY(1px)}
 .pg-lk.is-on{width:30px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#1E3A6E;border-color:#C9D2E0}
 .pg-lk.is-on:hover{background:#F3F6FB;border-color:#9FB2CC}
 .pg-lk svg{width:13px;height:13px;display:block}
 .pg-money{margin-left:auto;font-size:12px;color:#5F7086;letter-spacing:.4px;white-space:nowrap}
 .card.is-locked input.pgi{background:#F1F3F7;color:#5B6675;cursor:not-allowed}
 .tbl th.c{text-align:center}
-th.nmc,td.nmc{white-space:nowrap;font-size:12px}
+th.nmc{white-space:nowrap}
+td.nmc{white-space:nowrap;font-size:12px}
 .pg-tbl td.sec{font-weight:700;color:var(--navy);background:#F7FAFF}
 .pg-tbl td.ind1{padding-left:16px}
 .pg-tbl td.ind2{padding-left:30px;color:var(--muted)}
@@ -450,6 +452,13 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-ctr .pgi{text-align:center!important}
 .pg-ctr .fixv{text-align:center!important}
 .pg-ctr td.sec,.pg-ctr td.nmcell,.pg-ctr td.ind1,.pg-ctr td.ind2,.pg-ctr td.ind3{text-align:left!important}
+#card-out .pg-ctr td.nmc,#card-out .pg-ctr th.nmc{text-align:left!important}
+#card-reg .pg-ctr th,#card-reg .pg-ctr td{padding-left:6px;padding-right:6px}
+#card-reg .pg-ctr th.sep,#card-reg .pg-ctr td.sep{border-left:1px solid #D3DCE9}
+#card-reg .pg-ctr td .pgi{max-width:76px;margin:0 auto;padding:2px 5px}
+#card-reg .pg-ctr td .fixv{text-align:center}
+#card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
+#card-ppl .pgi{max-width:112px;margin:0 auto}
 /* 地市州月报：紧凑表格与描述块 */
 .jr-mini th{font-size:12px;padding:5px 6px}
 .jr-mini td{font-size:12.5px;padding:4px 6px}
@@ -827,7 +836,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       if (isLeaf) {
         if (r.unit === "%") {
           totCell = '<span class="fixv fixc">100</span>';
-        } else if (FIXOPEN) {
+        } else if (FIXOPEN || /^j[234]$/.test(CUR.tid)) {
           totCell = '<input class="pgi pgc" data-tot="' + i + '" value="' + nf(st.total) + '">';
         } else {
           totCell = '<span class="fixv fixc">' + nf(st.total) + "</span>";
@@ -882,10 +891,10 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       + '<td class="r" data-ocumtot="1">' + fmt(tot.cum, 0) + "</td>"
       + '<td class="r" style="display:none" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
     host.innerHTML = head("分项产值情况", subTitle(t), "out")
-      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-      + '<th style="width:40px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none" class="r">合同额</th>'
-      + '<th style="width:90px" class="r">本月完成</th><th style="width:90px" class="r">累计完成</th>'
-      + '<th style="width:72px;display:none" class="r">完成比例</th></tr></thead><tbody>' + body + "</tbody></table></div>";
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
+      + '<th style="width:44px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none">合同额</th>'
+      + '<th style="width:96px">本月完成</th><th style="width:96px">累计完成</th>'
+      + '<th style="width:72px;display:none">完成比例</th></tr></thead><tbody>' + body + "</tbody></table></div>";
   }
 
   /* ---------- 人员 ---------- */
@@ -896,9 +905,9 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     if (notStarted(t)) { host.innerHTML = soonHead("人员情况", subTitle(t)); return; }
     var p = pplAt(t, CUR.ym);
     host.innerHTML = head("人员情况", subTitle(t), "ppl")
-      + '<div class="card-body"><table class="tbl pg-tbl"><thead><tr><th>项目</th><th style="width:180px" class="r">人数（人）</th></tr></thead><tbody>'
-      + '<tr><td>管理人员数</td><td class="r"><input class="pgi" data-ppl="mgr" value="' + fmt(p.mgr, 0) + '"></td></tr>'
-      + '<tr><td>农民工用工人数</td><td class="r"><input class="pgi" data-ppl="worker" value="' + fmt(p.worker, 0) + '"></td></tr>'
+      + '<div class="card-body"><table class="tbl pg-tbl pg-ctr"><thead><tr><th>项目</th><th style="width:118px">人数（人）</th></tr></thead><tbody>'
+      + '<tr><td>管理人员数</td><td><input class="pgi pgc" data-ppl="mgr" value="' + fmt(p.mgr, 0) + '"></td></tr>'
+      + '<tr><td>农民工用工人数</td><td><input class="pgi pgc" data-ppl="worker" value="' + fmt(p.worker, 0) + '"></td></tr>'
       + "</tbody></table></div>";
   }
 
@@ -917,35 +926,44 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         var planCell = !FIXOPEN
           ? '<td class="c"><span class="fixv fixc">' + fmt(plan, 0) + "</span></td>"
           : '<td class="c"><input class="pgi pgc" data-reg="' + r.city + '|plan" value="' + fmt(plan, 0) + '"></td>';
-        return '<tr><td class="c">' + r.city + "</td>" + planCell
+        return '<tr><td class="c">' + DSP(r.city) + "</td>" + planCell
           + '<td class="c"><input class="pgi pgc" data-reg="' + r.city + '|done" value="' + fmt(done, 0) + '"></td></tr>';
       }).join("");
       host.innerHTML = head("地市州产值", subTitle(t), "reg")
-        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr><th>地市州</th>'
-        + '<th style="width:200px" class="r">总投资计划</th><th style="width:200px" class="r">完成产值</th></tr></thead><tbody>'
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
+        + '<th style="width:104px" class="c">地市州</th>'
+        + '<th style="width:150px" class="c">总投资计划</th><th style="width:150px" class="c">完成产值</th></tr></thead><tbody>'
         + rows + "</tbody></table></div>";
     } else {
       var rows2 = reg.rows.map(function (r) {
         var cur = (rep(CUR.tid, CUR.ym).reg || {})[r.city] || {};
-        function cell(k, base) {
+        function cell(k, base, sep) {
           var v = cur[k] !== undefined ? cur[k] : base;
           var d = (/Plan$|^outDone$/.test(k) && /^out/.test(k)) ? 0 : 2;
+          var cls = "c" + (sep ? " sep" : "");
           if (/Plan$/.test(k) && !FIXOPEN) {
-            return '<td class="c"><span class="fixv fixc">' + fmt(v, d) + "</span></td>";
+            return '<td class="' + cls + '"><span class="fixv fixc">' + fmt(v, d) + "</span></td>";
           }
-          return '<td class="c"><input class="pgi pgc" data-reg="' + r.city + '|' + k + '" value="' + fmt(v, d) + '"></td>';
+          return '<td class="' + cls + '"><input class="pgi pgc" data-reg="' + r.city + '|' + k + '" value="' + fmt(v, d) + '"></td>';
         }
-        return '<tr><td class="c" rowspan="1">' + r.city + "</td>"
-          + cell("outPlan", r.outPlan) + cell("outDone", r.outDone)
-          + cell("glPlan", r.glPlan) + cell("glDone", r.glDone)
-          + cell("fhPlan", r.fhPlan) + cell("fhDone", r.fhDone)
-          + cell("bzPlan", r.bzPlan) + cell("bzDone", r.bzDone) + "</tr>";
+        return '<tr><td class="c" rowspan="1">' + DSP(r.city) + "</td>"
+          + cell("outPlan", r.outPlan) + cell("outDone", r.outDone, 1)
+          + cell("glPlan", r.glPlan, 1) + cell("glDone", r.glDone)
+          + cell("fhPlan", r.fhPlan, 1) + cell("fhDone", r.fhDone)
+          + cell("bzPlan", r.bzPlan, 1) + cell("bzDone", r.bzDone) + "</tr>";
       }).join("");
+      var GW = ' style="width:72px"';
       host.innerHTML = head("分地市州填报", subTitle(t), "reg")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead>'
-        + '<tr><th rowspan="2" style="width:80px" class="c">地市州</th><th colspan="2" class="c">产值（万元）</th><th colspan="2" class="c">隔离栅（公里）</th>'
-        + '<th colspan="2" class="c">护栏（公里）</th><th colspan="2" class="c">标志标牌（个）</th></tr>'
-        + '<tr><th class="c">计划</th><th class="c">完成</th><th class="c">计划</th><th class="c">完成</th><th class="c">计划</th><th class="c">完成</th><th class="c">计划</th><th class="c">完成</th></tr>'
+        + '<tr><th rowspan="2" style="width:76px" class="c">地市州</th>'
+        + '<th colspan="2" class="c">产值（万元）</th>'
+        + '<th colspan="2" class="c sep">隔离栅（公里）</th>'
+        + '<th colspan="2" class="c sep">护栏（公里）</th>'
+        + '<th colspan="2" class="c sep">标志标牌（个）</th></tr>'
+        + '<tr><th class="c"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
+        + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
+        + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
+        + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th></tr>'
         + "</thead><tbody>" + rows2 + "</tbody></table></div>";
     }
   }
@@ -1015,7 +1033,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     var valid = STM >= "2026-11";
     var rows = JRCITY.map(function (c, i) {
       var lk = jrLocked(c, STM), mm = jrMoney(c, STM);
-      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + c + "</td>"
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + DSP(c) + "</td>"
         + '<td class="r">' + fmt(mm.cum, 0) + "</td>"
         + '<td class="c">' + (lk ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
           : '<span class="pg-st-no"><span class="pg-st-dot"></span>未提交</span>') + "</td></tr>";
@@ -1038,7 +1056,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   var JRCITY = JRCFG.cities || [];
   var JR = { city: JRCITY[0] || "", ym: "" };
   var JRSTART = "2026-11";
-  var JRSEED = {"武汉":{"pct":{"lu":40.0,"ql":40.0,"lm":17.0,"ja":24.0,"me":18.0,"fj":0.0},"done":{"lu":"武汉西至侏儒互通段左幅土建一期已完成施工，侏儒至北河段左幅桥梁基础及下构已完成90%，蔡甸段左幅路面工程完成65%","ja":"武汉西至侏儒段左幅标志完成46%，钢护栏立柱完成84%，隔离栅完成65%，标线完成3%，声屏障未启动","me":"项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工"},"plan":{"lu":"武汉西至侏儒互通段左幅预计2026年年底建成，侏儒互通至北河互通段左幅预计2027年6月底建成；届时将全面开展右幅施工","ja":"武汉西至侏儒互通段左幅预计2026年年底建成","me":"导改前，完成具备通电通网点位的设备安装","fj":"场地移交后10个月内完成九真山服务区南区房建施工"},"issue":"1.蔡甸段右幅红线用地交付及征拆工作亟需推进。目前，右幅红线范围内部分房屋、水塘及地面附着物尚未完成补偿，部分土地尚未移交，三改用地征拆补偿滞后，已影响汉宜主线右幅施工。\n2.交安声屏障工程正式施工图尚未下发，特别是路基段声屏障基础施工周期相对较长。"},"汉川":{"pct":{"lu":30.0,"ql":65.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"新建北河互通路基土石方填筑完成70%，4处匝道桥基础及下构工程已完成","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"新建北河互通计划启动架梁工作，预计2027年4月南侧建成","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.北河收费站出口收费站连接线口七座房屋未拆除，影响匝道施工、便道通行；\n2.因前期坟墓迁移、附着物漏登等补偿费用，未确定补偿方式，汉川协指要求尽快解决该费用，再启动协调工作；同步导致S244涉路施工许可一直未审批。"},"仙桃":{"pct":{"lu":25.0,"ql":35.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"跨G318（规划）特大桥总体完成55%，其中桩基完成64%，盖梁完成65%，墩柱完成67%，梁板架设完成21%","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"计划本年度完成跨G318（规划）特大桥左幅所有梁板架设","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.10kv低压线路未拆除，影响圆管涵施工；\n2.河道管理单位责令停工，要求拆除清理河道内渣土、便道毛渣及宣传牌等设施，目前已挖断便道，造成停工。"},"仙桃2":{"civil2Done":"仙桃城区特大桥左幅整体完成78%；除受制约因素影响部位外，该桥桩基、墩柱及普通盖梁已全部完工，UHPC盖梁完成84%，梁板架设完成60%，桥面铺装完成16%","civil2Plan":"仙桃城区高架桥左幅桩基、墩柱、梁板架设2026年12月10完成；夏市村管桩桥梁板架设2026年11月30日完成桥面铺装2026年12月30日完成；建堤村管桩桥2026年11月30日梁板架设完成；基层、面层试验段2026年11月20日完成"},"潜江":{"pct":{"lu":44.0,"ql":44.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"东荆河特大桥总体完成70%；桩基、墩柱、钢混组合梁架设已全部完成，盖梁完成90%，梁板架设完成71%，现浇连续梁完成11%","ja":"已完成项目驻地建设，总体施工组织设计批复中，护栏、标志、隔离栅、防眩网、商品混凝土原材料供应商准入已审批，标线、钢筋供应商准入在录入","me":"未启动","fj":""},"plan":{"lu":"2026年11月20日启动东荆河特大桥桥面系，2026年11月25日前完成东荆河特大桥所有盖梁，2026年11月30日前完成东荆河特大桥架设5跨","ja":"进一步完善供应商准入，各分项工程的专项施工方案、首件工程施工方案编制及审批","me":"待土建提供段面后施工","fj":""},"issue":"1.加快推进潜江东互通铁路专线迁改工作，尽早为潜江东互通及主线县河中桥提供施工作业面。尽快提供潜江高架桥变更图纸正式版，以便及时对现场施工组织及交通组织作出相应调整；\n2.ZK1047+203小桥受洪荆输油管道施工时间未确定影响，K1047+200小桥8根桩基无法施工。张丫线天桥红线征地手续尚未完善，未启动施工，影响新干渠中桥及E匝道施工。"},"荆州":{"pct":{"lu":42.0,"ql":40.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"引江济汉特大桥左幅总体完成75%；索塔已封顶，桩基、盖梁、墩柱、箱梁架设全部完成，目前正在现浇梁、桥面系施工","ja":"已完成项目驻地建设，施工组织设计批复，标牌、混凝土、隔离栅原材料准入","me":"已完成本标段3处收费站出口所有车道的“手机+”与项目部驻地建设","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成"},"plan":{"lu":"引江济汉特大桥正在开展现浇梁浇筑及桥面铺装，预计2027年9月份合龙","ja":"护栏、声屏障、标线等原材料准入，预计2026年12月","me":"跟随土建施工计划完成ZK1102+031-ZK1102+693处横穿管预埋","fj":"预计2027年3月进行小北门管理所改造工程"},"issue":"1.湖北省天然气、津江燃气管道迁改未按期落地，影响小北门互通ZK1096+400-ZK1099+260范围内：主线中桥2座(110m)、主线路基约1.0km施工，严重制约第一阶段导改；\n2.现阶段荆沙铁路中桥，桥梁全长98m，因10kv电缆和通信电缆未迁改，代建单位不能及时进场施工，严重制约第一阶段导改；\n3.220KV（江枝线）荆州段影响沮漳河特大桥8-11#下构及架梁。"},"宜昌":{"pct":{"lu":47.0,"ql":46.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"七星台互通桥梁下部结构除5#中墩外均已完成；玛瑙河大桥右幅下部结构完成92%","ja":"驻地建设已基本完成，部分问题仍在整改中。《施工组织设计》已编制完成，尚未上报审批。主要材料供应商正在建管平台审批","me":"已完成本标段4处收费站出口所有车道的“手机+”与项目部驻地建设","fj":""},"plan":{"lu":"2026年11月20日前完成基层（含底基层）首件施工；2026年11月30日前完成路面面层首件施工。 2026年11月25日前完成右幅梁板架设及铺装。2026年11月30日前完成7座天桥下构施工","ja":"《施工组织设计》正在修改，计划11月底完成报批","me":"跟随土建施工计划完成K1143+300-K1143+700处横穿管预埋","fj":""},"issue":"1.HYTJ-10标范围内6处35kV-220kV国网线路，枝江段69处10kV及以下线路未完成电力迁改；\n2.七星台镇、仙女镇董院2处保通侧卡点未交地；保通侧4处房屋拆迁未解决；高家店互通E匝道三处房屋距离现场过近，阻挠现场施工。"}};
+  var JRSEED = {"武汉":{"pct":{"lu":40.0,"ql":40.0,"lm":17.0,"ja":24.0,"me":18.0,"fj":0.0},"done":{"lu":"武汉西至侏儒互通段左幅土建一期已完成施工，侏儒至北河段左幅桥梁基础及下构已完成90%，蔡甸段左幅路面工程完成65%","ja":"武汉西至侏儒段左幅标志完成46%，钢护栏立柱完成84%，隔离栅完成65%，标线完成3%，声屏障未启动","me":"项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工"},"plan":{"lu":"武汉西至侏儒互通段左幅预计2026年年底建成，侏儒互通至北河互通段左幅预计2027年6月底建成；届时将全面开展右幅施工","ja":"武汉西至侏儒互通段左幅预计2026年年底建成","me":"导改前，完成具备通电通网点位的设备安装","fj":"场地移交后10个月内完成九真山服务区南区房建施工"},"issue":"1.蔡甸段右幅红线用地交付及征拆工作亟需推进。目前，右幅红线范围内部分房屋、水塘及地面附着物尚未完成补偿，部分土地尚未移交，三改用地征拆补偿滞后，已影响汉宜主线右幅施工。\n2.交安声屏障工程正式施工图尚未下发，特别是路基段声屏障基础施工周期相对较长。"},"汉川":{"pct":{"lu":30.0,"ql":65.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"新建北河互通路基土石方填筑完成70%，4处匝道桥基础及下构工程已完成","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"新建北河互通计划启动架梁工作，预计2027年4月南侧建成","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.北河收费站出口收费站连接线口七座房屋未拆除，影响匝道施工、便道通行；\n2.因前期坟墓迁移、附着物漏登等补偿费用，未确定补偿方式，孝感协指要求尽快解决该费用，再启动协调工作；同步导致S244涉路施工许可一直未审批。"},"仙桃":{"pct":{"lu":25.0,"ql":35.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"跨G318（规划）特大桥总体完成55%，其中桩基完成64%，盖梁完成65%，墩柱完成67%，梁板架设完成21%","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"计划本年度完成跨G318（规划）特大桥左幅所有梁板架设","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.10kv低压线路未拆除，影响圆管涵施工；\n2.河道管理单位责令停工，要求拆除清理河道内渣土、便道毛渣及宣传牌等设施，目前已挖断便道，造成停工。"},"仙桃2":{"civil2Done":"仙桃城区特大桥左幅整体完成78%；除受制约因素影响部位外，该桥桩基、墩柱及普通盖梁已全部完工，UHPC盖梁完成84%，梁板架设完成60%，桥面铺装完成16%","civil2Plan":"仙桃城区高架桥左幅桩基、墩柱、梁板架设2026年12月10完成；夏市村管桩桥梁板架设2026年11月30日完成桥面铺装2026年12月30日完成；建堤村管桩桥2026年11月30日梁板架设完成；基层、面层试验段2026年11月20日完成"},"潜江":{"pct":{"lu":44.0,"ql":44.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"东荆河特大桥总体完成70%；桩基、墩柱、钢混组合梁架设已全部完成，盖梁完成90%，梁板架设完成71%，现浇连续梁完成11%","ja":"已完成项目驻地建设，总体施工组织设计批复中，护栏、标志、隔离栅、防眩网、商品混凝土原材料供应商准入已审批，标线、钢筋供应商准入在录入","me":"未启动","fj":""},"plan":{"lu":"2026年11月20日启动东荆河特大桥桥面系，2026年11月25日前完成东荆河特大桥所有盖梁，2026年11月30日前完成东荆河特大桥架设5跨","ja":"进一步完善供应商准入，各分项工程的专项施工方案、首件工程施工方案编制及审批","me":"待土建提供段面后施工","fj":""},"issue":"1.加快推进潜江东互通铁路专线迁改工作，尽早为潜江东互通及主线县河中桥提供施工作业面。尽快提供潜江高架桥变更图纸正式版，以便及时对现场施工组织及交通组织作出相应调整；\n2.ZK1047+203小桥受洪荆输油管道施工时间未确定影响，K1047+200小桥8根桩基无法施工。张丫线天桥红线征地手续尚未完善，未启动施工，影响新干渠中桥及E匝道施工。"},"荆州":{"pct":{"lu":42.0,"ql":40.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"引江济汉特大桥左幅总体完成75%；索塔已封顶，桩基、盖梁、墩柱、箱梁架设全部完成，目前正在现浇梁、桥面系施工","ja":"已完成项目驻地建设，施工组织设计批复，标牌、混凝土、隔离栅原材料准入","me":"已完成本标段3处收费站出口所有车道的“手机+”与项目部驻地建设","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成"},"plan":{"lu":"引江济汉特大桥正在开展现浇梁浇筑及桥面铺装，预计2027年9月份合龙","ja":"护栏、声屏障、标线等原材料准入，预计2026年12月","me":"跟随土建施工计划完成ZK1102+031-ZK1102+693处横穿管预埋","fj":"预计2027年3月进行小北门管理所改造工程"},"issue":"1.湖北省天然气、津江燃气管道迁改未按期落地，影响小北门互通ZK1096+400-ZK1099+260范围内：主线中桥2座(110m)、主线路基约1.0km施工，严重制约第一阶段导改；\n2.现阶段荆沙铁路中桥，桥梁全长98m，因10kv电缆和通信电缆未迁改，代建单位不能及时进场施工，严重制约第一阶段导改；\n3.220KV（江枝线）荆州段影响沮漳河特大桥8-11#下构及架梁。"},"宜昌":{"pct":{"lu":47.0,"ql":46.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"七星台互通桥梁下部结构除5#中墩外均已完成；玛瑙河大桥右幅下部结构完成92%","ja":"驻地建设已基本完成，部分问题仍在整改中。《施工组织设计》已编制完成，尚未上报审批。主要材料供应商正在建管平台审批","me":"已完成本标段4处收费站出口所有车道的“手机+”与项目部驻地建设","fj":""},"plan":{"lu":"2026年11月20日前完成基层（含底基层）首件施工；2026年11月30日前完成路面面层首件施工。 2026年11月25日前完成右幅梁板架设及铺装。2026年11月30日前完成7座天桥下构施工","ja":"《施工组织设计》正在修改，计划11月底完成报批","me":"跟随土建施工计划完成K1143+300-K1143+700处横穿管预埋","fj":""},"issue":"1.HYTJ-10标范围内6处35kV-220kV国网线路，枝江段69处10kV及以下线路未完成电力迁改；\n2.七星台镇、仙女镇董院2处保通侧卡点未交地；保通侧4处房屋拆迁未解决；高家店互通E匝道三处房屋距离现场过近，阻挠现场施工。"}};
   var JRPCT = [{ k: "lu", n: "路基工程" }, { k: "ql", n: "桥梁工程" }, { k: "lm", n: "路面工程" },
                { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
   var JRKIND = [{ k: "lu", n: "土建工程" }, { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
@@ -1053,6 +1071,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   };
   var JRSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
   function jrCityName(c) { return (JRCFG.cityMap || {})[c] || c; }
+  /* 地市州显示名（数据键仍沿用原键，避免影响已存数据） */
+  function DSP(c) { return c === "汉川" ? "孝感" : c; }
   function jrRec(city, ym, mk) {
     var c = DB.jr[city] || (DB.jr[city] = {});
     var r = c[ym];
@@ -1120,7 +1140,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     var tabs = $("#jr-tabs");
     if (tabs && !tabs.children.length) {
       tabs.innerHTML = JRCITY.map(function (c) {
-        return '<button type="button" class="pg-tab" data-jr-city="' + c + '">' + c + "</button>";
+        return '<button type="button" class="pg-tab" data-jr-city="' + c + '">' + DSP(c) + "</button>";
       }).join("");
     }
     if (tabs) Array.prototype.forEach.call(tabs.querySelectorAll("[data-jr-city]"), function (b) {
@@ -1142,7 +1162,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     var into = $("#jr-info");
     if (into) {
       var mm = jrMoney(JR.city, JR.ym);
-      into.textContent = JR.ym.replace("-", " 年 ") + " 月　" + JR.city + "　建安费产值 " + fmt(mm.cum, 0) + " 万元";
+      into.textContent = JR.ym.replace("-", " 年 ") + " 月　" + DSP(JR.city) + "　建安费产值 " + fmt(mm.cum, 0) + " 万元";
     }
     renderJrMoney(); renderJrDesc(); renderJrIssue();
   }
@@ -1158,7 +1178,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       return "<tr><td>" + p.n + "</td><td class='c'><input class='pgi pgc' data-jrp='" + p.k
         + "'" + (lk ? " readonly" : "") + " value='" + (v === "" ? "" : fmtz(v, 2)) + "' style='width:72px'>%</td></tr>";
     }).join("");
-    host.innerHTML = head("产值完成情况", JR.city + "　" + JR.ym.replace("-", " 年 ") + " 月", null)
+    host.innerHTML = head("产值完成情况", DSP(JR.city) + "　" + JR.ym.replace("-", " 年 ") + " 月", null)
       + '<div class="card-body" style="padding:0 0 10px">'
       + '<table class="tbl pg-tbl jr-mini"><thead><tr><th style="width:44px" class="c">序号</th><th>标段</th>'
       + '<th style="width:92px" class="r">本月产值</th><th style="width:98px" class="r">累计产值</th></tr></thead><tbody>'
@@ -1193,7 +1213,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       }
       return '<div class="jr-blk"><div class="jr-blk-t">' + k.n + '</div><table class="tbl pg-tbl"><tbody>' + inner + "</tbody></table></div>";
     }).join("");
-    host.innerHTML = '<div class="card-head"><h2>主要形象进度描述</h2><span class="hint">' + JR.city + "　" + JR.ym.replace("-", " 年 ") + " 月</span>"
+    host.innerHTML = '<div class="card-head"><h2>主要形象进度描述</h2><span class="hint">' + DSP(JR.city) + "　" + JR.ym.replace("-", " 年 ") + " 月</span>"
       + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="1" title="'
       + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本月填报") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
       + '<div class="card-body"><div class="jr-who">' + (JRLEADTXT[JR.city] || "") + "</div>" + blocks + "</div>";
@@ -1201,7 +1221,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   function renderJrIssue() {
     var host = $("#jr-issue"); if (!host) return;
     var lk = jrLocked(JR.city, JR.ym);
-    host.innerHTML = head("亟需解决的问题", JR.city + "　由" + (JRLEAD[JR.city] || "土建驻地办") + "填写", null)
+    host.innerHTML = head("亟需解决的问题", DSP(JR.city) + "　由" + (JRLEAD[JR.city] || "土建驻地办") + "填写", null)
       + '<div class="card-body"><textarea class="jr-ta" data-jrf="issue"' + (lk ? " readonly" : "") + JRTA
       + ' placeholder="如：征地拆迁、管线迁改、地方协调等需协调事项" style="min-height:132px">' + jrVal(JR.city, JR.ym, "issue") + "</textarea></div>";
   }
@@ -1214,14 +1234,14 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     if (!jrLocked(JR.city, JR.ym)) {
       jrRec(JR.city, JR.ym, true).lock.all = 1;
       persistLocal(); renderJr(); renderStatus(); pushCloud();
-      flag("已提交：" + JR.city + " " + JR.ym.replace("-", " 年 ") + " 月", true);
+      flag("已提交：" + DSP(JR.city) + " " + JR.ym.replace("-", " 年 ") + " 月", true);
     } else {
       var pw = prompt("取消提交需输入密码：");
       if (pw === null) return;
       if (String(pw).trim() !== "a") { alert("密码错误"); return; }
       jrRec(JR.city, JR.ym, true).lock.all = 0;
       persistLocal(); renderJr(); renderStatus(); pushCloud();
-      flag("已取消提交：" + JR.city, true);
+      flag("已取消提交：" + DSP(JR.city), true);
     }
   });
   document.addEventListener("input", function (e) {
