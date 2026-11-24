@@ -445,8 +445,16 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-st-no .pg-st-dot{background:#C14343}
 .pg-st-na{color:#B9C0CC}
 .pg-tbl .fixv{color:#0F2C5C;background:transparent;border:0;padding:0 4px;display:block;min-width:0;font-variant-numeric:tabular-nums;text-align:right}
+.pg-tbl .fixv.fixc{text-align:center}
 .pg-ctr td,.pg-ctr th{text-align:center!important}
 .pg-ctr .pgi{text-align:center!important}
+/* 固化数据锁：导出数据左侧的小锁按钮 */
+.top-lock{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin-right:8px;
+  border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#fff;
+  font-family:inherit;transition:background .15s,border-color .15s}
+.top-lock:hover{background:rgba(255,255,255,.22)}
+.top-lock.is-open{background:#FFFFFF;color:#1E3A6E;border-color:#FFFFFF}
+.top-lock svg{width:15px;height:15px;display:block}
 
 </style>
 </head>
@@ -462,6 +470,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       <div class="top-sub">工程月报填报　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
     </div>
     <div class="top-meta">
+      <button id="btn-fix" type="button" class="top-lock" title="解锁后可修改固化的基础数据" aria-label="解锁固化数据"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></svg></button>
       <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
     </div>
   </div>
@@ -554,6 +563,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   };
   /* 线上访问（http/https）自动写回云端；本机 file:// 打开完全只读，改了也不影响线上 */
   var ONLINE = (location.protocol === "http:" || location.protocol === "https:");
+  /* 固化的基础数据默认只读；点顶部小锁、输入密码 aaa 后才可编辑（解锁状态只在本机本次会话有效） */
+  var FIXOPEN = false;
 
   function $(s) { return document.querySelector(s); }
   function fmt(v, d) {
@@ -606,7 +617,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   function setEv(tid, ym, kind, key, v) {
     var r = rep(tid, ym, true);
     r[kind] = r[kind] || {};
-    if (v === null) delete r[kind][key]; else r[kind][key] = v;
+    /* 清空时写空串而不是删除键：便于按单元格合并时如实反映“已清空” */
+    r[kind][key] = (v === null || v === undefined) ? "" : v;
     DIRTY = true;
   }
   function fixBag(tid) {
@@ -615,14 +627,19 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     f.tot = f.tot || {}; f.pre = f.pre || {};
     return f;
   }
+  /* 只读访问固化覆盖值：不存在时不要凭空创建空结构，避免写入时误判为“已改动” */
+  function fixRead(tid) {
+    var t = DB.reports[tid];
+    return (t && t.__fix) ? t.__fix : null;
+  }
   function totOf(t, row) {
-    var f = fixBag(t.tid), v = f.tot[row.k];
+    var f = fixRead(t.tid), v = f && f.tot ? f.tot[row.k] : undefined;
     if (row.unit === "%") return 100;
     if (v !== undefined && v !== null && v !== "") return Number(v);
     return (row.total === null || row.total === undefined) ? 0 : Number(row.total);
   }
   function preOf(t, row, ym) {
-    var f = fixBag(t.tid), b = f.pre[ym] || {}, v = b[row.k];
+    var f = fixRead(t.tid), b = (f && f.pre) ? (f.pre[ym] || {}) : {}, v = b[row.k];
     return (v === undefined || v === null || v === "") ? null : Number(v);
   }
   function shapeAt(t, row, ym) {
@@ -778,14 +795,22 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       var st = isLeaf ? shapeAt(t, r, CUR.ym) : null;
       var totCell = "";
       if (isLeaf) {
-        totCell = (r.unit === "%")
-          ? '<span class="fixv">100</span>'
-          : '<input class="pgi pgc" data-tot="' + i + '" value="' + nf(st.total) + '">';
+        if (r.unit === "%") {
+          totCell = '<span class="fixv fixc">100</span>';
+        } else if (FIXOPEN) {
+          totCell = '<input class="pgi pgc" data-tot="' + i + '" value="' + nf(st.total) + '">';
+        } else {
+          totCell = '<span class="fixv fixc">' + nf(st.total) + "</span>";
+        }
       }
-      var prevCell = isLeaf ? '<input class="pgi pgc" data-prev="' + i + '" value="' + nf(st.prev) + '">' : "";
+      var prevCell = "";
+      if (isLeaf) {
+        prevCell = FIXOPEN
+          ? '<input class="pgi pgc" data-prev="' + i + '" value="' + nf(st.prev) + '">'
+          : '<span class="fixv fixc">' + nf(st.prev) + "</span>";
+      }
       var monCell = isLeaf ? '<input class="pgi pgc" data-shape="' + i + '" value="' + nf(st.mon) + '">' : "";
-      var pctv = isLeaf ? pct(st.total ? st.cum / st.total : 0) : "";
-      return "<tr" + (r.lv === 1 ? ' class="rowsec"' : "") + "><td class='c sec'>" + (r.lv <= 2 ? (r.no || "") : "") + "</td><td class='" + cls + "'>" + r.nm + "</td>"
+      var pctv = isLeaf ? pct(st.total ? st.cum / st.total : 0) : "";      return "<tr" + (r.lv === 1 ? ' class="rowsec"' : "") + "><td class='c sec'>" + (r.lv <= 2 ? (r.no || "") : "") + "</td><td class='" + cls + "'>" + r.nm + "</td>"
         + '<td class="c unit">' + (r.unit || "") + "</td><td class='c'>" + totCell + "</td>"
         + '<td class="c">' + prevCell + "</td>"
         + '<td class="c">' + monCell + "</td>"
@@ -799,7 +824,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       + '<th style="width:12.7%" class="c">本月完成</th><th style="width:12.7%" class="c">本月底累计</th>'
       + '<th style="width:12.7%" class="c">完成比例</th>'
       + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
-      + '<div class="note">本月完成：本月新增工程量（百分比项目填百分点）；其余为固定值，累计自动计算。</div>';
+      + '<div class="note">总数量、上月末累计为固化数据（需修改请点右上角小锁解锁）；本月完成填本月新增工程量（百分比项目填百分点），本月底累计自动计算。</div>';
   }
 
   /* ---------- 产值 ---------- */
@@ -813,10 +838,13 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       var o = outAt(t, r, CUR.ym);
       tot.contract += (r.contract || 0); tot.mon += (o.mon || 0); tot.cum += (o.cum || 0);
       var pctv = r.contract ? (o.cum / r.contract) : null;
+      var cumCell = FIXOPEN
+        ? '<input class="pgi" data-ocumin="' + i + '" value="' + fmt(o.cum, 0) + '">'
+        : '<span class="fixv">' + fmt(o.cum, 0) + "</span>";
       return '<tr><td class="c">' + (r.no || "") + "</td><td class=\"nmc\">" + r.nm + "</td>"
         + '<td class="r" style="display:none">' + fmt(r.contract, 0) + "</td>"
         + '<td class="r"><input class="pgi" data-out="' + i + '" value="' + fmt(o.mon, 0) + '"></td>'
-        + '<td class="r"><input class="pgi" data-ocumin="' + i + '" value="' + fmt(o.cum, 0) + '"></td>'
+        + '<td class="r">' + cumCell + "</td>"
         + '<td class="r" style="display:none" data-opct="' + r.k + '">' + (pctv === null ? "" : pct(pctv)) + "</td></tr>";
     }).join("");
     body += '<tr class="total"><td class="c"></td><td class="nmc">合计</td><td class="r" style="display:none">' + fmt(tot.contract, 0) + "</td>"
@@ -854,8 +882,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         var cur = (rep(CUR.tid, CUR.ym).reg || {})[r.city] || {};
         var plan = cur.plan !== undefined ? cur.plan : r.plan;
         var done = cur.done !== undefined ? cur.done : r.done;
-        var planCell = CUR.tid === "t1"
-          ? '<td class="r fixv">' + fmt(plan, 0) + "</td>"
+        var planCell = (CUR.tid === "t1" || !FIXOPEN)
+          ? '<td class="r"><span class="fixv">' + fmt(plan, 0) + "</span></td>"
           : '<td class="r"><input class="pgi" data-reg="' + r.city + '|plan" value="' + fmt(plan, 0) + '"></td>';
         return '<tr><td>' + r.city + "</td>" + planCell
           + '<td class="r"><input class="pgi" data-reg="' + r.city + '|done" value="' + fmt(done, 0) + '"></td></tr>';
@@ -870,6 +898,9 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         function cell(k, base) {
           var v = cur[k] !== undefined ? cur[k] : base;
           var d = (/Plan$|^outDone$/.test(k) && /^out/.test(k)) ? 0 : 2;
+          if (/Plan$/.test(k) && !FIXOPEN) {
+            return '<td class="c"><span class="fixv fixc">' + fmt(v, d) + "</span></td>";
+          }
           return '<td class="c"><input class="pgi pgc" data-reg="' + r.city + '|' + k + '" value="' + fmt(v, d) + '"></td>';
         }
         return '<tr><td class="c" rowspan="1">' + r.city + "</td>"
@@ -964,6 +995,12 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     renderTabs(); renderSel(); renderShape(); renderOut(); renderPpl(); renderReg();
     placeReg();
     applyLocks(); renderStatus();
+    var fx = $("#btn-fix");
+    if (fx) {
+      fx.classList.toggle("is-open", FIXOPEN);
+      var tip = FIXOPEN ? "已解锁：基础数据可编辑，点击重新固化" : "解锁后可修改固化的基础数据";
+      fx.setAttribute("title", tip); fx.setAttribute("aria-label", tip);
+    }
     $("#pg-hint").textContent = DIRTY ? "有未保存的修改" : "";
     var s = $("#saved");
     if (s && DB.ts) {
@@ -988,9 +1025,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         var pw = prompt("该表格已锁定。请输入修改密码：");
         if (pw === null) return;
         if (pw.trim() !== "a") { alert("密码错误，无法解锁"); return; }
-        delete lockOf(CUR.tid, CUR.ym)[name];
-        DIRTY = false;
-        persist();
+        lockOf(CUR.tid, CUR.ym)[name] = 0;   /* 0＝已撤销提交，便于按字段合并时如实同步 */
+        DIRTY = false;        persist();
         pushCloud();
         flag("已解锁：" + LKNAME[name] + "，可以修改", true);
         renderAll();
@@ -1062,7 +1098,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       row9.k = "r" + Number(t.dataset.tot);
       if ((((row9.agg || "").split("|")[0]) === "桥梁工程") && v !== null) v = Math.round(v);
       var fb = fixBag(CUR.tid);
-      if (v === null) delete fb.tot[row9.k]; else fb.tot[row9.k] = v;
+      fb.tot[row9.k] = (v === null) ? "" : v;
       DIRTY = true;
       refreshShapeRow(t9, row9);
       $("#pg-hint").textContent = "有未保存的修改";
@@ -1074,7 +1110,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       if ((((row8.agg || "").split("|")[0]) === "桥梁工程") && v !== null) v = Math.round(v);
       var fb2 = fixBag(CUR.tid);
       fb2.pre[CUR.ym] = fb2.pre[CUR.ym] || {};
-      if (v === null) delete fb2.pre[CUR.ym][row8.k]; else fb2.pre[CUR.ym][row8.k] = v;
+      fb2.pre[CUR.ym][row8.k] = (v === null) ? "" : v;
       DIRTY = true;
       refreshShapeRow(t8, row8);
       $("#pg-hint").textContent = "有未保存的修改";
@@ -1116,7 +1152,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       var p = t.dataset.reg.split("|");
       var r = rep(CUR.tid, CUR.ym, true);
       r.reg[p[0]] = r.reg[p[0]] || {};
-      if (v === null) delete r.reg[p[0]][p[1]]; else r.reg[p[0]][p[1]] = v;
+      r.reg[p[0]][p[1]] = (v === null) ? "" : v;
       DIRTY = true;
       $("#pg-hint").textContent = "有未保存的修改";
       return;
@@ -1167,38 +1203,47 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   snap();
   function cloneRep(o) { try { return JSON.parse(JSON.stringify(o || {})); } catch (e) { return {}; } }
   function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
-  /* 合并：云端为底，逐标段/月/板块判断本页是否改过，只覆盖改过的段；锁按字段逐个合并 */
+  /* 只合并"本页真正改过的叶子值"，最细到单个单元格（标段→月份→板块→行/城市字段）；
+     本页没碰过的单元格一律保持云端现值。这样两人同时填不同标段/不同格子互不覆盖。 */
+  function mrg(c, l, b) {
+    var out = (c && typeof c === "object" && !Array.isArray(c)) ? cloneRep(c) : {};
+    if (!l || typeof l !== "object" || Array.isArray(l)) return out;
+    Object.keys(l).forEach(function (k) {
+      var lv = l[k], bv = b ? b[k] : undefined;
+      if (lv && typeof lv === "object" && !Array.isArray(lv)) {
+        out[k] = mrg(out[k], lv, bv);
+      } else if (!same(lv, bv)) {
+        out[k] = lv;
+      } else if (out[k] === undefined) {
+        out[k] = lv;
+      }
+    });
+    return out;
+  }
   function mergeInto(cloud) {
     var merged = cloneRep(cloud), local = DB.reports || {}, base = BASE0 || {};
     Object.keys(local).forEach(function (tid) {
-      var lt = local[tid] || {}, bt = base[tid] || {};
-      merged[tid] = merged[tid] || {};
-      Object.keys(lt).forEach(function (ym) {
-        var ly = lt[ym] || {}, by = bt[ym] || {};
-        merged[tid][ym] = merged[tid][ym] || {};
-        Object.keys(ly).forEach(function (sec) {
-          var my = merged[tid][ym];
-          if (sec === "lock") {
-            var ml = cloneRep(my.lock || {}), ll = ly.lock || {}, bl = by.lock || {};
-            Object.keys(ll).forEach(function (nm) {
-              if (!same(ll[nm], bl[nm])) ml[nm] = ll[nm];            /* 本页锁/解锁过：以本页为准 */
-              else if (ml[nm] === undefined) ml[nm] = ll[nm];
-            });
-            Object.keys(bl).forEach(function (nm) {                  /* 本页解掉的锁要删掉 */
-              if (bl[nm] !== undefined && ll[nm] === undefined) delete ml[nm];
-            });
-            my.lock = ml;
-          } else if (sec === "__fix") {
-            return;
-          } else if (!same(ly[sec], by[sec])) {
-            my[sec] = ly[sec];
-          } else if (my[sec] === undefined) {
-            my[sec] = ly[sec];
-          }
-        });
-      });
+      merged[tid] = mrg(merged[tid], local[tid], base[tid]);
     });
     return merged;
+  }
+  /* 收集本页相对打开时快照发生变化的叶子路径，保存后逐条回读核对 */
+  function leafPaths(o, p, acc) {
+    if (!o || typeof o !== "object" || Array.isArray(o)) { acc.push({ p: p, v: o }); return acc; }
+    Object.keys(o).forEach(function (k) { leafPaths(o[k], p.concat([k]), acc); });
+    return acc;
+  }
+  function getAt(o, p) {
+    var x = o;
+    for (var i = 0; i < p.length; i++) { if (!x || typeof x !== "object") return undefined; x = x[p[i]]; }
+    return x;
+  }
+  function changedPaths() {
+    var now = {}, base = {};
+    leafPaths(DB.reports || {}, [], []).forEach(function (x) { now[JSON.stringify(x.p)] = x.v; });
+    leafPaths(BASE0 || {}, [], []).forEach(function (x) { base[JSON.stringify(x.p)] = x.v; });
+    var keys = Object.keys(now);
+    return keys.filter(function (k) { return !same(now[k], base[k]); }).map(function (k) { return JSON.parse(k); });
   }
   function doPush(retry) {
     if (!SYNC_OK) return Promise.resolve();
@@ -1220,28 +1265,18 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
             return r2.json();
           })
           .then(function () {
-            /* 回读核对：本页改过的段/锁必须已落库 */
-            var bad = [], local = DB.reports || {};
-            Object.keys(local).forEach(function (tid) {
-              Object.keys(local[tid] || {}).forEach(function (ym) {
-                var ly = local[tid][ym] || {}, by = (baseBefore[tid] || {})[ym] || {};
-                var my = (merged[tid] || {})[ym] || {};
-                Object.keys(ly).forEach(function (sec) {
-                  if (sec === "__fix") return;
-                  if (sec === "lock") {
-                    var ll = ly.lock || {}, bl = by.lock || {}, ml = my.lock || {};
-                    Object.keys(ll).forEach(function (nm) {
-                      if (!same(ll[nm], bl[nm]) && !same(ll[nm], ml[nm])) bad.push(tid + "/" + ym + "/锁" + nm);
-                    });
-                    return;
-                  }
-                  if (!same(ly[sec], by[sec]) && !same(ly[sec], my[sec])) bad.push(tid + "/" + ym + "/" + sec);
-                });
+            /* 回读核对：本页改过的每一个单元格都必须原样落库 */
+            var paths = changedPaths();
+            return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+              .then(function (r3) { return r3.json(); })
+              .then(function (jj) {
+                var f2 = (jj.files || {})[CLOUD.file] || {}, back = {};
+                try { back = JSON.parse(f2.content).data.reports || {}; } catch (e4) { back = {}; }
+                var bad = paths.filter(function (p) { return !same(getAt(back, p), getAt(DB.reports || {}, p)); });
+                BASE0 = cloneRep(DB.reports);
+                if (bad.length) flag("云端核对有差异：" + bad.slice(0, 2).map(function (p) { return p.join("/"); }).join("、"), false);
+                else flag("已保存并同步云端 · " + new Date(ts).toLocaleTimeString(), true);
               });
-            });
-            BASE0 = cloneRep(DB.reports);
-            if (bad.length) flag("云端核对有差异：" + bad.slice(0, 3).join("、"), false);
-            else flag("已保存并同步云端 · " + new Date(ts).toLocaleTimeString(), true);
           });
       })
       .catch(function (e) { flag("云端未同步（" + (e && e.message ? e.message : e) + "）", false); });
@@ -1296,6 +1331,17 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     a.click();
   });
   window.addEventListener("beforeunload", function (e) { if (!DIRTY) return; e.preventDefault(); e.returnValue = "有未保存的修改，是否离开？"; });
+  /* 顶部小锁：解锁固化的基础数据（总数量、上月末累计、累计完成、总投资计划、交安计划） */
+  if ($("#btn-fix")) {
+    $("#btn-fix").addEventListener("click", function () {
+      if (FIXOPEN) { FIXOPEN = false; renderAll(); flag("已重新固化基础数据", true); return; }
+      var pw = prompt("解锁固化的基础数据，请输入密码：");
+      if (pw === null) return;
+      if (String(pw).trim() !== "aaa") { alert("密码错误，无法解锁"); return; }
+      FIXOPEN = true; renderAll();
+      flag("已解锁：总数量、上月末累计、累计完成、总投资计划可编辑", true);
+    });
+  }
 
   renderAll();
   /* 本机 file:// 打开不再自动拉取线上数据；只有线上访问才同步 */
