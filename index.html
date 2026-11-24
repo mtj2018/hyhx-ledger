@@ -416,15 +416,17 @@ td.c input.pgi,input.pgc{text-align:center}
 .card-head .hint.pg-flag{margin-left:14px;margin-right:auto;display:inline-flex;align-items:center;gap:6px;background:#FDECEA;border:1px solid #F2C3BC;border-left:3px solid #C0392B;border-radius:4px;padding:5px 11px;font-size:12.5px;line-height:1;color:#9E2B21;letter-spacing:.3px;white-space:nowrap;box-shadow:0 1px 2px rgba(192,57,43,.08)}
 .pg-flag b{color:#B3261E;font-weight:800}
 .pg-flag i{font-style:normal;color:#D58B82}
-.pg-lk{margin-left:10px;padding:4px 14px;border:1px solid #1E3A6E;border-radius:5px;background:#1E3A6E;color:#fff;font-size:12px;line-height:1.5;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
-.pg-lk:hover{background:#28508F}
+.pg-lk{margin-left:12px;padding:7px 22px;border:1px solid #16407F;border-radius:6px;background:#16407F;color:#fff;font-size:13px;font-weight:700;letter-spacing:.6px;line-height:1.45;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto;box-shadow:0 2px 7px rgba(22,64,127,.32);transition:background .15s,box-shadow .15s,transform .12s}
+.pg-lk:hover{background:#1F5AA8;box-shadow:0 3px 10px rgba(22,64,127,.4)}
+.pg-lk:active{transform:translateY(1px)}
 .pg-lk.is-on{width:30px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#1E3A6E;border-color:#C9D2E0}
 .pg-lk.is-on:hover{background:#F3F6FB;border-color:#9FB2CC}
 .pg-lk svg{width:13px;height:13px;display:block}
 .pg-money{margin-left:auto;font-size:12px;color:#5F7086;letter-spacing:.4px;white-space:nowrap}
 .card.is-locked input.pgi{background:#F1F3F7;color:#5B6675;cursor:not-allowed}
 .tbl th.c{text-align:center}
-th.nmc,td.nmc{white-space:nowrap;font-size:12px}
+th.nmc{white-space:nowrap}
+td.nmc{white-space:nowrap;font-size:12px}
 .pg-tbl td.sec{font-weight:700;color:var(--navy);background:#F7FAFF}
 .pg-tbl td.ind1{padding-left:16px}
 .pg-tbl td.ind2{padding-left:30px;color:var(--muted)}
@@ -451,6 +453,23 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-ctr .pgi{text-align:center!important}
 .pg-ctr .fixv{text-align:center!important}
 .pg-ctr td.sec,.pg-ctr td.nmcell,.pg-ctr td.ind1,.pg-ctr td.ind2,.pg-ctr td.ind3{text-align:left!important}
+#card-out .pg-ctr td.nmc,#card-out .pg-ctr th.nmc{text-align:left!important}
+#card-reg .pg-ctr th,#card-reg .pg-ctr td{padding-left:6px;padding-right:6px}
+#card-reg .pg-ctr th.sep,#card-reg .pg-ctr td.sep{border-left:1px solid #D3DCE9}
+#card-reg .pg-ctr td .pgi{max-width:76px;margin:0 auto;padding:2px 5px}
+#card-reg .pg-ctr td .fixv{text-align:center}
+#card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
+#card-ppl .pgi{max-width:112px;margin:0 auto}
+/* 地市州月报：紧凑表格与描述块 */
+.jr-mini th{font-size:12px;padding:5px 6px}
+.jr-mini td{font-size:12.5px;padding:4px 6px}
+.jr-sub-t{font-size:12px;color:#6B7684;padding:12px 14px 2px}
+.jr-blk{padding:8px 0 2px;border-top:1px dashed #E4EAF3}
+.jr-blk:first-child{border-top:0}
+.jr-blk-t{font-size:13px;font-weight:600;color:#1E3A6E;padding:2px 2px 5px;letter-spacing:.02em}
+.jr-blk .pg-tbl td{padding:4px 6px}
+.jr-lb{width:150px;color:#5B6779;font-size:12.5px}
+.jr-who{font-size:12px;color:#5B6779;background:#F6F8FB;border:1px solid #E4EAF3;border-radius:5px;padding:7px 10px;margin:0 0 8px}
 /* 固化数据锁：导出数据左侧的小锁按钮 */
 .top-lock{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin-right:8px;
   border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#fff;
@@ -652,7 +671,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
     <!-- ===== 视图：投资与进度 ===== -->
     <section class="view" id="view-investment">
-      <div style="padding:4px 0 14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
+      <div class="card" style="padding:14px 18px;margin-bottom:14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
 
       <div class="inv-top" style="display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:stretch">
       <div class="card" style="min-width:0">
@@ -972,7 +991,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
     <!-- ===== 视图：概算执行情况 ===== -->
     <section class="view" id="view-exec">
-      <div style="padding:4px 0 14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
+      <div class="card" style="padding:14px 18px;margin-bottom:14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
 
       <div style="display:flex;align-items:flex-start;gap:14px">
       <div class="card" id="exec-card" style="flex:1 1 auto;min-width:0;max-width:1042px;padding:0;overflow:hidden">
@@ -4030,8 +4049,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           : '<td class="r"><input class="pgi" data-k="oct' + r.ci + '" data-int="1" value="' + fmt(r.contract, 0)
             + '" style="width:100%;max-width:118px;margin-left:auto;text-align:right" aria-label="合同额（万元）"></td>';
         return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + outLabel(r.name) + "</td>"
-          + ctCell + '<td class="r">' + fmt(r.mon, 2) + "</td>"
-          + '<td class="r">' + fmt(r.cum, 2) + "</td>"
+          + ctCell + '<td class="r">' + fmt(r.mon, 0) + "</td>"
+          + '<td class="r">' + fmt(r.cum, 0) + "</td>"
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
       }).join("");
       q("#pg-out").innerHTML = head("产值完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计")
@@ -4103,7 +4122,23 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         + "<div>" + h1 + "</div><div>" + h2 + "</div></div>";
     }
 
-    function render() { renderShape(); renderOut(); renderPpl(); }
+    function render() { renderShape(); renderOut(); renderPpl(); applyModLock(); }
+    /* 页面小锁联动：未解锁时本模块所有录入框只读 */
+    function applyModLock() {
+      var locked = false;
+      try { locked = (typeof LOCKED !== "undefined") ? !!LOCKED : true; } catch (e) { locked = true; }
+      Array.prototype.forEach.call(document.querySelectorAll('#pg-out input[data-k^="oc"]'), function (t) {
+        t.readOnly = locked;
+        t.setAttribute("aria-readonly", locked ? "true" : "false");
+        t.style.background = locked ? "#FFFFFF" : "#FFFDF1";
+        t.style.border = locked ? "1px solid #E3E8EF" : "1px solid #F1E6C3";
+        t.style.cursor = locked ? "default" : "text";
+      });
+    }
+    try {
+      var __setLocked = setLocked;
+      setLocked = function (v) { __setLocked(v); try { render(); } catch (e) {} };
+    } catch (e2) {}
 
     /* ---- 数据填报情况 ---- */
     var STM = YM;
