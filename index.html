@@ -449,6 +449,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-tbl .fixv.fixc{text-align:center}
 .pg-ctr td,.pg-ctr th{text-align:center!important}
 .pg-ctr .pgi{text-align:center!important}
+.pg-ctr .fixv{text-align:center!important}
+.pg-ctr td.sec,.pg-ctr td.nmcell,.pg-ctr td.ind1,.pg-ctr td.ind2,.pg-ctr td.ind3{text-align:left!important}
 /* 固化数据锁：导出数据左侧的小锁按钮 */
 .top-lock{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin-right:8px;
   border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#fff;
@@ -462,7 +464,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-st-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
 .pg-st-ok .pg-st-dot{background:#2E9159}
 .pg-st-no .pg-st-dot{background:#C14343}
-.pg-split{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(0,556px);gap:14px;align-items:start}
+.pg-split{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(0,512px);gap:14px;align-items:start}
 .pg-right{display:flex;flex-direction:column;gap:14px;min-width:0}
 .pg-right .pg-tbl th:nth-child(2),.pg-right .pg-tbl td:nth-child(2){min-width:118px}
 .pg-right .pg-tbl{font-size:12.5px}
@@ -650,7 +652,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
     <!-- ===== 视图：投资与进度 ===== -->
     <section class="view" id="view-investment">
-      <div class="card" style="padding:9px 14px;margin-bottom:14px"><div class="pg-tabs" data-execbar><button type="button" class="pg-tab" data-exec="overview">总览</button><button type="button" class="pg-tab" data-exec="detail">明细</button></div></div>
+      <div style="padding:4px 0 14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
 
       <div class="inv-top" style="display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:stretch">
       <div class="card" style="min-width:0">
@@ -970,7 +972,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
     <!-- ===== 视图：概算执行情况 ===== -->
     <section class="view" id="view-exec">
-      <div class="card" style="padding:9px 14px;margin-bottom:14px"><div class="pg-tabs" data-execbar><button type="button" class="pg-tab" data-exec="overview">总览</button><button type="button" class="pg-tab" data-exec="detail">明细</button></div></div>
+      <div style="padding:4px 0 14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
 
       <div style="display:flex;align-items:flex-start;gap:14px">
       <div class="card" id="exec-card" style="flex:1 1 auto;min-width:0;max-width:1042px;padding:0;overflow:hidden">
@@ -4019,13 +4021,15 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (xb) xb.addEventListener("click", exportShapeXlsx);
     }
 
+    /* 展示用名称：集采材料到工地价 → 集采材料（合计口径仍按原行名归集） */
+    function outLabel(n) { return n === "集采材料到工地价" ? "集采材料" : n; }
     function renderOut() {
       var rows = aggOut(YM).map(function (r) {
         var ctCell = (r.name === "合计")
           ? '<td class="r">' + fmt(r.contract, 0) + "</td>"
           : '<td class="r"><input class="pgi" data-k="oct' + r.ci + '" data-int="1" value="' + fmt(r.contract, 0)
             + '" style="width:100%;max-width:118px;margin-left:auto;text-align:right" aria-label="合同额（万元）"></td>';
-        return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + r.name + "</td>"
+        return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + outLabel(r.name) + "</td>"
           + ctCell + '<td class="r">' + fmt(r.mon, 2) + "</td>"
           + '<td class="r">' + fmt(r.cum, 2) + "</td>"
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
@@ -4439,7 +4443,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   function paint(which) {
     Array.prototype.forEach.call(bars, function (b) {
       Array.prototype.forEach.call(b.querySelectorAll("[data-exec]"), function (x) {
-        x.classList.toggle("is-on", x.getAttribute("data-exec") === which);
+        x.classList.toggle("on", x.getAttribute("data-exec") === which);
       });
     });
   }
@@ -4465,6 +4469,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     var ex = document.getElementById("view-exec");
     paint(ex && ex.classList.contains("is-on") ? "detail" : "overview");
   }, 0);
+  /* 明细页里原有的年份标签也是 .pg-tab 风格，这里不动；总览/明细用 .fa-tab 与固投页签保持一致 */
 })();
 </script>
 
