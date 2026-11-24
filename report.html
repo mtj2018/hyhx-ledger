@@ -402,7 +402,8 @@ main{min-width:0}
 .pg-hint{font-size:12px;color:var(--muted);margin-left:auto}
 .pg-cols{display:grid;grid-template-columns:minmax(0,1.98fr) minmax(0,1.02fr);gap:14px;align-items:start}
 .pg-right{display:flex;flex-direction:column;gap:14px}
-@media (max-width:1180px){.pg-cols{grid-template-columns:1fr}}
+.pg-cols2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1180px){.pg-cols{grid-template-columns:1fr}.pg-cols2{grid-template-columns:1fr}}
 .pg-tbl{width:100%;table-layout:auto}
 .pg-tbl th{white-space:nowrap;font-size:12.5px;padding:6px 6px}
 .pg-tbl td{padding:5px 6px;font-size:13px}
@@ -523,8 +524,8 @@ td.nmc{white-space:nowrap;font-size:12px}
   <aside class="rail">
     <nav>
       <a class="nav-item is-on" href="#report" data-view="report"><span>工程月报</span></a>
-      <a class="nav-item" href="#status" data-view="status"><span>数据填报情况</span></a>
       <a class="nav-item" href="#jr" data-view="jr"><span>地市州月报</span></a>
+      <a class="nav-item" href="#status" data-view="status"><span>数据填报情况</span></a>
     </nav>
   </aside>
 
@@ -556,15 +557,17 @@ td.nmc{white-space:nowrap;font-size:12px}
         <div class="card-head"><h2>数据填报情况</h2><span class="hint">在填报页点击“提交”的表格视为已填报</span></div>
         <div class="pg-bar">
           <select class="pg-sel" id="st-month"></select>
-          <span class="pg-hint" id="st-src">按月统计各标段提交状态</span>
+          <span class="pg-hint" id="st-src"></span>
         </div>
       </div>
-      <div class="card" id="pg-st"></div>
-      <div class="card" id="jr-st"></div>
+      <div class="pg-cols2">
+        <div class="card" id="pg-st"></div>
+        <div class="card" id="jr-st"></div>
+      </div>
     </section>
     <section class="view" id="view-jr">
       <div class="card">
-        <div class="card-head"><h2>地市州月报</h2><span class="hint pg-flag" id="jr-hint"><b>每月25日更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">货币单位：万元</span></div>
+        <div class="card-head"><h2>地市州月报</h2><span class="hint pg-flag" id="jr-hint"><b>每月28日更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">货币单位：万元</span></div>
         <div class="pg-bar">
           <div class="pg-tabs" id="jr-tabs"></div>
           <select class="pg-sel" id="jr-year"></select>
@@ -1033,9 +1036,7 @@ td.nmc{white-space:nowrap;font-size:12px}
         ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已填报</span>'
         : '<span class="pg-st-no"><span class="pg-st-dot"></span>未填报</span>';
       return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td>"
-        + '<td class="c">' + (t.type === "civil" ? "土建" : (t.type === "me" ? "机电" : "交安")) + "</td>"
-        + cells + '<td class="c">' + status + "</td>"
-        + '<td class="c" style="color:#6B7684;font-size:12px">已提交 ' + done + " / " + kinds.length + "</td></tr>";
+        + cells + '<td class="c">' + status + "</td></tr>";
     }).join("");
     var sum = BASE.tenders.filter(function (t) {
       var lk = (rep(t.tid, STM, "shape").lock) || {};
@@ -1043,37 +1044,49 @@ td.nmc{white-space:nowrap;font-size:12px}
       if (BASE.regions && BASE.regions[t.tid]) kinds.push("reg");
       return kinds.every(function (k) { return !!lk[k]; });
     }).length;
-    var ths = ['<th style="width:52px" class="c">序号</th>', '<th style="width:104px">标段</th>',
-               '<th style="width:80px" class="c">类型</th>',
-               '<th style="width:96px" class="c">形象进度</th>', '<th style="width:96px" class="c">产值</th>',
-               '<th style="width:96px" class="c">人员</th>', '<th style="width:104px" class="c">分地市州</th>',
-               '<th style="width:104px" class="c">状态</th>', '<th style="width:120px" class="c">已提交表格</th>'].join("");
+    var ths = ['<th style="width:46px" class="c">序号</th>', '<th class="nmc">标段</th>',
+               '<th style="width:92px" class="c">形象进度</th>', '<th style="width:82px" class="c">产值</th>',
+               '<th style="width:82px" class="c">人员</th>', '<th style="width:96px" class="c">分地市州</th>',
+               '<th style="width:104px" class="c">状态</th>'].join("");
     host.innerHTML = '<div class="card-head"><h2>各标段工程月报填报情况</h2><span class="hint">'
       + STM.replace("-", " 年 ") + " 月　已填报 " + sum + " / " + BASE.tenders.length + " 个标段</span></div>"
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-      + ths + "</thead><tbody>" + rows + "</tbody></table></div>"
-      + '<div class="note">已填报 = 该标段当月形象进度、产值、人员（及分地市州）表格均已点击“提交”并锁定。</div>';
+      + ths + "</thead><tbody>" + rows + "</tbody></table></div>";
     renderStatusJr();
   }
   function renderStatusJr() {
     var host = $("#jr-st");
     if (!host) return;
     var valid = STM >= "2026-11";
+    function mark(on) {
+      return on ? '<span style="color:#2E9159;font-weight:600">✓</span>' : '<span style="color:#C7CDD8">—</span>';
+    }
     var rows = JRCITY.map(function (c, i) {
-      var lk = jrAllLocked(c, STM), mm = jrMoney(c, STM);
+      var leadOk = (c === "仙桃")
+        ? (jrLocked(c, STM, "lead") && jrLocked(c, STM, "lead2"))
+        : jrLocked(c, STM, "lead");
+      var meOk = jrLocked(c, STM, "me"), fjOk = jrLocked(c, STM, "fj");
+      var all = leadOk && meOk && fjOk;
       return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + DSP(c) + "</td>"
-        + '<td class="r">' + fmt(mm.cum, 0) + "</td>"
-        + '<td class="c">' + (lk ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
+        + '<td class="c">' + mark(leadOk) + "</td>"
+        + '<td class="c">' + mark(meOk) + "</td>"
+        + '<td class="c">' + mark(fjOk) + "</td>"
+        + '<td class="c">' + (all ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
           : '<span class="pg-st-no"><span class="pg-st-dot"></span>未提交</span>') + "</td></tr>";
     }).join("");
-    var done = JRCITY.filter(function (c) { return jrAllLocked(c, STM); }).length;
+    var done = JRCITY.filter(function (c) {
+      var leadOk = (c === "仙桃")
+        ? (jrLocked(c, STM, "lead") && jrLocked(c, STM, "lead2"))
+        : jrLocked(c, STM, "lead");
+      return leadOk && jrLocked(c, STM, "me") && jrLocked(c, STM, "fj");
+    }).length;
     host.innerHTML = '<div class="card-head"><h2>地市州月报填报情况</h2><span class="hint">' + STM.replace("-", " 年 ") + " 月　"
       + (valid ? "已提交 " + done + " / " + JRCITY.length + " 个地市州" : "该月早于 2026 年 11 月，无需填报") + "</span></div>"
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
-      + '<th style="width:52px" class="c">序号</th><th style="width:120px" class="nmc">地市州</th>'
-      + '<th class="r">建安费产值（累计·万元）</th><th style="width:120px" class="c">填报状态</th>'
-      + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
-      + '<div class="note">地市州月报：建安费产值由各标段工程月报自动取数，形象进度比例、主要形象进度描述、亟需解决的问题由各驻地办填报并提交。</div>';
+      + '<th style="width:44px" class="c">序号</th><th style="width:88px" class="nmc">地市州</th>'
+      + '<th class="c">土建驻地办</th><th class="c">机电驻点办</th><th class="c">房建驻地办</th>'
+      + '<th style="width:104px" class="c">填报状态</th>'
+      + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
   }
   if ($("#st-month")) {
     $("#st-month").addEventListener("change", function () { STM = this.value; renderStatus(); });
