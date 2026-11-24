@@ -450,6 +450,16 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
 .pg-ctr .pgi{text-align:center!important}
 .pg-ctr .fixv{text-align:center!important}
 .pg-ctr td.sec,.pg-ctr td.nmcell,.pg-ctr td.ind1,.pg-ctr td.ind2,.pg-ctr td.ind3{text-align:left!important}
+/* 地市州月报：紧凑表格与描述块 */
+.jr-mini th{font-size:12px;padding:5px 6px}
+.jr-mini td{font-size:12.5px;padding:4px 6px}
+.jr-sub-t{font-size:12px;color:#6B7684;padding:12px 14px 2px}
+.jr-blk{padding:8px 0 2px;border-top:1px dashed #E4EAF3}
+.jr-blk:first-child{border-top:0}
+.jr-blk-t{font-size:13px;font-weight:600;color:#1E3A6E;padding:2px 2px 5px;letter-spacing:.02em}
+.jr-blk .pg-tbl td{padding:4px 6px}
+.jr-lb{width:150px;color:#5B6779;font-size:12.5px}
+.jr-who{font-size:12px;color:#5B6779;background:#F6F8FB;border:1px solid #E4EAF3;border-radius:5px;padding:7px 10px;margin:0 0 8px}
 /* 固化数据锁：导出数据左侧的小锁按钮 */
 .top-lock{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin-right:8px;
   border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#fff;
@@ -483,7 +493,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     <nav>
       <a class="nav-item is-on" href="#report" data-view="report"><span>工程月报</span></a>
       <a class="nav-item" href="#status" data-view="status"><span>数据填报情况</span></a>
-      <a class="nav-item" href="#jr" data-view="jr"><span>地市州监理月报</span></a>
+      <a class="nav-item" href="#jr" data-view="jr"><span>地市州月报</span></a>
     </nav>
   </aside>
 
@@ -523,7 +533,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     </section>
     <section class="view" id="view-jr">
       <div class="card">
-        <div class="card-head"><h2>地市州监理月报</h2><span class="hint pg-flag" id="jr-hint"><b>建安费产值自动取数</b><i>·</i>可填报项填写后点击各驻地办「提交」</span><span class="pg-money">货币单位：万元</span></div>
+        <div class="card-head"><h2>地市州月报</h2><span class="hint pg-flag" id="jr-hint"><b>每月25日更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">货币单位：万元</span></div>
         <div class="pg-bar">
           <div class="pg-tabs" id="jr-tabs"></div>
           <select class="pg-sel" id="jr-year"></select>
@@ -532,11 +542,11 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
         </div>
       </div>
       <div class="pg-cols">
-        <div class="pg-right" style="flex:0 0 420px">
-          <div class="card" id="jr-money"></div>
-        </div>
-        <div style="flex:1 1 auto;min-width:0">
+        <div style="min-width:0">
           <div class="card" id="jr-desc"></div>
+        </div>
+        <div class="pg-right">
+          <div class="card" id="jr-money"></div>
           <div class="card" id="jr-issue"></div>
         </div>
       </div>
@@ -1004,36 +1014,44 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     if (!host) return;
     var valid = STM >= "2026-11";
     var rows = JRCITY.map(function (c, i) {
-      var lk = jrRec(c, STM, false).lock || {};
-      var cells = ["civil", "me", "fj"].map(function (w) {
-        return '<td class="c">' + (lk[w] ? '<span style="color:#2E9159;font-weight:600">✓</span>'
-          : '<span style="color:#C7CDD8">—</span>') + "</td>";
-      }).join("");
-      var n = ["civil", "me", "fj"].filter(function (w) { return lk[w]; }).length;
-      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + c + "</td>" + cells
-        + '<td class="c">' + (n === 3 ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已完成</span>'
-          : '<span class="pg-st-no"><span class="pg-st-dot"></span>未完成</span>') + "</td>"
-        + '<td class="c" style="color:#6B7684;font-size:12px">已提交 ' + n + " / 3</td></tr>";
+      var lk = jrLocked(c, STM), mm = jrMoney(c, STM);
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + c + "</td>"
+        + '<td class="r">' + fmt(mm.cum, 0) + "</td>"
+        + '<td class="c">' + (lk ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
+          : '<span class="pg-st-no"><span class="pg-st-dot"></span>未提交</span>') + "</td></tr>";
     }).join("");
-    var done = JRCITY.filter(function (c) { var lk = jrRec(c, STM, false).lock || {}; return lk.civil && lk.me && lk.fj; }).length;
-    host.innerHTML = '<div class="card-head"><h2>地市州监理月报填报情况</h2><span class="hint">' + STM.replace("-", " 年 ") + " 月　"
-      + (valid ? "三个驻地办全部提交 " + done + " / " + JRCITY.length + " 个地市州" : "该月早于 2026 年 11 月，无需填报") + "</span></div>"
+    var done = JRCITY.filter(function (c) { return jrLocked(c, STM); }).length;
+    host.innerHTML = '<div class="card-head"><h2>地市州月报填报情况</h2><span class="hint">' + STM.replace("-", " 年 ") + " 月　"
+      + (valid ? "已提交 " + done + " / " + JRCITY.length + " 个地市州" : "该月早于 2026 年 11 月，无需填报") + "</span></div>"
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
       + '<th style="width:52px" class="c">序号</th><th style="width:120px" class="nmc">地市州</th>'
-      + '<th class="c">土建驻地办</th><th class="c">机电驻地办</th><th class="c">房建驻地办</th>'
-      + '<th style="width:104px" class="c">状态</th><th style="width:120px" class="c">已提交驻地办</th>'
+      + '<th class="r">建安费产值（累计·万元）</th><th style="width:120px" class="c">填报状态</th>'
       + "</tr></thead><tbody>" + rows + "</tbody></table></div>"
-      + '<div class="note">地市州监理月报：建安费产值由各标段工程月报自动取数，产值完成比例、主要形象进度描述、亟需解决的问题由各驻地办填报并提交。</div>';
+      + '<div class="note">地市州月报：建安费产值由各标段工程月报自动取数，形象进度比例、主要形象进度描述、亟需解决的问题由各驻地办填报并提交。</div>';
   }
   if ($("#st-month")) {
     $("#st-month").addEventListener("change", function () { STM = this.value; renderStatus(); });
   }
 
-  /* ================= 地市州监理月报 ================= */
+  /* ================= 地市州月报 ================= */
   var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   var JRCITY = JRCFG.cities || [];
   var JR = { city: JRCITY[0] || "", ym: "" };
   var JRSTART = "2026-11";
+  var JRSEED = {"武汉":{"pct":{"lu":40.0,"ql":40.0,"lm":17.0,"ja":24.0,"me":18.0,"fj":0.0},"done":{"lu":"武汉西至侏儒互通段左幅土建一期已完成施工，侏儒至北河段左幅桥梁基础及下构已完成90%，蔡甸段左幅路面工程完成65%","ja":"武汉西至侏儒段左幅标志完成46%，钢护栏立柱完成84%，隔离栅完成65%，标线完成3%，声屏障未启动","me":"项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工"},"plan":{"lu":"武汉西至侏儒互通段左幅预计2026年年底建成，侏儒互通至北河互通段左幅预计2027年6月底建成；届时将全面开展右幅施工","ja":"武汉西至侏儒互通段左幅预计2026年年底建成","me":"导改前，完成具备通电通网点位的设备安装","fj":"场地移交后10个月内完成九真山服务区南区房建施工"},"issue":"1.蔡甸段右幅红线用地交付及征拆工作亟需推进。目前，右幅红线范围内部分房屋、水塘及地面附着物尚未完成补偿，部分土地尚未移交，三改用地征拆补偿滞后，已影响汉宜主线右幅施工。\n2.交安声屏障工程正式施工图尚未下发，特别是路基段声屏障基础施工周期相对较长。"},"汉川":{"pct":{"lu":30.0,"ql":65.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"新建北河互通路基土石方填筑完成70%，4处匝道桥基础及下构工程已完成","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"新建北河互通计划启动架梁工作，预计2027年4月南侧建成","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.北河收费站出口收费站连接线口七座房屋未拆除，影响匝道施工、便道通行；\n2.因前期坟墓迁移、附着物漏登等补偿费用，未确定补偿方式，汉川协指要求尽快解决该费用，再启动协调工作；同步导致S244涉路施工许可一直未审批。"},"仙桃":{"pct":{"lu":25.0,"ql":35.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"跨G318（规划）特大桥总体完成55%，其中桩基完成64%，盖梁完成65%，墩柱完成67%，梁板架设完成21%","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"计划本年度完成跨G318（规划）特大桥左幅所有梁板架设","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.10kv低压线路未拆除，影响圆管涵施工；\n2.河道管理单位责令停工，要求拆除清理河道内渣土、便道毛渣及宣传牌等设施，目前已挖断便道，造成停工。"},"仙桃2":{"civil2Done":"仙桃城区特大桥左幅整体完成78%；除受制约因素影响部位外，该桥桩基、墩柱及普通盖梁已全部完工，UHPC盖梁完成84%，梁板架设完成60%，桥面铺装完成16%","civil2Plan":"仙桃城区高架桥左幅桩基、墩柱、梁板架设2026年12月10完成；夏市村管桩桥梁板架设2026年11月30日完成桥面铺装2026年12月30日完成；建堤村管桩桥2026年11月30日梁板架设完成；基层、面层试验段2026年11月20日完成"},"潜江":{"pct":{"lu":44.0,"ql":44.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"东荆河特大桥总体完成70%；桩基、墩柱、钢混组合梁架设已全部完成，盖梁完成90%，梁板架设完成71%，现浇连续梁完成11%","ja":"已完成项目驻地建设，总体施工组织设计批复中，护栏、标志、隔离栅、防眩网、商品混凝土原材料供应商准入已审批，标线、钢筋供应商准入在录入","me":"未启动","fj":""},"plan":{"lu":"2026年11月20日启动东荆河特大桥桥面系，2026年11月25日前完成东荆河特大桥所有盖梁，2026年11月30日前完成东荆河特大桥架设5跨","ja":"进一步完善供应商准入，各分项工程的专项施工方案、首件工程施工方案编制及审批","me":"待土建提供段面后施工","fj":""},"issue":"1.加快推进潜江东互通铁路专线迁改工作，尽早为潜江东互通及主线县河中桥提供施工作业面。尽快提供潜江高架桥变更图纸正式版，以便及时对现场施工组织及交通组织作出相应调整；\n2.ZK1047+203小桥受洪荆输油管道施工时间未确定影响，K1047+200小桥8根桩基无法施工。张丫线天桥红线征地手续尚未完善，未启动施工，影响新干渠中桥及E匝道施工。"},"荆州":{"pct":{"lu":42.0,"ql":40.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"引江济汉特大桥左幅总体完成75%；索塔已封顶，桩基、盖梁、墩柱、箱梁架设全部完成，目前正在现浇梁、桥面系施工","ja":"已完成项目驻地建设，施工组织设计批复，标牌、混凝土、隔离栅原材料准入","me":"已完成本标段3处收费站出口所有车道的“手机+”与项目部驻地建设","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成"},"plan":{"lu":"引江济汉特大桥正在开展现浇梁浇筑及桥面铺装，预计2027年9月份合龙","ja":"护栏、声屏障、标线等原材料准入，预计2026年12月","me":"跟随土建施工计划完成ZK1102+031-ZK1102+693处横穿管预埋","fj":"预计2027年3月进行小北门管理所改造工程"},"issue":"1.湖北省天然气、津江燃气管道迁改未按期落地，影响小北门互通ZK1096+400-ZK1099+260范围内：主线中桥2座(110m)、主线路基约1.0km施工，严重制约第一阶段导改；\n2.现阶段荆沙铁路中桥，桥梁全长98m，因10kv电缆和通信电缆未迁改，代建单位不能及时进场施工，严重制约第一阶段导改；\n3.220KV（江枝线）荆州段影响沮漳河特大桥8-11#下构及架梁。"},"宜昌":{"pct":{"lu":47.0,"ql":46.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"七星台互通桥梁下部结构除5#中墩外均已完成；玛瑙河大桥右幅下部结构完成92%","ja":"驻地建设已基本完成，部分问题仍在整改中。《施工组织设计》已编制完成，尚未上报审批。主要材料供应商正在建管平台审批","me":"已完成本标段4处收费站出口所有车道的“手机+”与项目部驻地建设","fj":""},"plan":{"lu":"2026年11月20日前完成基层（含底基层）首件施工；2026年11月30日前完成路面面层首件施工。 2026年11月25日前完成右幅梁板架设及铺装。2026年11月30日前完成7座天桥下构施工","ja":"《施工组织设计》正在修改，计划11月底完成报批","me":"跟随土建施工计划完成K1143+300-K1143+700处横穿管预埋","fj":""},"issue":"1.HYTJ-10标范围内6处35kV-220kV国网线路，枝江段69处10kV及以下线路未完成电力迁改；\n2.七星台镇、仙女镇董院2处保通侧卡点未交地；保通侧4处房屋拆迁未解决；高家店互通E匝道三处房屋距离现场过近，阻挠现场施工。"}};
+  var JRPCT = [{ k: "lu", n: "路基工程" }, { k: "ql", n: "桥梁工程" }, { k: "lm", n: "路面工程" },
+               { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
+  var JRKIND = [{ k: "lu", n: "土建工程" }, { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
+  var JRLEAD = { 武汉: "一驻地办", 汉川: "一驻地办", 仙桃: "一、二驻地办", 潜江: "三驻地办", 荆州: "四驻地办", 宜昌: "四驻地办" };
+  var JRLEADTXT = {
+    武汉: "一驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    汉川: "一驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    仙桃: "一、二驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    潜江: "三驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    荆州: "四驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    宜昌: "四驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。"
+  };
+  var JRSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
   function jrCityName(c) { return (JRCFG.cityMap || {})[c] || c; }
   function jrRec(city, ym, mk) {
     var c = DB.jr[city] || (DB.jr[city] = {});
@@ -1043,9 +1061,34 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     if (mk) r.lock = r.lock || {};
     return r;
   }
-  function jrLocked(city, ym, who) {
-    var r = jrRec(city, ym, false);
-    return !!(r.lock && r.lock[who]);
+  function jrLocked(city, ym) { var r = jrRec(city, ym, false); return !!(r.lock && r.lock.all); }
+  function jrGet(city, ym, path) {
+    var r = (DB.jr[city] || {})[ym], v = r, segs = path.split(".");
+    if (!r) return undefined;
+    for (var i = 0; i < segs.length; i++) { v = v ? v[segs[i]] : undefined; }
+    return (v === undefined || v === null || String(v) === "") ? undefined : v;
+  }
+  function jrSet(city, ym, path, val) {
+    var r = jrRec(city, ym, true), segs = path.split("."), o = r;
+    for (var i = 0; i < segs.length - 1; i++) { o = o[segs[i]] || (o[segs[i]] = {}); }
+    o[segs[segs.length - 1]] = val;
+    DIRTY = true;
+  }
+  /* 未填报时沿用上月数据；2026-11 再取监理月报原始数据 */
+  function jrVal(city, ym, path) {
+    var v = jrGet(city, ym, path);
+    if (v !== undefined) return v;
+    var idx = BASE.months.indexOf(ym), i, m, x;
+    for (i = idx - 1; i >= 0; i--) {
+      m = BASE.months[i];
+      if (m < JRSTART) break;
+      x = jrGet(city, m, path);
+      if (x !== undefined) return x;
+    }
+    var sd = (path.indexOf("civil2") === 0) ? (JRSEED["仙桃2"] || {}) : (JRSEED[city] || {});
+    var cur = sd;
+    path.split(".").forEach(function (p) { cur = cur ? cur[p] : undefined; });
+    return (cur === undefined || cur === null) ? "" : cur;
   }
   /* 建安费产值：土建1标 / 交安1标 / 机电1标取分地市州「完成产值」，其余标段取「分项产值情况」累计完成合计 */
   function jrMoney(city, ym) {
@@ -1072,15 +1115,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     (cfg.two || []).forEach(function (tid) { add(tid, "二驻地办"); });
     return { mon: tm, cum: tc, parts: parts };
   }
-  var JRTA = ' style="width:100%;min-height:56px;border:1px solid #D5DBE3;border-radius:6px;padding:7px 9px;font:inherit;font-size:13px;line-height:1.7;color:#1E2A3A;resize:vertical;background:#FFF"';
-  var JRWHO = { civil: "土建驻地办", me: "机电驻地办", fj: "房建驻地办" };
-  var JRKIND = [{ k: "civil", n: "土建工程", who: "civil" }, { k: "jt", n: "交安工程", who: "civil" },
-                { k: "me", n: "机电工程", who: "me" }, { k: "fj", n: "房建工程", who: "fj" }];
-  function jrBadge(city, ym, who) {
-    return jrLocked(city, ym, who)
-      ? '<span class="pg-st-ok" style="font-size:11.5px"><span class="pg-st-dot"></span>已提交</span>'
-      : '<span class="pg-st-no" style="font-size:11.5px"><span class="pg-st-dot"></span>未提交</span>';
-  }
+  var JRTA = ' style="width:100%;min-height:74px;border:1px solid #D5DBE3;border-radius:5px;padding:7px 9px;font:inherit;font-size:12.5px;line-height:1.65;color:#1E2A3A;resize:vertical;background:#FFF"';
   function renderJr() {
     var tabs = $("#jr-tabs");
     if (tabs && !tabs.children.length) {
@@ -1097,9 +1132,7 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
       BASE.months.forEach(function (m) { var y = m.slice(0, 4); if (ys.indexOf(y) < 0 && m >= JRSTART) ys.push(y); });
       sy.innerHTML = ys.map(function (y) { return '<option value="' + y + '">' + y + " 年</option>"; }).join("");
     }
-    if (!JR.ym) {
-      JR.ym = nowYm(BASE.months.filter(function (m) { return m >= JRSTART; }));
-    }
+    if (!JR.ym) JR.ym = nowYm(BASE.months.filter(function (m) { return m >= JRSTART; }));
     if (sy) sy.value = JR.ym.slice(0, 4);
     if (sm) {
       var y = JR.ym.slice(0, 4), ms = BASE.months.filter(function (m) { return m.slice(0, 4) === y && m >= JRSTART; });
@@ -1109,111 +1142,93 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
     var into = $("#jr-info");
     if (into) {
       var mm = jrMoney(JR.city, JR.ym);
-      into.textContent = JR.ym.replace("-", " 年 ") + " 月　" + JR.city + "　建安费产值 " + fmt(mm.total, 0) + " 万元";
+      into.textContent = JR.ym.replace("-", " 年 ") + " 月　" + JR.city + "　建安费产值 " + fmt(mm.cum, 0) + " 万元";
     }
     renderJrMoney(); renderJrDesc(); renderJrIssue();
   }
   function renderJrMoney() {
     var host = $("#jr-money"); if (!host) return;
-    var mm = jrMoney(JR.city, JR.ym);
-    var rec = jrRec(JR.city, JR.ym, false);
-    var con = Number((JRCFG.contracts || {})[JR.city] || 0);
-    var rate = rec.ratio === undefined || rec.ratio === "" ? (con ? (mm.cum / con * 100) : null) : Number(rec.ratio);
-    var ratio2 = con ? (mm.cum / con * 100).toFixed(1) + "%" : "";
+    var mm = jrMoney(JR.city, JR.ym), lk = jrLocked(JR.city, JR.ym);
     var rows = mm.parts.map(function (p, i) {
-      return "<tr><td class='c'>" + (i + 1) + "</td><td>" + p.name + "</td><td class='c'>" + p.tag
+      return "<tr><td class='c'>" + (i + 1) + "</td><td>" + p.name
         + "</td><td class='r'>" + fmt(p.mon, 0) + "</td><td class='r'>" + fmt(p.cum, 0) + "</td></tr>";
     }).join("");
-    host.innerHTML = head("一、产值完成情况", JR.city + "　" + JR.ym.replace("-", " 年 ") + " 月")
-      + '<div class="card-body"><table class="tbl pg-tbl"><thead><tr><th style="width:40px" class="c">序号</th><th>标段</th>'
-      + '<th style="width:86px" class="c">驻地办</th><th style="width:96px" class="r">本月产值</th>'
-      + '<th style="width:102px" class="r">累计产值</th></tr></thead><tbody>'
-      + rows + '<tr class="total"><td class="c"></td><td>合计</td><td class="c"></td>'
-      + '<td class="r">' + fmt(mm.mon, 0) + '</td><td class="r">' + fmt(mm.cum, 0) + "</td></tr>"
-      + "</tbody></table>"
-      + '<table class="tbl pg-tbl" style="margin-top:10px"><tbody>'
-      + '<tr><td style="width:132px">建安费产值（累计）</td><td class="r" style="width:120px">' + fmt(mm.cum, 0) + " 万元</td>"
-      + "<td>产值完成比例（可填报）</td><td style='width:140px'><input class='pgi' data-jr='ratio' value='"
-      + (rate === null || rate === undefined ? "" : fmt(rate, 1)) + "' placeholder='" + ratio2 + "'>%</td></tr>"
-      + '<tr><td>合同额</td><td class="r">' + fmt(con, 0) + ' 万元</td><td colspan="2" style="color:#6B7684;font-size:12px">'
-      + "合同额取自《建安费合同额》分段表</td></tr>"
-      + "</tbody></table>"
-      + '<div class="note" style="margin-top:8px">土建1标、交安1标、机电1标取各标段「地市州产值」的完成产值；其他标段取「分项产值情况」累计完成合计，均自动取数。</div>'
+    var pctRows = JRPCT.map(function (p) {
+      var v = jrVal(JR.city, JR.ym, "pct." + p.k);
+      return "<tr><td>" + p.n + "</td><td class='c'><input class='pgi pgc' data-jrp='" + p.k
+        + "'" + (lk ? " readonly" : "") + " value='" + (v === "" ? "" : fmtz(v, 2)) + "' style='width:72px'>%</td></tr>";
+    }).join("");
+    host.innerHTML = head("产值完成情况", JR.city + "　" + JR.ym.replace("-", " 年 ") + " 月", null)
+      + '<div class="card-body" style="padding:0 0 10px">'
+      + '<table class="tbl pg-tbl jr-mini"><thead><tr><th style="width:44px" class="c">序号</th><th>标段</th>'
+      + '<th style="width:92px" class="r">本月产值</th><th style="width:98px" class="r">累计产值</th></tr></thead><tbody>'
+      + rows + '<tr class="total"><td class="c"></td><td>合计</td><td class="r">' + fmt(mm.mon, 0)
+      + '</td><td class="r">' + fmt(mm.cum, 0) + "</td></tr></tbody></table>"
+      + '<div class="jr-sub-t">形象进度完成比例（%）</div>'
+      + '<table class="tbl pg-tbl pg-ctr jr-mini"><thead><tr><th>项目</th><th style="width:124px">完成比例</th></tr></thead><tbody>'
+      + pctRows + "</tbody></table>"
+      + '<div class="note" style="margin:8px 14px 0">建安费产值由各标段工程月报自动取数；比例默认取上月填报数据，可直接修改。</div>'
       + "</div>";
   }
-  function jrField(key, rec, locked, big, ph) {
-    var base = JRTA + (big ? ";min-height:78px" : "");
-    return '<textarea class="jr-ta" data-jrf="' + key + '"' + (locked ? " readonly" : "") + base
-      + ' placeholder="' + (ph || "") + '">'
-      + (rec[key] === undefined || rec[key] === null ? "" : rec[key]) + "</textarea>";
+  function jrField(path, val, lk, ph) {
+    return '<textarea class="jr-ta" data-jrf="' + path + '"' + (lk ? " readonly" : "") + JRTA
+      + ' placeholder="' + (ph || "") + '">' + (val === undefined || val === null ? "" : val) + "</textarea>";
   }
   function renderJrDesc() {
     var host = $("#jr-desc"); if (!host) return;
-    var rec = jrRec(JR.city, JR.ym, false);
-    var isXt = JR.city === "仙桃";
-    var jas = JRKIND.map(function (k) {
-      var who = jrLocked(JR.city, JR.ym, k.who);
-      var whoTxt = k.who === "civil" ? "土建驻地办" : (k.who === "me" ? "机电驻地办" : "房建驻地办");
-      var two = (isXt && k.k === "civil");
-      return '<div style="padding:10px 2px 4px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">'
-        + '<b style="font-size:13.5px;color:#1E2A3A">' + k.n + "</b>"
-        + '<span style="font-size:11.5px;color:#6B7684">' + whoTxt + " 填写</span>" + jrBadge(JR.city, JR.ym, k.who) + "</div>"
-        + '<table class="tbl pg-tbl"><tbody>'
-        + '<tr><td style="width:118px">已完成</td><td>' + jrField(k.k + "Done", rec, who, true) + "</td></tr>"
-        + '<tr><td>下一步计划</td><td>' + jrField(k.k + "Plan", rec, who, true) + "</td></tr>"
-        + (two ? '<tr><td>已完成（二驻地办）</td><td>' + jrField("civil2Done", rec, who, true) + "</td></tr>"
-              + '<tr><td>下一步计划（二驻地办）</td><td>' + jrField("civil2Plan", rec, who, true) + "</td></tr>" : "")
-        + "</tbody></table></div>";
+    var lk = jrLocked(JR.city, JR.ym), isXt = JR.city === "仙桃";
+    var blocks = JRKIND.map(function (k) {
+      var two = isXt && k.k === "lu";
+      var done = jrField("done." + k.k, jrVal(JR.city, JR.ym, "done." + k.k), lk, "已完成情况");
+      var plan = jrField("plan." + k.k, jrVal(JR.city, JR.ym, "plan." + k.k), lk, "下一步计划");
+      var inner;
+      if (two) {
+        inner = '<tr><td class="jr-lb">已完成（一驻地办）</td><td>' + done + "</td></tr>"
+          + '<tr><td class="jr-lb">下一步计划（一驻地办）</td><td>' + plan + "</td></tr>"
+          + '<tr><td class="jr-lb">已完成（二驻地办）</td><td>' + jrField("civil2Done", jrVal(JR.city, JR.ym, "civil2Done"), lk, "二驻地办已完成情况") + "</td></tr>"
+          + '<tr><td class="jr-lb">下一步计划（二驻地办）</td><td>' + jrField("civil2Plan", jrVal(JR.city, JR.ym, "civil2Plan"), lk, "二驻地办下一步计划") + "</td></tr>";
+      } else {
+        inner = '<tr><td class="jr-lb">已完成</td><td>' + done + "</td></tr>"
+          + '<tr><td class="jr-lb">下一步计划</td><td>' + plan + "</td></tr>";
+      }
+      return '<div class="jr-blk"><div class="jr-blk-t">' + k.n + '</div><table class="tbl pg-tbl"><tbody>' + inner + "</tbody></table></div>";
     }).join("");
-    var btns = ["civil", "me", "fj"].map(function (w) {
-      var on = jrLocked(JR.city, JR.ym, w);
-      return '<button type="button" class="pg-tab' + (on ? " is-on" : "") + '" data-jr-lk="' + w + '"'
-        + ' style="border-color:' + (on ? "#2E9159" : "") + '">' + (on ? "已提交·" : "提交·") + JRWHO[w] + "</button>";
-    }).join("");
-    host.innerHTML = head("二、主要形象进度描述", JR.city + "　" + JR.ym.replace("-", " 年 ") + " 月")
-      + '<div class="card-body"><div class="note" style="margin:0 0 6px;border:1px solid #E4E9F0;background:#F7F9FC;border-radius:6px;padding:8px 10px">'
-      + "土建、交安工程由<b>土建驻地办</b>填写；机电工程由<b>机电驻地办</b>填写；房建工程由<b>房建驻地办</b>填写。"
-      + (JR.city === "仙桃" ? "仙桃段土建区分<b>一驻地办</b>与<b>二驻地办</b>分别填写。" : "") + "</div>"
-      + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px">' + btns + "</div>"
-      + jas + "</div>";
+    host.innerHTML = '<div class="card-head"><h2>主要形象进度描述</h2><span class="hint">' + JR.city + "　" + JR.ym.replace("-", " 年 ") + " 月</span>"
+      + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="1" title="'
+      + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本月填报") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
+      + '<div class="card-body"><div class="jr-who">' + (JRLEADTXT[JR.city] || "") + "</div>" + blocks + "</div>";
   }
   function renderJrIssue() {
     var host = $("#jr-issue"); if (!host) return;
-    var rec = jrRec(JR.city, JR.ym, false);
-    var on = jrLocked(JR.city, JR.ym, "civil");
-    host.innerHTML = head("三、亟需解决的问题", JR.city + "　由土建驻地办填写" + (jrLocked(JR.city, JR.ym, "civil") ? "　（已提交）" : ""))
-      + '<div class="card-body">' + jrField("issue", rec, on, true, "如：征地拆迁、管线迁改、地方协调等需协调事项")
-      + "</div>";
+    var lk = jrLocked(JR.city, JR.ym);
+    host.innerHTML = head("亟需解决的问题", JR.city + "　由" + (JRLEAD[JR.city] || "土建驻地办") + "填写", null)
+      + '<div class="card-body"><textarea class="jr-ta" data-jrf="issue"' + (lk ? " readonly" : "") + JRTA
+      + ' placeholder="如：征地拆迁、管线迁改、地方协调等需协调事项" style="min-height:132px">' + jrVal(JR.city, JR.ym, "issue") + "</textarea></div>";
   }
-  if (document.addEventListener) {
-    document.addEventListener("click", function (e) {
-      var t = e.target;
-      var c = t && t.closest ? t.closest("[data-jr-city]") : null;
-      if (c) { JR.city = c.getAttribute("data-jr-city"); renderJr(); return; }
-      var lk = t && t.closest ? t.closest("[data-jr-lk]") : null;
-      if (lk) {
-        var w = lk.getAttribute("data-jr-lk");
-        if (!jrLocked(JR.city, JR.ym, w)) {
-          jrRec(JR.city, JR.ym, true).lock[w] = 1;
-          persistLocal(); renderJr(); renderStatus(); pushCloud();
-          flag("已提交：" + JR.city + " " + JRWHO[w], true);
-        } else {
-          var pw = prompt("取消提交需输入密码：");
-          if (pw === null) return;
-          if (String(pw).trim() !== "a") { alert("密码错误"); return; }
-          jrRec(JR.city, JR.ym, true).lock[w] = 0;
-          persistLocal(); renderJr(); renderStatus(); pushCloud();
-          flag("已取消提交：" + JR.city + " " + JRWHO[w], true);
-        }
-      }
-    });
-  }
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var c = t && t.closest ? t.closest("[data-jr-city]") : null;
+    if (c) { JR.city = c.getAttribute("data-jr-city"); renderJr(); return; }
+    var sub = t && t.closest ? t.closest("[data-jr-sub]") : null;
+    if (!sub) return;
+    if (!jrLocked(JR.city, JR.ym)) {
+      jrRec(JR.city, JR.ym, true).lock.all = 1;
+      persistLocal(); renderJr(); renderStatus(); pushCloud();
+      flag("已提交：" + JR.city + " " + JR.ym.replace("-", " 年 ") + " 月", true);
+    } else {
+      var pw = prompt("取消提交需输入密码：");
+      if (pw === null) return;
+      if (String(pw).trim() !== "a") { alert("密码错误"); return; }
+      jrRec(JR.city, JR.ym, true).lock.all = 0;
+      persistLocal(); renderJr(); renderStatus(); pushCloud();
+      flag("已取消提交：" + JR.city, true);
+    }
+  });
   document.addEventListener("input", function (e) {
     var t = e.target;
-    if (!t || !t.dataset || !t.dataset.jrf) return;
-    var r = jrRec(JR.city, JR.ym, true);
-    r[t.dataset.jrf] = t.value;
-    DIRTY = true;
+    if (!t || !t.dataset) return;
+    if (t.dataset.jrf) { jrSet(JR.city, JR.ym, t.dataset.jrf, t.value); return; }
+    if (t.dataset.jrp) { jrSet(JR.city, JR.ym, "pct." + t.dataset.jrp, t.value); }
   });
   document.addEventListener("change", function (e) {
     var t = e.target;
