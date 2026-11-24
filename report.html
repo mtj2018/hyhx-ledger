@@ -478,6 +478,10 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-sub-t{font-size:12px;color:#6B7684;padding:12px 14px 2px}
 .jr-blk{padding:8px 0 2px;border-top:1px dashed #E4EAF3}
 .jr-blk:first-child{border-top:0}
+.jr-pair{display:flex;gap:14px;align-items:flex-start}
+.jr-pair>.jr-blk{flex:1 1 0;min-width:0;border-top:0;padding-top:0}
+.jr-pair .jr-lb{width:84px;font-size:12px;white-space:nowrap}
+.jr-ta.jr-inh{color:#9AA6B5!important}
 .jr-blk-t{font-size:13px;font-weight:600;color:#1E3A6E;padding:2px 2px 5px;letter-spacing:.02em}
 .jr-blk .pg-tbl td{padding:4px 6px}
 .jr-lb{width:150px;color:#5B6779;font-size:12.5px}
@@ -1187,10 +1191,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       sm.value = JR.ym;
     }
     var into = $("#jr-info");
-    if (into) {
-      var mm = jrMoney(JR.city, JR.ym);
-      into.textContent = JR.ym.replace("-", " 年 ") + " 月　" + DSP(JR.city) + "　建安费产值 " + fmt(mm.cum, 0) + " 万元";
-    }
+    if (into) into.textContent = "";
     renderJrMoney(); renderJrPct(); renderJrDesc(); renderJrMe(); renderJrFj();
   }
   function renderJrMoney() {
@@ -1200,7 +1201,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       return "<tr><td class='c'>" + (i + 1) + "</td><td>" + p.name
         + "</td><td class='r'>" + fmt(p.mon, 0) + "</td><td class='r'>" + fmt(p.cum, 0) + "</td></tr>";
     }).join("");
-    host.innerHTML = head("产值完成情况", DSP(JR.city) + "　" + JR.ym.replace("-", " 年 ") + " 月", null)
+    host.innerHTML = head("产值完成情况", "", null)
       + '<div class="card-body" style="padding:0 0 10px">'
       + '<table class="tbl pg-tbl jr-mini"><thead><tr><th style="width:44px" class="c">序号</th><th>标段</th>'
       + '<th style="width:92px" class="r">本月产值</th><th style="width:98px" class="r">累计产值</th></tr></thead><tbody>'
@@ -1215,14 +1216,24 @@ td.nmc{white-space:nowrap;font-size:12px}
       return "<tr><td>" + p.n + "</td><td class='c'><input class='pgi pgc' data-jrp='" + p.k
         + "' value='" + show + "' placeholder='/' style='width:76px'><span class='jr-pcu'>%</span></td></tr>";
     }).join("");
-    host.innerHTML = head("形象进度完成比例", DSP(JR.city) + "　" + JR.ym.replace("-", " 年 ") + " 月", null)
+    host.innerHTML = head("形象进度完成比例", "", null)
       + '<div class="card-body" style="padding:0 0 10px">'
       + '<table class="tbl pg-tbl pg-ctr jr-mini"><thead><tr><th>项目</th><th style="width:128px">完成比例</th></tr></thead><tbody>'
       + rows + "</tbody></table></div>";
   }
-  function jrField(path, val, lk, ph) {
-    return '<textarea class="jr-ta" data-jrf="' + path + '"' + (lk ? " readonly" : "") + JRTA
+  function jrField(path, val, lk, ph, h) {
+    var own = jrOwn(JR.city, JR.ym, path);
+    return '<textarea class="jr-ta' + (own ? "" : " jr-inh") + '" data-jrf="' + path + '"' + (lk ? " readonly" : "")
+      + JRTA.replace("min-height:74px", "min-height:" + (h || 96) + "px")
       + ' placeholder="' + (ph || "") + '">' + (val === undefined || val === null ? "" : val) + "</textarea>";
+  }
+  /* 本月是否已自行填报该字段（否则为承接上月数据，显示灰色） */
+  function jrOwn(city, ym, path) {
+    var r = (DB.jr[city] || {})[ym];
+    if (!r) return false;
+    var v = r, segs = path.split(".");
+    for (var i = 0; i < segs.length; i++) { if (v === null || v === undefined) return false; v = v[segs[i]]; }
+    return v !== undefined && v !== null;
   }
   function jrBlock(title, inner) {
     return '<div class="jr-blk"><div class="jr-blk-t">' + title + '</div><table class="tbl pg-tbl"><tbody>' + inner + "</tbody></table></div>";
@@ -1233,40 +1244,34 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<tr><td class="jr-lb">' + (isPlanLabel || "下一步计划") + "</td><td>"
       + jrField(planPath, jrVal(JR.city, JR.ym, planPath), lk, "下一步计划") + "</td></tr>";
   }
-  function jrLeadCard(host, key, title, withJa, withIssue, civil2) {
+  function jrLeadCard(host, key, title, withIssue, civil2) {
     if (!host) return;
     var lk = jrLocked(JR.city, JR.ym, key);
-    var body = "";
-    if (civil2) {
-      body += jrBlock("土建工程", jrRows("civil2Done", "civil2Plan", lk));
-    } else {
-      body += jrBlock("土建工程", jrRows("done.lu", "plan.lu", lk));
-      body += jrBlock("交安工程", jrRows("done.ja", "plan.ja", lk));
-    }
+    var body = '<div class="jr-pair">'
+      + jrBlock("土建工程", jrRows(civil2 ? "civil2Done" : "done.lu", civil2 ? "civil2Plan" : "plan.lu", lk))
+      + jrBlock("交安工程", jrRows(civil2 ? "done.ja2" : "done.ja", civil2 ? "plan.ja2" : "plan.ja", lk))
+      + "</div>";
     if (withIssue) {
       body += '<div class="jr-blk"><div class="jr-blk-t">待解决问题</div>'
         + '<table class="tbl pg-tbl"><tbody><tr><td>'
-        + '<textarea class="jr-ta" data-jrf="issue"' + (lk ? " readonly" : "") + JRTA
-        + ' placeholder="如：征地拆迁、管线迁改、地方协调等需协调事项" style="min-height:104px">'
-        + jrVal(JR.city, JR.ym, "issue") + "</textarea></td></tr></tbody></table></div>";
+        + jrField(civil2 ? "issue2" : "issue", jrVal(JR.city, JR.ym, civil2 ? "issue2" : "issue"), lk, "如：征地拆迁、管线迁改、地方协调等需协调事项", 140)
+        + "</td></tr></tbody></table></div>";
     }
-    host.innerHTML = '<div class="card-head"><h2>' + title + '</h2><span class="hint">' + DSP(JR.city) + "　"
-      + JR.ym.replace("-", " 年 ") + " 月</span>"
+    host.innerHTML = '<div class="card-head"><h2>' + title + '</h2>'
       + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="' + key + '" title="'
       + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本卡片") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
       + '<div class="card-body">' + body + "</div>";
   }
   function renderJrDesc() {
     var isXt = JR.city === "仙桃", lead = JRLEAD[JR.city] || "一驻地办";
-    jrLeadCard($("#jr-desc"), "lead", (isXt ? "一驻地办" : lead) + "填报", true, true, false);
-    if (isXt) jrLeadCard($("#jr-desc2"), "lead2", "二驻地办填报", false, false, true);
+    jrLeadCard($("#jr-desc"), "lead", (isXt ? "一驻地办" : lead) + "填报", true, false);
+    if (isXt) jrLeadCard($("#jr-desc2"), "lead2", "二驻地办填报", true, true);
     if ($("#jr-desc2")) $("#jr-desc2").style.display = isXt ? "" : "none";
   }
   function renderJrMe() {
     var host = $("#jr-me"); if (!host) return;
     var lk = jrLocked(JR.city, JR.ym, "me");
-    host.innerHTML = '<div class="card-head"><h2>机电驻地办填报</h2><span class="hint">' + DSP(JR.city) + "　"
-      + JR.ym.replace("-", " 年 ") + " 月</span>"
+    host.innerHTML = '<div class="card-head"><h2>机电驻地办填报</h2>'
       + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="me" title="'
       + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本卡片") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
       + '<div class="card-body">' + jrBlock("机电工程", jrRows("done.me", "plan.me", lk)) + "</div>";
@@ -1274,8 +1279,7 @@ td.nmc{white-space:nowrap;font-size:12px}
   function renderJrFj() {
     var host = $("#jr-fj"); if (!host) return;
     var lk = jrLocked(JR.city, JR.ym, "fj");
-    host.innerHTML = '<div class="card-head"><h2>房建驻地办填报</h2><span class="hint">' + DSP(JR.city) + "　"
-      + JR.ym.replace("-", " 年 ") + " 月</span>"
+    host.innerHTML = '<div class="card-head"><h2>房建驻地办填报</h2>'
       + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="fj" title="'
       + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本卡片") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
       + '<div class="card-body">' + jrBlock("房建工程", jrRows("done.fj", "plan.fj", lk)) + "</div>";
@@ -1306,7 +1310,10 @@ td.nmc{white-space:nowrap;font-size:12px}
   document.addEventListener("input", function (e) {
     var t = e.target;
     if (!t || !t.dataset) return;
-    if (t.dataset.jrf) { jrSet(JR.city, JR.ym, t.dataset.jrf, t.value); return; }
+    if (t.dataset.jrf) {
+      if (t.classList && t.classList.contains("jr-inh")) t.classList.remove("jr-inh");
+      jrSet(JR.city, JR.ym, t.dataset.jrf, t.value); return;
+    }
     if (t.dataset.jrp) { jrSet(JR.city, JR.ym, "pct." + t.dataset.jrp, t.value); }
   });
   document.addEventListener("change", function (e) {
