@@ -484,8 +484,16 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-pair>.jr-blk:first-child{padding-left:0;border-right:1px solid #E4EAF3}
 .jr-pair>.jr-blk:last-child{padding-right:0}
 .jr-pair .jr-blk-t{margin-top:0}
-.jr-mapnote{margin:8px 0 2px;padding:7px 12px;background:#F1F5FB;border-left:3px solid #16407F;border-radius:2px;font-size:12.5px;line-height:1.6;color:#16407F;font-weight:600}
-.jr-map-t td.nm{font-weight:600;color:#16407F}
+.jr-mapnote{margin:8px 12px 10px;padding:7px 11px;background:#F1F5FB;border-left:3px solid #16407F;border-radius:2px;font-size:12px;line-height:1.55;color:#16407F;font-weight:600}
+.jr-map-h{display:flex;align-items:baseline;gap:8px;padding:8px 12px 7px;border-bottom:1px solid #EDF2F8}
+.jr-map-h b{font-size:13px;font-weight:700;color:#16407F;letter-spacing:.02em;border-left:3px solid #16407F;padding-left:7px;line-height:1.1}
+.jr-map-h span{font-size:11px;color:#8C97A6}
+.jr-map-t th{font-size:11.5px;font-weight:600;color:#5B6779;background:#F6F9FD;padding:4px 6px;border-bottom:1px solid #E4EAF3}
+.jr-map-t td{padding:4px 6px;font-size:11.5px;line-height:1.6;vertical-align:middle}
+.jr-map-t tbody tr:nth-child(even) td{background:#FCFDFF}
+.jr-map-t td.nm{font-weight:700;color:#16407F;white-space:nowrap}
+.jr-map-t .jr-nw{display:inline-block;white-space:nowrap}
+.jr-map-t .jr-sep{color:#C0C8D4}
 .jr-pair .jr-lb{width:84px;font-size:12px;white-space:nowrap}
 .jr-ta.jr-inh{color:#9AA6B5!important}
 .jr-blk-t{font-size:13px;font-weight:600;color:#1E3A6E;padding:2px 2px 5px;letter-spacing:.02em}
@@ -575,7 +583,6 @@ td.nmc{white-space:nowrap;font-size:12px}
           <span class="pg-hint" id="jr-info"></span>
         </div>
       </div>
-      <div class="card" id="jr-map"></div>
       <div class="pg-cols">
         <div style="min-width:0">
           <div class="card" id="jr-desc"></div>
@@ -588,6 +595,7 @@ td.nmc{white-space:nowrap;font-size:12px}
         <div class="pg-right">
           <div class="card" id="jr-money"></div>
           <div class="card" id="jr-pct"></div>
+          <div class="card" id="jr-map"></div>
         </div>
       </div>
     </section>
@@ -1215,25 +1223,28 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
   /* 地市州归口对照：监理标段固定，施工标段取自该地市州“产值完成情况”涉及标段 */
   var JRMAP = [
-    { k: "武汉", n: "武汉", j: "一驻地办、机电1标驻地办、房建1标驻地办" },
-    { k: "汉川", n: "孝感", j: "一驻地办、机电1标驻地办" },
-    { k: "仙桃", n: "仙桃", j: "一驻地办、二驻地办、机电1标驻地办" },
-    { k: "潜江", n: "潜江", j: "三驻地办、机电1标驻地办" },
-    { k: "荆州", n: "荆州", j: "四驻地办、机电2标驻地办" },
-    { k: "宜昌", n: "宜昌", j: "五驻地办、机电3标驻地办" }
+    { k: "武汉", n: "武汉", j: "一驻地办、机电监理1标、房建监理1标" },
+    { k: "汉川", n: "孝感", j: "一驻地办、机电监理1标" },
+    { k: "仙桃", n: "仙桃", j: "一驻地办、二驻地办、机电监理1标" },
+    { k: "潜江", n: "潜江", j: "三驻地办、机电监理1标" },
+    { k: "荆州", n: "荆州", j: "四驻地办、机电监理2标" },
+    { k: "宜昌", n: "宜昌", j: "五驻地办、机电监理3标" }
   ];
   function renderJrMap() {
     var host = $("#jr-map"); if (!host) return;
+    function tags(list) {
+      return list.map(function (x) { return '<span class="jr-nw">' + x + "</span>"; }).join('<span class="jr-sep">、</span>');
+    }
     var rows = JRMAP.map(function (r) {
       var parts = jrMoney(r.k, JR.ym).parts.map(function (p) { return p.name; });
-      return '<tr><td class="nm">' + r.n + "</td><td>" + r.j + "</td><td>" + parts.join("、") + "</td></tr>";
+      return '<tr><td class="nm">' + r.n + "</td><td>" + tags(r.j.split("、")) + "</td><td>" + tags(parts) + "</td></tr>";
     }).join("");
-    host.innerHTML = head("地市州填报归口", "", null)
-      + '<div class="card-body" style="padding:2px 0 10px">'
+    host.innerHTML = '<div class="card-body" style="padding:0">'
+      + '<div class="jr-map-h"><b>地市州填报归口</b><span>监理标段 · 施工标段</span></div>'
       + '<table class="tbl pg-tbl pg-ctr jr-map-t"><thead><tr>'
-      + '<th style="width:15%">地市州</th><th style="width:41%">涉及监理标段</th><th>涉及施工标段</th>'
+      + '<th style="width:14%">地市州</th><th style="width:40%">涉及监理标段</th><th>涉及施工标段</th>'
       + "</tr></thead><tbody>" + rows + "</tbody></table>"
-      + '<div class="jr-mapnote" style="margin:8px 16px 0">各驻地办负责汇总辖段内数据，并按对应地市州填报；文字信息以时间节点为主线，重点说明辖段内重点工程进度。</div>'
+      + '<div class="jr-mapnote">各驻地办负责汇总辖段内数据，并按对应地市州填报；文字信息以时间节点为主线，重点说明辖段内重点工程进度。</div>'
       + "</div>";
   }
   function renderJrMoney() {
