@@ -459,8 +459,8 @@ td.nmc{white-space:nowrap;font-size:12px}
 #card-reg .pg-ctr td .fixv{text-align:center}
 /* 全局口径：表头一律居中；金额类数据（td.r 及其录入框）一律左对齐 */
 .tbl th,.pg-tbl th{text-align:center!important}
-.pg-tbl td.r,.pg-ctr td.r{text-align:right!important}
-.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:right!important;margin:0}
+.pg-tbl td.r,.pg-ctr td.r{text-align:center!important}
+.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:center!important;margin:0}
 .pg-tbl .fixv{text-align:inherit!important}
 #card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
 #card-ppl .pgi{max-width:112px;margin:0 auto}
@@ -478,8 +478,13 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-sub-t{font-size:12px;color:#6B7684;padding:12px 14px 2px}
 .jr-blk{padding:8px 0 2px;border-top:1px dashed #E4EAF3}
 .jr-blk:first-child{border-top:0}
-.jr-pair{display:flex;gap:14px;align-items:flex-start}
-.jr-pair>.jr-blk{flex:1 1 0;min-width:0;border-top:0;padding-top:0}
+.jr-pair{display:flex;gap:0;align-items:stretch}
+.jr-pair>.jr-blk{flex:1 1 0;min-width:0;border-top:0;padding:0 16px}
+.jr-pair>.jr-blk:first-child{padding-left:0;border-right:1px solid #E4EAF3}
+.jr-pair>.jr-blk:last-child{padding-right:0}
+.jr-pair .jr-blk-t{margin-top:0}
+.jr-mapnote{margin:8px 0 2px;padding:7px 12px;background:#F1F5FB;border-left:3px solid #16407F;border-radius:2px;font-size:12.5px;line-height:1.6;color:#16407F;font-weight:600}
+.jr-map-t td.nm{font-weight:600;color:#16407F}
 .jr-pair .jr-lb{width:84px;font-size:12px;white-space:nowrap}
 .jr-ta.jr-inh{color:#9AA6B5!important}
 .jr-blk-t{font-size:13px;font-weight:600;color:#1E3A6E;padding:2px 2px 5px;letter-spacing:.02em}
@@ -567,6 +572,7 @@ td.nmc{white-space:nowrap;font-size:12px}
           <span class="pg-hint" id="jr-info"></span>
         </div>
       </div>
+      <div class="card" id="jr-map"></div>
       <div class="pg-cols">
         <div style="min-width:0">
           <div class="card" id="jr-desc"></div>
@@ -1082,7 +1088,7 @@ td.nmc{white-space:nowrap;font-size:12px}
   var JRPCT = [{ k: "lu", n: "路基工程" }, { k: "ql", n: "桥梁工程" }, { k: "lm", n: "路面工程" },
                { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
   var JRKIND = [{ k: "lu", n: "土建工程" }, { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
-  var JRLEAD = { 武汉: "一驻地办", 汉川: "一驻地办", 仙桃: "一、二驻地办", 潜江: "三驻地办", 荆州: "四驻地办", 宜昌: "四驻地办" };
+  var JRLEAD = { 武汉: "一驻地办", 汉川: "一驻地办", 仙桃: "一、二驻地办", 潜江: "三驻地办", 荆州: "四驻地办", 宜昌: "五驻地办" };
   var JRLEADTXT = {
     武汉: "一驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
     汉川: "一驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
@@ -1192,7 +1198,30 @@ td.nmc{white-space:nowrap;font-size:12px}
     }
     var into = $("#jr-info");
     if (into) into.textContent = "";
-    renderJrMoney(); renderJrPct(); renderJrDesc(); renderJrMe(); renderJrFj();
+    renderJrMoney(); renderJrPct(); renderJrDesc(); renderJrMe(); renderJrFj(); renderJrMap();
+  }
+  /* 地市州归口对照：监理标段固定，施工标段取自该地市州“产值完成情况”涉及标段 */
+  var JRMAP = [
+    { k: "武汉", n: "武汉", j: "一驻地办、机电1标驻地办、房建1标驻地办" },
+    { k: "汉川", n: "孝感", j: "一驻地办、机电1标驻地办" },
+    { k: "仙桃", n: "仙桃", j: "一驻地办、二驻地办、机电1标驻地办" },
+    { k: "潜江", n: "潜江", j: "三驻地办、机电1标驻地办" },
+    { k: "荆州", n: "荆州", j: "四驻地办、机电2标驻地办" },
+    { k: "宜昌", n: "宜昌", j: "五驻地办、机电3标驻地办" }
+  ];
+  function renderJrMap() {
+    var host = $("#jr-map"); if (!host) return;
+    var rows = JRMAP.map(function (r) {
+      var parts = jrMoney(r.k, JR.ym).parts.map(function (p) { return p.name; });
+      return '<tr><td class="nm">' + r.n + "</td><td>" + r.j + "</td><td>" + parts.join("、") + "</td></tr>";
+    }).join("");
+    host.innerHTML = head("地市州填报归口", "", null)
+      + '<div class="card-body" style="padding:2px 0 10px">'
+      + '<table class="tbl pg-tbl pg-ctr jr-map-t"><thead><tr>'
+      + '<th style="width:15%">地市州</th><th style="width:41%">涉及监理标段</th><th>涉及施工标段</th>'
+      + "</tr></thead><tbody>" + rows + "</tbody></table>"
+      + '<div class="jr-mapnote" style="margin:8px 16px 0">各驻地办负责汇总辖段内数据，并按对应地市州填报；文字信息以时间节点为主线，重点说明辖段内重点工程进度。</div>'
+      + "</div>";
   }
   function renderJrMoney() {
     var host = $("#jr-money"); if (!host) return;
