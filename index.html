@@ -451,13 +451,18 @@ td.nmc{white-space:nowrap;font-size:12px}
 .pg-tbl .fixv.fixc{text-align:center}
 .pg-ctr td,.pg-ctr th{text-align:center!important}
 .pg-ctr .pgi{text-align:center!important}
-.pg-ctr .fixv{text-align:center!important}
+.pg-ctr .fixv{text-align:inherit!important}
 .pg-ctr td.sec,.pg-ctr td.nmcell,.pg-ctr td.ind1,.pg-ctr td.ind2,.pg-ctr td.ind3{text-align:left!important}
 #card-out .pg-ctr td.nmc,#card-out .pg-ctr th.nmc{text-align:left!important}
 #card-reg .pg-ctr th,#card-reg .pg-ctr td{padding-left:6px;padding-right:6px}
 #card-reg .pg-ctr th.sep,#card-reg .pg-ctr td.sep{border-left:1px solid #D3DCE9}
 #card-reg .pg-ctr td .pgi{max-width:76px;margin:0 auto;padding:2px 5px}
 #card-reg .pg-ctr td .fixv{text-align:center}
+/* 全局口径：表头一律居中；金额类数据（td.r 及其录入框）一律左对齐 */
+.tbl th,.pg-tbl th{text-align:center!important}
+.pg-tbl td.r,.pg-ctr td.r{text-align:left!important}
+.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:left!important;margin:0}
+.pg-tbl .fixv{text-align:inherit!important}
 #card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
 #card-ppl .pgi{max-width:112px;margin:0 auto}
 /* 地市州月报：紧凑表格与描述块 */
@@ -516,6 +521,14 @@ td.nmc{white-space:nowrap;font-size:12px}
 .rail .nav-jump:hover{background:var(--mist)}
 .rail .nav-jump::after{content:"\2197";font-size:13px;color:#8FA1B8;font-weight:600;line-height:1}
 @media (max-width:980px){.rail nav .nav-sec{display:none}.rail nav .nav-item.sub::before{display:none}}
+/* 全局口径：表头一律居中；金额类数据左对齐；锁定态与普通数据外观一致 */
+.tbl th,.pg-tbl th,.fa-tbl th,.fcr-tbl th{text-align:center!important}
+td.r,.pg-tbl td.r{text-align:left!important}
+.pg-tbl td.r .pgi{text-align:left!important;margin-left:0!important}
+#view-investment .tbl td.c,#view-investment .tbl td.c input{text-align:left!important}
+#view-fixedasset .fa-tbl td,#view-fixedasset .fa-tbl td input{text-align:left!important}
+#view-fixedasset .fa-tbl td.nm{text-align:left!important}
+#pg-out .pgi:read-only{border:0!important;background:transparent!important;box-shadow:none!important;padding:0 4px!important;color:inherit!important}
 
 
 /* ---------- 页面查看锁 ---------- */
@@ -4055,7 +4068,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         var ctCell = (r.name === "合计")
           ? '<td class="r">' + fmt(r.contract, 0) + "</td>"
           : '<td class="r"><input class="pgi" data-k="oct' + r.ci + '" data-int="1" value="' + fmt(r.contract, 0)
-            + '" style="width:100%;max-width:118px;margin-left:auto;text-align:right" aria-label="合同额（万元）"></td>';
+            + '" style="width:100%;max-width:118px;text-align:left" aria-label="合同额（万元）"></td>';
         return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + outLabel(r.name) + "</td>"
           + ctCell + '<td class="r">' + fmt(r.mon, 0) + "</td>"
           + '<td class="r">' + fmt(r.cum, 0) + "</td>"
