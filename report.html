@@ -1161,15 +1161,89 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   /* 线上访问才写回云端；本机 file:// 只读 */
   var SYNC_OK = false;
   var pushQueue = Promise.resolve();
+  /* 打开页面时的快照：用来判断本页改动了哪些表格段，写入时只覆盖这些段 */
+  var BASE0 = null;
+  function snap() { try { BASE0 = JSON.parse(JSON.stringify(DB.reports)); } catch (e) { BASE0 = {}; } }
+  snap();
+  function cloneRep(o) { try { return JSON.parse(JSON.stringify(o || {})); } catch (e) { return {}; } }
+  function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+  /* 合并：云端为底，逐标段/月/板块判断本页是否改过，只覆盖改过的段；锁按字段逐个合并 */
+  function mergeInto(cloud) {
+    var merged = cloneRep(cloud), local = DB.reports || {}, base = BASE0 || {};
+    Object.keys(local).forEach(function (tid) {
+      var lt = local[tid] || {}, bt = base[tid] || {};
+      merged[tid] = merged[tid] || {};
+      Object.keys(lt).forEach(function (ym) {
+        var ly = lt[ym] || {}, by = bt[ym] || {};
+        merged[tid][ym] = merged[tid][ym] || {};
+        Object.keys(ly).forEach(function (sec) {
+          var my = merged[tid][ym];
+          if (sec === "lock") {
+            var ml = cloneRep(my.lock || {}), ll = ly.lock || {}, bl = by.lock || {};
+            Object.keys(ll).forEach(function (nm) {
+              if (!same(ll[nm], bl[nm])) ml[nm] = ll[nm];            /* 本页锁/解锁过：以本页为准 */
+              else if (ml[nm] === undefined) ml[nm] = ll[nm];
+            });
+            Object.keys(bl).forEach(function (nm) {                  /* 本页解掉的锁要删掉 */
+              if (bl[nm] !== undefined && ll[nm] === undefined) delete ml[nm];
+            });
+            my.lock = ml;
+          } else if (sec === "__fix") {
+            return;
+          } else if (!same(ly[sec], by[sec])) {
+            my[sec] = ly[sec];
+          } else if (my[sec] === undefined) {
+            my[sec] = ly[sec];
+          }
+        });
+      });
+    });
+    return merged;
+  }
   function doPush(retry) {
-    var ts = DB.ts, reports = DB.reports;
-    return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify({ files: (function () { var o = {}; o[CLOUD.file] = { content: JSON.stringify({ ts: ts, data: { reports: reports } }) }; return o; })() }) })
-      .then(function (r) {
-        if (r.status === 409 && (retry || 0) < 3) return doPush((retry || 0) + 1);
-        if (!r.ok) throw new Error(r.status);
-        return r.json();
+    if (!SYNC_OK) return Promise.resolve();
+    var baseBefore = cloneRep(BASE0);
+    /* 先读回云端最新，再合并，避免旧页面/第二个窗口整份覆盖，把别人已提交的锁冲掉 */
+    return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) {
+        var f = (j.files || {})[CLOUD.file], cloud = {};
+        try { cloud = JSON.parse(f.content); } catch (e0) { cloud = {}; }
+        var rep = (cloud.data && cloud.data.reports) ? cloud.data.reports : {};
+        var merged = mergeInto(rep);
+        var ts = Date.now();
+        var o = {}; o[CLOUD.file] = { content: JSON.stringify({ ts: ts, data: { reports: merged } }) };
+        return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify({ files: o }) })
+          .then(function (r2) {
+            if (r2.status === 409 && (retry || 0) < 3) return doPush((retry || 0) + 1);
+            if (!r2.ok) throw new Error(r2.status);
+            return r2.json();
+          })
+          .then(function () {
+            /* 回读核对：本页改过的段/锁必须已落库 */
+            var bad = [], local = DB.reports || {};
+            Object.keys(local).forEach(function (tid) {
+              Object.keys(local[tid] || {}).forEach(function (ym) {
+                var ly = local[tid][ym] || {}, by = (baseBefore[tid] || {})[ym] || {};
+                var my = (merged[tid] || {})[ym] || {};
+                Object.keys(ly).forEach(function (sec) {
+                  if (sec === "__fix") return;
+                  if (sec === "lock") {
+                    var ll = ly.lock || {}, bl = by.lock || {}, ml = my.lock || {};
+                    Object.keys(ll).forEach(function (nm) {
+                      if (!same(ll[nm], bl[nm]) && !same(ll[nm], ml[nm])) bad.push(tid + "/" + ym + "/锁" + nm);
+                    });
+                    return;
+                  }
+                  if (!same(ly[sec], by[sec]) && !same(ly[sec], my[sec])) bad.push(tid + "/" + ym + "/" + sec);
+                });
+              });
+            });
+            BASE0 = cloneRep(DB.reports);
+            if (bad.length) flag("云端核对有差异：" + bad.slice(0, 3).join("、"), false);
+            else flag("已保存并同步云端 · " + new Date(ts).toLocaleTimeString(), true);
+          });
       })
-      .then(function () { flag("已保存并同步云端", true); })
       .catch(function (e) { flag("云端未同步（" + (e && e.message ? e.message : e) + "）", false); });
   }
   function pushCloud() {
@@ -1190,10 +1264,10 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   function applyRemote(c) {
     try {
       var o = JSON.parse(c); if (!o || !o.data || !o.data.reports) return;
-      /* 线上版：云端更新时才覆盖，避免冲掉正在填的内容；本机文件版：一直以云端为准 */
-      if (!ONLINE || (o.ts || 0) >= (DB.ts || 0)) {
+      /* 线上版：云端更新时才覆盖，避免冲掉正在填的内容 */
+      if ((o.ts || 0) >= (DB.ts || 0)) {
         DB = { ts: o.ts || 0, reports: o.data.reports };
-        persistLocal(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true);
+        persistLocal(); snap(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true);
       }
     } catch (e) {}
   }
@@ -1224,7 +1298,8 @@ th.nmc,td.nmc{white-space:nowrap;font-size:12px}
   window.addEventListener("beforeunload", function (e) { if (!DIRTY) return; e.preventDefault(); e.returnValue = "有未保存的修改，是否离开？"; });
 
   renderAll();
-  pullCloud();
+  /* 本机 file:// 打开不再自动拉取线上数据；只有线上访问才同步 */
+  if (ONLINE) pullCloud();
 })();
 </script>
 </body>
