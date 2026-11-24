@@ -450,13 +450,18 @@ td.nmc{white-space:nowrap;font-size:12px}
 .pg-tbl .fixv.fixc{text-align:center}
 .pg-ctr td,.pg-ctr th{text-align:center!important}
 .pg-ctr .pgi{text-align:center!important}
-.pg-ctr .fixv{text-align:center!important}
+.pg-ctr .fixv{text-align:inherit!important}
 .pg-ctr td.sec,.pg-ctr td.nmcell,.pg-ctr td.ind1,.pg-ctr td.ind2,.pg-ctr td.ind3{text-align:left!important}
 #card-out .pg-ctr td.nmc,#card-out .pg-ctr th.nmc{text-align:left!important}
 #card-reg .pg-ctr th,#card-reg .pg-ctr td{padding-left:6px;padding-right:6px}
 #card-reg .pg-ctr th.sep,#card-reg .pg-ctr td.sep{border-left:1px solid #D3DCE9}
 #card-reg .pg-ctr td .pgi{max-width:76px;margin:0 auto;padding:2px 5px}
 #card-reg .pg-ctr td .fixv{text-align:center}
+/* 全局口径：表头一律居中；金额类数据（td.r 及其录入框）一律左对齐 */
+.tbl th,.pg-tbl th{text-align:center!important}
+.pg-tbl td.r,.pg-ctr td.r{text-align:left!important}
+.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:left!important;margin:0}
+.pg-tbl .fixv{text-align:inherit!important}
 #card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
 #card-ppl .pgi{max-width:112px;margin:0 auto}
 /* 地市州月报：紧凑表格与描述块 */
@@ -937,10 +942,10 @@ td.nmc{white-space:nowrap;font-size:12px}
         var plan = cur.plan !== undefined ? cur.plan : r.plan;
         var done = cur.done !== undefined ? cur.done : r.done;
         var planCell = !FIXOPEN
-          ? '<td class="c"><span class="fixv fixc">' + fmt(plan, 0) + "</span></td>"
-          : '<td class="c"><input class="pgi pgc" data-reg="' + r.city + '|plan" value="' + fmt(plan, 0) + '"></td>';
+          ? '<td class="r"><span class="fixv">' + fmt(plan, 0) + "</span></td>"
+          : '<td class="r"><input class="pgi" data-reg="' + r.city + '|plan" value="' + fmt(plan, 0) + '"></td>';
         return '<tr><td class="c">' + DSP(r.city) + "</td>" + planCell
-          + '<td class="c"><input class="pgi pgc" data-reg="' + r.city + '|done" value="' + fmt(done, 0) + '"></td></tr>';
+          + '<td class="r"><input class="pgi" data-reg="' + r.city + '|done" value="' + fmt(done, 0) + '"></td></tr>';
       }).join("");
       host.innerHTML = head("地市州产值", subTitle(t), "reg")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
@@ -953,7 +958,7 @@ td.nmc{white-space:nowrap;font-size:12px}
         function cell(k, base, sep) {
           var v = cur[k] !== undefined ? cur[k] : base;
           var d = (/Plan$|^outDone$/.test(k) && /^out/.test(k)) ? 0 : 2;
-          var cls = "c" + (sep ? " sep" : "");
+          var cls = (/^out/.test(k) ? "r" : "c") + (sep ? " sep" : "");
           if (/Plan$/.test(k) && !FIXOPEN) {
             return '<td class="' + cls + '"><span class="fixv fixc">' + fmt(v, d) + "</span></td>";
           }
