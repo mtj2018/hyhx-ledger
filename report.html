@@ -500,7 +500,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-blk-t{font-size:13px;font-weight:600;color:#1E3A6E;padding:2px 2px 5px;letter-spacing:.02em}
 .jr-blk .pg-tbl td{padding:4px 6px;border-bottom:0}
 /* 地市州：驻地办卡片标题强调色 */
-#jr-desc .card-head h2,#jr-desc2 .card-head h2,#jr-me .card-head h2,#jr-fj .card-head h2{color:#0B5FB0;font-weight:800}
+#jr-desc .card-head h2,#jr-desc2 .card-head h2,#jr-me .card-head h2,#jr-fj .card-head h2{color:#0B7A5E;font-weight:800}
 /* 地市州：形象进度完成比例锁定说明 */
 .jr-pct-note{margin:2px 14px 10px;font-size:11.5px;line-height:1.55;color:#6B7684;display:flex;align-items:flex-start;gap:5px}
 .jr-pct-note.is-on{color:#8A5A0B;background:#FFF8E9;border:1px solid #F0DDB6;border-radius:3px;padding:5px 8px;margin-top:4px}
@@ -1283,7 +1283,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<table class="tbl pg-tbl pg-ctr jr-mini"><thead><tr><th>项目</th><th style="width:128px">完成比例</th></tr></thead><tbody>'
       + rows + "</tbody></table>"
       + '<div class="jr-pct-note' + (allLk ? " is-on" : "") + '">' + (allLk ? "<b>已锁定：</b>" : "")
-      + "各驻地办全部提交后，完成比例自动锁定，无需单独提交；如需调整，请先撤销对应驻地办的提交。</div></div>";
+      + "各驻地办均完成左侧信息提交后，完成比例自动锁定，无需单独提交。</div></div>";
   }
   function jrField(path, val, lk, ph, h) {
     var own = jrOwn(JR.city, JR.ym, path);
