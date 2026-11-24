@@ -459,8 +459,8 @@ td.nmc{white-space:nowrap;font-size:12px}
 #card-reg .pg-ctr td .fixv{text-align:center}
 /* 全局口径：表头一律居中；金额类数据（td.r 及其录入框）一律左对齐 */
 .tbl th,.pg-tbl th{text-align:center!important}
-.pg-tbl td.r,.pg-ctr td.r{text-align:left!important}
-.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:left!important;margin:0}
+.pg-tbl td.r,.pg-ctr td.r{text-align:right!important}
+.pg-tbl td.r .pgi,.pg-ctr td.r .pgi{text-align:right!important;margin:0}
 .pg-tbl .fixv{text-align:inherit!important}
 #card-ppl .pg-tbl td,#card-ppl .pg-tbl th{text-align:center}
 #card-ppl .pgi{max-width:112px;margin:0 auto}
@@ -1090,7 +1090,8 @@ td.nmc{white-space:nowrap;font-size:12px}
   var JRSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
   function jrCityName(c) { return (JRCFG.cityMap || {})[c] || c; }
   /* 地市州显示名（数据键仍沿用原键，避免影响已存数据） */
-  function DSP(c) { return c === "汉川" ? "孝感" : c; }
+  function DSP(c) { return c === "汉川" ? "孝感" : c === "蔡甸" ? "武汉" : c; }
+  function DSPT(v) { return typeof v === "string" ? v.split("蔡甸").join("武汉") : v; }
   function jrRec(city, ym, mk) {
     var c = DB.jr[city] || (DB.jr[city] = {});
     var r = c[ym];
@@ -1123,18 +1124,18 @@ td.nmc{white-space:nowrap;font-size:12px}
   /* 未填报时沿用上月数据；2026-11 再取监理月报原始数据 */
   function jrVal(city, ym, path) {
     var v = jrGet(city, ym, path);
-    if (v !== undefined) return v;
+    if (v !== undefined) return DSPT(v);
     var idx = BASE.months.indexOf(ym), i, m, x;
     for (i = idx - 1; i >= 0; i--) {
       m = BASE.months[i];
       if (m < JRSTART) break;
       x = jrGet(city, m, path);
-      if (x !== undefined) return x;
+      if (x !== undefined) return DSPT(x);
     }
     var sd = (path.indexOf("civil2") === 0) ? (JRSEED["仙桃2"] || {}) : (JRSEED[city] || {});
     var cur = sd;
     path.split(".").forEach(function (p) { cur = cur ? cur[p] : undefined; });
-    return (cur === undefined || cur === null) ? "" : cur;
+    return DSPT(cur === undefined || cur === null ? "" : cur);
   }
   /* 建安费产值：土建1标 / 交安1标 / 机电1标取分地市州「完成产值」，其余标段取「分项产值情况」累计完成合计 */
   function jrMoney(city, ym) {
