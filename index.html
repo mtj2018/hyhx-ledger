@@ -773,7 +773,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .pg-tbr{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}
 #pg-times{display:flex;align-items:center;gap:8px}
 .pg-cut{font-size:12px;color:var(--muted);white-space:nowrap}
-.seg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.seg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
 .seg-card{margin-bottom:0;padding:14px 16px 12px}
 .seg-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .seg-nm{font-size:15px;font-weight:700;color:#0F2C5C;letter-spacing:.03em}
@@ -800,7 +800,30 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .seg-pr em{font-style:normal;text-align:right;color:#16407F;font-weight:600}
 .seg-pr.hd i,.seg-pr.hd em{color:#8794A5;font-weight:400}
 .seg-pr.dim{opacity:.42}
-@media (max-width:1100px){.seg-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1560px){.seg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:1080px){.seg-grid{grid-template-columns:minmax(0,1fr)}.seg-cmp{grid-column:span 1}}
+</style>
+
+<style id="a10css">
+/* ===== 形象进度：标段分项完成情况（三列 + 对比卡） ===== */
+.seg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.seg-cmp{grid-column:span 2}
+.seg-cmp .seg-sub{font-size:11.5px;color:#7A8798;white-space:nowrap}
+.seg-crows{margin-top:2px;border-top:1px solid #E9EEF6}
+.seg-cr{display:grid;grid-template-columns:26px minmax(0,.95fr) minmax(0,1.02fr) minmax(0,1.02fr) 58px 76px;
+  align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #F4F7FB;font-size:12px;color:#33465F;
+  font-variant-numeric:tabular-nums}
+.seg-cr:last-child{border-bottom:0}
+.seg-cr.hd{font-size:11px;color:#8794A5;padding:7px 0 5px}
+.seg-cr.hd .seg-rate{color:#8794A5;font-weight:400}
+.seg-rk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+  background:#EEF2F8;color:#61728A;font-size:11.5px;font-weight:700}
+.seg-cr.seg-top3 .seg-rk{background:#EEF4FE;color:#16407F}
+.seg-num{text-align:right}
+.seg-rate{text-align:right;color:#16407F;font-weight:600}
+.seg-cb{height:4px;background:#EDF1F7;border-radius:2px;overflow:hidden}
+.seg-cb i{display:block;height:100%;background:linear-gradient(90deg,#3C7BEA,#16407F);border-radius:2px}
+@media (max-width:1560px){.seg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1080px){.seg-grid{grid-template-columns:minmax(0,1fr)}.seg-cmp{grid-column:span 1}}
 </style>
 </head>
 <body class="is-masked">
@@ -846,7 +869,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     <section class="view" id="view-progress">
       <div class="card" style="padding:14px 18px;margin-bottom:14px">
         <div class="pg-tb">
-          <div id="pg-tabs"><button type="button" class="fa-tab on" data-pg="overview">总览</button><button type="button" class="fa-tab" data-pg="tender">标段情况</button></div>
+          <div id="pg-tabs"><button type="button" class="fa-tab on" data-pg="overview">总览</button><button type="button" class="fa-tab" data-pg="tender">标段分项完成情况</button></div>
           <div class="pg-tbr">
             <div id="pg-times">
               <select class="pg-sel" id="pg-year"></select>
@@ -4548,10 +4571,40 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         pgTabPaint();
       });
     }
-    var SEG_OPT = {};
+    var SEG_OPT = {}, SEG_CMP = { zlj: 0, lm: 1 };
     function segOpt(tid) {
-      if (!SEG_OPT[tid]) SEG_OPT[tid] = { zlj: 1, lm: 1 };
+      if (!SEG_OPT[tid]) SEG_OPT[tid] = { zlj: 0, lm: 1 };
       return SEG_OPT[tid];
+    }
+    function segCmpCard() {
+      var arr = [];
+      SEG_TEN.forEach(function (tid) {
+        var t = segTender(tid); if (!t) return;
+        var amt = segAmt(tid, SEG_CMP), cum = segCumAll(t, SEG_CMP), rate = amt ? cum / amt : 0;
+        arr.push({ nm: t.name, amt: amt, cum: cum, rate: rate });
+      });
+      arr.sort(function (a, b) { return b.rate - a.rate; });
+      var rows = '<div class="seg-cr hd"><span class="seg-rk">#</span><span>标段</span>'
+        + '<span class="seg-num">合同额</span><span class="seg-num">累计完成</span>'
+        + '<span class="seg-rate">完成比例</span><span></span></div>';
+      arr.forEach(function (x, i) {
+        rows += '<div class="seg-cr' + (i < 3 ? " seg-top3" : "") + '">'
+          + '<span class="seg-rk">' + (i + 1) + "</span>"
+          + "<span>" + x.nm + "</span>"
+          + '<span class="seg-num">' + fmt(x.amt, 0) + "</span>"
+          + '<span class="seg-num">' + fmt(x.cum, 0) + "</span>"
+          + '<span class="seg-rate">' + pct(x.rate) + "</span>"
+          + '<span class="seg-cb"><i style="width:' + (Math.max(0, Math.min(1, x.rate)) * 100).toFixed(1) + '%"></i></span>'
+          + "</div>";
+      });
+      return '<div class="card seg-card seg-cmp">'
+        + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
+        + '<span class="seg-sub">按完成比例排名 · 累计至 ' + (YM || "").replace("-", ".") + '</span></div>'
+        + '<div class="seg-opts" style="margin:10px 0 6px">'
+        + '<button type="button" class="seg-opt' + (SEG_CMP.zlj ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
+        + '<button type="button" class="seg-opt' + (SEG_CMP.lm ? " on" : "") + '" data-copt="lm">含路面工程</button>'
+        + "</div>"
+        + '<div class="seg-crows">' + rows + "</div></div>";
     }
     function segAmt(tid, o) {
       var c = SEG_CTR[tid] || {}, v = c.amt || 0;
@@ -4585,6 +4638,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (!host.__sb) {
         host.__sb = 1;
         host.addEventListener("click", function (e) {
+          var cb = (e.target && e.target.closest) ? e.target.closest("[data-copt]") : null;
+          if (cb) { var ck = cb.getAttribute("data-copt"); SEG_CMP[ck] = !SEG_CMP[ck]; renderSeg(); return; }
           var b = (e.target && e.target.closest) ? e.target.closest("[data-opt]") : null;
           if (!b) return;
           var card = (b.closest ? b.closest(".seg-card") : null); if (!card) return;
@@ -4613,11 +4668,14 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           + '<div class="seg-bar"><em style="width:' + (Math.max(0, Math.min(1, rate)) * 100).toFixed(1) + '%"></em></div>'
           + '<div class="seg-opts">'
           + '<button type="button" class="seg-opt' + (o.zlj ? " on" : "") + '" data-opt="zlj">含暂列金</button>'
-          + '<button type="button" class="seg-opt' + (o.lm ? " on" : "") + '" data-opt="lm">含路面工程</button>'
+          + ((ctr.lm || 0) > 0
+              ? '<button type="button" class="seg-opt' + (o.lm ? " on" : "") + '" data-opt="lm">含路面工程</button>'
+              : "")
           + "</div>"
           + '<div class="seg-proj">' + segProjRows(t, ctr, o) + "</div>"
           + "</div>";
       });
+      h += segCmpCard();
       host.innerHTML = h;
     }
 
