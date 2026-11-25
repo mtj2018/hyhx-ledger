@@ -551,7 +551,10 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-sum-txt{padding:4px 16px 12px;font-size:13px;line-height:1.95;color:#25333F;white-space:pre-line;cursor:pointer;border-radius:4px}
 .tsf-sum-txt:hover{background:#F6F9FD}
 .tsf-cp{font-size:11.5px;color:#8A94A3;padding:0 16px 12px}
-.tsf-pdf{margin-left:12px;padding:6px 14px;border:1px solid #16407F;border-radius:5px;background:#fff;color:#16407F;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap}
+.tsf-exp{margin-left:auto;display:flex;align-items:center;gap:14px}
+.tsf-exp-d{font-size:12px;color:#5F7086;white-space:nowrap}
+.tsf-exp-d b{margin-left:4px;font-size:13.5px;color:#16407F;font-weight:700;font-variant-numeric:tabular-nums}
+.tsf-pdf{margin-left:0;padding:6px 14px;border:1px solid #16407F;border-radius:5px;background:#fff;color:#16407F;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap}
 .tsf-pdf:hover{background:#16407F;color:#fff}
 .tsf-tbl .pg-lk{margin:0;padding:4px 10px;font-size:12px;border-radius:4px;box-shadow:none;letter-spacing:.2px}
 .tsf-tbl .pg-lk.is-on{width:34px;height:26px}
@@ -599,7 +602,7 @@ td.nmc{white-space:nowrap;font-size:12px}
   <main>
     <section class="view is-on" id="view-tsf">
       <div class="card">
-        <div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint" style="display:inline-block"><b>每日更新</b>·填报完成后点击「提交」</span><span class="pg-money">单位：万方</span><button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></div>
+        <div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint" style="display:inline-block"><b>每日更新</b>·填报完成后点击「提交」</span><span class="pg-money">单位：万方</span></div>
       </div>
       <div class="pg-cols">
         <div style="min-width:0"><div class="card" id="tsf-tbl"></div></div>
@@ -1956,7 +1959,7 @@ td.nmc{white-space:nowrap;font-size:12px}
     for (i = 0; i < lead; i++) cells += '<span class="tsf-blank"></span>';
     for (var dd = 1; dd <= total; dd++) {
       var s = ds(y, m, dd), cls = "tsf-day", off = false;
-      if (s < TG.min || s > TG.max) { cls += " off"; off = true; }
+      if (s < TG.min || s > TG.max || s > td) { cls += " off"; off = true; }
       else if (s < td) cls += " past";
       else if (s === td) cls += " today";
       if (s === TS.sel) cls += " sel";
@@ -1988,13 +1991,18 @@ td.nmc{white-space:nowrap;font-size:12px}
   function tsfGoMonth(y, m, pick) {
     if (m < 1) { m = 12; y -= 1; }
     if (m > 12) { m = 1; y += 1; }
+    var t = tday(), ty = +t.slice(0, 4), tm = +t.slice(5, 7);
     if (y < 2026) { y = 2026; m = 11; }
-    if (y > 2029) { y = 2029; m = 12; }
-    if (y === 2029 && m > 12) m = 12;
+    if (y > ty || (y === ty && m > tm)) { y = ty; m = tm; }
     TS.y = y; TS.m = m;
-    var t = tday(), first = ds(y, m, 1);
+    var first = ds(y, m, 1);
     if (first.slice(0, 7) === t.slice(0, 7)) TS.sel = t;
-    else { TS.sel = first; if (TS.sel < TG.min) TS.sel = TG.min; if (TS.sel > TG.max) TS.sel = TG.max; }
+    else {
+      TS.sel = first;
+      if (TS.sel < TG.min) TS.sel = TG.min;
+      if (TS.sel > TG.max) TS.sel = TG.max;
+      if (TS.sel > t) TS.sel = t;
+    }
     tsfRenderAll();
   }
 
@@ -2025,7 +2033,10 @@ td.nmc{white-space:nowrap;font-size:12px}
       + "<td>" + tsfF(t.da, 1) + "</td><td>" + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
       + "<td>" + tsfF(t.db, 1) + "</td><td>" + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td>"
       + '<td class="lkc"></td></tr>';
-    host.innerHTML = '<div class="card-head"><h2>施工日报填报</h2><span class="hint">仅填「当日完成数量」，累计与比例自动计算</span></div>'
+    var dl = d.slice(0, 4) + "年" + (+d.slice(5, 7)) + "月" + (+d.slice(8, 10)) + "日";
+    host.innerHTML = '<div class="card-head"><h2>施工日报填报</h2>'
+      + '<span class="tsf-exp"><span class="tsf-exp-d">填报日期 <b>' + dl + '</b></span>'
+      + '<button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></span></div>'
       + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
       + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%">'
       + '<col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%"><col style="width:8%"></colgroup><thead>'
