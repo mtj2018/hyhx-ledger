@@ -765,6 +765,43 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 /* ===== 地市州右栏：报送流程块靠底对齐，避免留出大片空白或被裁掉 ===== */
 .fa-panel .fcr-head{justify-content:flex-end;overflow:visible;min-height:58px;padding-bottom:10px}
 </style>
+
+<style id="a9css">
+/* ===== 形象进度：页签行 + 标段卡片 ===== */
+.pg-tb{display:flex;align-items:center;gap:12px}
+#pg-tabs{display:flex;gap:8px;padding:0}
+.pg-tbr{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}
+#pg-times{display:flex;align-items:center;gap:8px}
+.pg-cut{font-size:12px;color:var(--muted);white-space:nowrap}
+.seg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.seg-card{margin-bottom:0;padding:14px 16px 12px}
+.seg-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.seg-nm{font-size:15px;font-weight:700;color:#0F2C5C;letter-spacing:.03em}
+.seg-kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:11px}
+.seg-kpi>div{min-width:0}
+.seg-kpi i{display:block;font-style:normal;font-size:11.5px;color:#7A8798;letter-spacing:.02em;line-height:1.5}
+.seg-kpi b{display:block;font-size:17px;font-weight:700;color:#0F2C5C;font-variant-numeric:tabular-nums;
+  letter-spacing:.01em;line-height:1.35}
+.seg-kpi b.seg-pct{color:#16407F}
+.seg-bar{height:4px;background:#EDF1F7;border-radius:2px;margin:11px 0 12px;overflow:hidden}
+.seg-bar em{display:block;height:100%;background:linear-gradient(90deg,#3C7BEA,#16407F);border-radius:2px}
+.seg-opts{display:flex;gap:8px;margin-bottom:11px}
+.seg-opt{font-family:inherit;font-size:11.5px;line-height:1;padding:5px 9px;border-radius:3px;
+  border:1px solid #C9D6E6;background:#fff;color:#61728A;cursor:pointer;white-space:nowrap}
+.seg-opt:hover{border-color:#8FB0DA;color:#16407F}
+.seg-opt.on{background:#EEF4FE;border-color:#8FB0DA;color:#16407F;font-weight:600}
+.seg-proj{border-top:1px solid #E9EEF6}
+.seg-pr{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr) 60px;
+  align-items:center;padding:6px 0;border-bottom:1px solid #F4F7FB;font-size:12px;color:#33465F;
+  font-variant-numeric:tabular-nums}
+.seg-pr:last-child{border-bottom:0}
+.seg-pr.hd{font-size:11px;color:#8794A5;padding:7px 0 5px}
+.seg-pr i{font-style:normal;text-align:right;color:#33465F}
+.seg-pr em{font-style:normal;text-align:right;color:#16407F;font-weight:600}
+.seg-pr.hd i,.seg-pr.hd em{color:#8794A5;font-weight:400}
+.seg-pr.dim{opacity:.42}
+@media (max-width:1100px){.seg-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body class="is-masked">
 
@@ -807,13 +844,17 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
     <!-- ===== 视图：形象进度情况（汇总） ===== -->
     <section class="view" id="view-progress">
-      <div class="card">
-        <div class="card-head"><h2>形象进度管理</h2></div>
-        <div class="ov-tabs" id="pg-tabs"><button type="button" class="fa-tab on" data-pg="overview">总览</button><button type="button" class="fa-tab" data-pg="tender">标段情况</button></div>
-        <div class="pg-bar">
-          <select class="pg-sel" id="pg-year"></select>
-          <select class="pg-sel" id="pg-mon"></select>
-          <span class="pg-hint" id="pg-src">数据来源：工程月报填报页</span>
+      <div class="card" style="padding:14px 18px;margin-bottom:14px">
+        <div class="pg-tb">
+          <div id="pg-tabs"><button type="button" class="fa-tab on" data-pg="overview">总览</button><button type="button" class="fa-tab" data-pg="tender">标段情况</button></div>
+          <div class="pg-tbr">
+            <div id="pg-times">
+              <select class="pg-sel" id="pg-year"></select>
+              <select class="pg-sel" id="pg-mon"></select>
+            </div>
+            <span class="pg-cut" id="pg-cut" style="display:none"></span>
+            <span class="pg-hint" id="pg-src">数据来源：工程月报填报页</span>
+          </div>
         </div>
       </div>
       <div class="pg-split" id="pg-ov">
@@ -823,9 +864,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           <div class="card" id="pg-ppl"></div>
         </div>
       </div>
-      <div id="pg-seg" style="display:none">
-        <div class="card" id="pg-seg-card"></div>
-      </div>
+      <div id="pg-seg" class="seg-grid" style="display:none"></div>
     </section>
 
     <!-- ===== 视图：项目总览 ===== -->
@@ -4471,7 +4510,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     ];
     var SEG_TEN = ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"];
     /* 合同额：取「合同清单」各章节金额（万元） */
-    var SEG_CTR = {"t1": {"lj": 103402, "qh": 102057, "lm": 61049, "lh": 7016, "jc": 148869}, "t2": {"lj": 29175, "qh": 102165, "lm": 0, "lh": 1129, "jc": 90341}, "t3": {"lj": 39048, "qh": 28659, "lm": 0, "lh": 1414, "jc": 40541}, "t4": {"lj": 43476, "qh": 16843, "lm": 34867, "lh": 1932, "jc": 47008}, "t5": {"lj": 46913, "qh": 47231, "lm": 0, "lh": 1566, "jc": 58485}, "t6": {"lj": 43860, "qh": 27096, "lm": 42860, "lh": 1129, "jc": 61014}, "t7": {"lj": 53657, "qh": 42331, "lm": 54488, "lh": 3182, "jc": 60885}, "t8": {"lj": 56532, "qh": 47795, "lm": 0, "lh": 2114, "jc": 35268}, "t9": {"lj": 43673, "qh": 12691, "lm": 48212, "lh": 3177, "jc": 56503}, "t10": {"lj": 45082, "qh": 21222, "lm": 0, "lh": 4491, "jc": 17554}};
+    var SEG_CTR = {"t1": {"amt": 539259, "zlj": 26072, "lj": 103402, "qh": 102057, "lm": 61049, "lh": 7016, "jc": 148869}, "t2": {"amt": 257748, "zlj": 13334, "lj": 29175, "qh": 102165, "lm": 0, "lh": 1129, "jc": 90341}, "t3": {"amt": 135061, "zlj": 7418, "lj": 39048, "qh": 28659, "lm": 0, "lh": 1414, "jc": 40541}, "t4": {"amt": 177118, "zlj": 9907, "lj": 43476, "qh": 16843, "lm": 34867, "lh": 1932, "jc": 47008}, "t5": {"amt": 185962, "zlj": 10425, "lj": 46913, "qh": 47231, "lm": 0, "lh": 1566, "jc": 58485}, "t6": {"amt": 203745, "zlj": 10420, "lj": 43860, "qh": 27096, "lm": 42860, "lh": 1129, "jc": 61014}, "t7": {"amt": 265310, "zlj": 13564, "lj": 53657, "qh": 42331, "lm": 54488, "lh": 3182, "jc": 60885}, "t8": {"amt": 176634, "zlj": 10580, "lj": 56532, "qh": 47795, "lm": 0, "lh": 2114, "jc": 35268}, "t9": {"amt": 200344, "zlj": 10590, "lj": 43673, "qh": 12691, "lm": 48212, "lh": 3177, "jc": 56503}, "t10": {"amt": 120065, "zlj": 6609, "lj": 45082, "qh": 21222, "lm": 0, "lh": 4491, "jc": 17554}};
     function segTender(tid) {
       var out = null;
       BASE.tenders.forEach(function (x) { if (x.tid === tid) out = x; });
@@ -4492,8 +4531,11 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         x.classList.toggle("on", x.getAttribute("data-pg") === PG_TAB);
       });
       var ov = q("#pg-ov"), sg = q("#pg-seg");
+      var tp = q("#pg-times"), ct = q("#pg-cut");
       if (ov) ov.style.display = (PG_TAB === "tender") ? "none" : "";
       if (sg) sg.style.display = (PG_TAB === "tender") ? "" : "none";
+      if (tp) tp.style.display = (PG_TAB === "tender") ? "none" : "";
+      if (ct) ct.style.display = (PG_TAB === "tender") ? "" : "none";
       if (PG_TAB === "tender") renderSeg();
     }
     function pgTabBind() {
@@ -4506,33 +4548,77 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         pgTabPaint();
       });
     }
+    var SEG_OPT = {};
+    function segOpt(tid) {
+      if (!SEG_OPT[tid]) SEG_OPT[tid] = { zlj: 1, lm: 1 };
+      return SEG_OPT[tid];
+    }
+    function segAmt(tid, o) {
+      var c = SEG_CTR[tid] || {}, v = c.amt || 0;
+      if (!o.zlj) v -= (c.zlj || 0);
+      if (!o.lm) v -= (c.lm || 0);
+      return v;
+    }
+    function segCumAll(t, o) {
+      var s = 0;
+      t.out.forEach(function (row) {
+        if (!o.lm && row.nm === "路面工程") return;
+        s += outAt(t, row, YM).cum;
+      });
+      return s;
+    }
+    function segProjRows(t, ctr, o) {
+      var h = '<div class="seg-pr hd"><span>项目</span><i>合同额</i><i>累计完成</i><em>完成率</em></div>';
+      SEG_PROJ.forEach(function (p) {
+        var cv = ctr[p.key], cum = segCum(t, p);
+        var has = (cv !== undefined && cv !== null && cv !== 0);
+        var dim = (p.key === "lm" && !o.lm) ? " dim" : "";
+        h += '<div class="seg-pr' + dim + '"><span>' + p.label + "</span>"
+          + "<i>" + (has ? fmt(cv, 0) : "—") + "</i>"
+          + "<i>" + (has && cum !== null ? fmt(cum, 0) : "—") + "</i>"
+          + "<em>" + (has ? pct((cum || 0) / cv) : "—") + "</em></div>";
+      });
+      return h;
+    }
     function renderSeg() {
-      var host = q("#pg-seg-card"); if (!host) return;
-      var rows = "", totC = 0, totV = 0;
+      var host = q("#pg-seg"); if (!host) return;
+      if (!host.__sb) {
+        host.__sb = 1;
+        host.addEventListener("click", function (e) {
+          var b = (e.target && e.target.closest) ? e.target.closest("[data-opt]") : null;
+          if (!b) return;
+          var card = (b.closest ? b.closest(".seg-card") : null); if (!card) return;
+          var o = segOpt(card.getAttribute("data-tid"));
+          var k = b.getAttribute("data-opt");
+          o[k] = !o[k];
+          renderSeg();
+        });
+      }
+      var yms = (YM || "").split("-");
+      var cut = q("#pg-cut");
+      if (cut) cut.textContent = "累计至 " + (yms[0] || "") + " 年 " + (parseInt(yms[1], 10) || "") + " 月";
+      var h = "";
       SEG_TEN.forEach(function (tid) {
         var t = segTender(tid); if (!t) return;
-        var ctr = SEG_CTR[tid] || {};
-        rows += '<tr><td class="c nmc" rowspan="' + SEG_PROJ.length + '">' + t.name + "</td>";
-        SEG_PROJ.forEach(function (p, i) {
-          var cv = ctr[p.key], cum = segCum(t, p), has = (cv !== undefined && cv !== null && cv !== 0);
-          if (has) { totC += cv; if (cum !== null) totV += cum; }
-          rows += (i ? "<tr>" : "")
-            + '<td class="c">' + p.label + "</td>"
-            + '<td class="c num">' + (has ? fmt(cv, 0) : "—") + "</td>"
-            + '<td class="c num">' + (has ? fmt(cum === null ? 0 : cum, 0) : "—") + "</td>"
-            + '<td class="c num">' + ((has && cum !== null && cv) ? pct(cum / cv) : "—") + "</td></tr>";
-        });
+        var ctr = SEG_CTR[tid] || {}, o = segOpt(tid);
+        var amt = segAmt(tid, o), cum = segCumAll(t, o);
+        var rate = amt ? cum / amt : 0;
+        h += '<div class="card seg-card" data-tid="' + tid + '">'
+          + '<div class="seg-hd"><span class="seg-nm">' + t.name + "</span></div>"
+          + '<div class="seg-kpi">'
+          + "<div><i>合同总额（万元）</i><b>" + fmt(amt, 0) + "</b></div>"
+          + "<div><i>累计完成（万元）</i><b>" + fmt(cum, 0) + "</b></div>"
+          + '<div><i>完成比例</i><b class="seg-pct">' + pct(rate) + "</b></div>"
+          + "</div>"
+          + '<div class="seg-bar"><em style="width:' + (Math.max(0, Math.min(1, rate)) * 100).toFixed(1) + '%"></em></div>'
+          + '<div class="seg-opts">'
+          + '<button type="button" class="seg-opt' + (o.zlj ? " on" : "") + '" data-opt="zlj">含暂列金</button>'
+          + '<button type="button" class="seg-opt' + (o.lm ? " on" : "") + '" data-opt="lm">含路面工程</button>'
+          + "</div>"
+          + '<div class="seg-proj">' + segProjRows(t, ctr, o) + "</div>"
+          + "</div>";
       });
-      rows += '<tr class="total"><td class="c" colspan="2">合计</td>'
-        + '<td class="c num">' + fmt(totC, 0) + "</td>"
-        + '<td class="c num">' + fmt(totV, 0) + "</td>"
-        + '<td class="c num">' + (totC ? pct(totV / totC) : "—") + "</td></tr>";
-      host.innerHTML = head("标段完成情况（万元）", YM.replace("-", " 年 ") + " 月　土建 1–10 标",
-          '<span class="pg-hint">合同额取合同清单 · 累计完成取工程月报</span>')
-        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr">'
-        + '<thead><tr><th style="width:14%">标段</th><th style="width:16%">项目</th>'
-        + '<th style="width:23%">合同额（万元）</th><th style="width:23%">累计完成（万元）</th>'
-        + '<th style="width:24%">完成百分比</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+      host.innerHTML = h;
     }
 
 
