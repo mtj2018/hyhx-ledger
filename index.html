@@ -4691,9 +4691,10 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       var t = b.querySelector(".sc-t");
       if (!t) return;
       b.className = "sync-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
+      /* 成功态不显示任何文案：只在失败/进行中留状态，避免"已自动保存"这类提示反复出现 */
       t.textContent = st === "warn" ? "未同步云端 · 已存本机"
-        : st === "busy" ? "正在保存并同步…"
-        : (ONLINE ? "已自动保存并同步云端" : "已自动保存（本机）");
+        : st === "busy" ? "正在保存…" : "";
+      b.style.display = (st === "warn" || st === "busy") ? "" : "none";
       if (txt) b.setAttribute("title", txt); else b.setAttribute("title", "本页改动会自动保存并写回云端");
       if (SC_T) { clearTimeout(SC_T); SC_T = null; }
       if (st === "busy") SC_T = setTimeout(function () { syncChip(ONLINE ? "ok" : "warn"); }, 12000);
