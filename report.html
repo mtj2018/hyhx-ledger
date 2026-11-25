@@ -555,6 +555,11 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-exp{margin-left:auto;display:flex;align-items:center;gap:14px}
 .tsf-exp-d{font-size:12px;color:#5F7086;white-space:nowrap}
 .tsf-exp-d b{margin-left:4px;font-size:13.5px;color:#16407F;font-weight:700;font-variant-numeric:tabular-nums}
+.tsf-sync{display:none;align-items:center;gap:5px;font-size:11px;line-height:1;color:#5F7086;letter-spacing:.02em}
+.tsf-sync.on{display:inline-flex}
+.tsf-sync i{width:6px;height:6px;border-radius:50%;background:#2E8B57;display:block;flex:0 0 6px}
+.tsf-sync.err i{background:#C08A2A}
+.tsf-sync em{font-style:normal}
 .tsf-pdf{margin-left:0;padding:6px 14px;border:1px solid #16407F;border-radius:5px;background:#fff;color:#16407F;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap}
 .tsf-pdf:hover{background:#16407F;color:#fff}
 .tsf-tbl .pg-lk{margin:0;padding:4px 10px;font-size:12px;border-radius:4px;box-shadow:none;letter-spacing:.2px}
@@ -1827,11 +1832,11 @@ td.nmc{white-space:nowrap;font-size:12px}
                 var bad = paths.filter(function (p) { return !same(getAt(back, p), getAt(localAll, p)); });
                 snap();
                 if (bad.length) flag("云端核对有差异：" + bad.slice(0, 2).map(function (p) { return p.join("/"); }).join("、"), false);
-                else flag("已保存并同步云端 · " + new Date(ts).toLocaleTimeString(), true);
+                else { flag("已保存并同步云端 · " + new Date(ts).toLocaleTimeString(), true); tsfSync("ok", ts); }
               });
           });
       })
-      .catch(function (e) { flag("云端未同步（" + (e && e.message ? e.message : e) + "）", false); });
+      .catch(function (e) { flag("云端未同步（" + (e && e.message ? e.message : e) + "）", false); tsfSync("err"); });
   }
   function pushCloud() {
     if (!ONLINE || !SYNC_OK) return Promise.resolve();
@@ -1854,7 +1859,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       /* 线上版：云端更新时才覆盖，避免冲掉正在填的内容 */
       if ((o.ts || 0) >= (DB.ts || 0)) {
         DB = { ts: o.ts || 0, reports: o.data.reports || {}, jr: o.data.jr || {}, tsf: o.data.tsf || DB.tsf || {}, tsfBase: o.data.tsfBase || DB.tsfBase || {} };
-        persistLocal(); snap(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true);
+        persistLocal(); snap(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true); tsfSync("ok", o.ts);
       }
     } catch (e) {}
   }
@@ -2028,9 +2033,20 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
 
   function tsfNm(s) { var i = s.indexOf("标"); return i >= 0 ? s.slice(0, i + 1) + "<br>" + s.slice(i + 1) : s; }
+  /* 土石方页极简同步点位：只在线上真正写回成功时亮绿点 */
+  var TSFSYNC = { st: "", ts: 0 };
+  function tsfSync(st, ts) {
+    if (st) { TSFSYNC.st = st; if (ts) TSFSYNC.ts = ts; }
+    var w = $("#tsf-sync"); if (!w) return;
+    var ok = TSFSYNC.st === "ok";
+    w.className = "tsf-sync" + (TSFSYNC.st ? " on" : "") + (ok ? "" : " err");
+    var em = w.querySelector("em");
+    if (em) em.textContent = ok ? "已同步" : (TSFSYNC.st === "err" ? "未同步" : "");
+    w.title = (ok && TSFSYNC.ts) ? "最近同步 " + new Date(TSFSYNC.ts).toLocaleTimeString() : (TSFSYNC.st ? "云端写入未成功" : "");
+  }
   /* 顶部锁控制的列（设计量 / 累计完成）：锁定时与「总数量」一致为纯文本，解锁后为可编辑录入框 */
   function tsfFixCell(id, k, attr, val, dp, lk) {
-    if (FIXOPEN && !lk) {
+    if (FIXOPEN) {
       return '<td id="' + id + '"><input class="pgi pgc" ' + attr + '="' + k + '" value="' + tsfF(val, dp) + '"></td>';
     }
     return '<td id="' + id + '">' + tsfF(val, dp) + "</td>";
@@ -2069,7 +2085,8 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<td class="lkc"></td></tr>';
     var dl = d.slice(0, 4) + "年" + (+d.slice(5, 7)) + "月" + (+d.slice(8, 10)) + "日";
     host.innerHTML = '<div class="card-head"><h2>数据信息填报</h2>'
-      + '<span class="tsf-exp"><span class="tsf-exp-d">填报日期 <b>' + dl + '</b></span>'
+      + '<span class="tsf-exp"><span class="tsf-sync" id="tsf-sync"><i></i><em></em></span>'
+      + '<span class="tsf-exp-d">填报日期 <b>' + dl + '</b></span>'
       + '<button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></span></div>'
       + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
       + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%">'
@@ -2079,6 +2096,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<tr><th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th>'
       + '<th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th></tr>'
       + "</thead><tbody>" + body + "</tbody></table></div>";
+    tsfSync();
   }
   function tsfRenderSum() {
     var host = $("#tsf-sum"); if (!host) return;
