@@ -505,8 +505,6 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-pct-note b{font-weight:700}
 .pgc[readonly]{background:#F2F4F8!important;color:#5B6675!important;cursor:not-allowed;border-color:#DCE2EC!important}
 /* ===== 土石方日报 ===== */
-.tsf-bot{display:grid;grid-template-columns:minmax(0,352px) minmax(0,1fr);gap:14px;align-items:start}
-@media (max-width:1180px){.tsf-bot{grid-template-columns:1fr}}
 .tsf-cal{padding:4px 12px 12px}
 .tsf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
 .tsf-bar .pg-sel{min-width:76px;font-size:12.5px;padding:4px 6px}
@@ -599,13 +597,18 @@ td.nmc{white-space:nowrap;font-size:12px}
 
   <main>
     <section class="view is-on" id="view-tsf">
-      <div class="card" id="tsf-tbl"></div>
-      <div class="tsf-bot">
-        <div class="card">
-          <div class="card-head"><h2>填报日期</h2><span class="hint">点击日期切换</span></div>
-          <div class="tsf-cal" id="tsf-cal"></div>
+      <div class="card">
+        <div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint">每日更新·填报完成后点击「提交」</span><span class="pg-money">单位：万方</span><button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></div>
+      </div>
+      <div class="pg-cols">
+        <div style="min-width:0"><div class="card" id="tsf-tbl"></div></div>
+        <div class="pg-right">
+          <div class="card">
+            <div class="card-head"><h2>填报日期</h2><span class="hint">点击日期切换</span></div>
+            <div class="tsf-cal" id="tsf-cal"></div>
+          </div>
+          <div class="card" id="tsf-sum"></div>
         </div>
-        <div class="card" id="tsf-sum"></div>
       </div>
     </section>
     <section class="view" id="view-report">
@@ -2005,7 +2008,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       + "<td>" + tsfF(t.da, 1) + "</td><td>" + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
       + "<td>" + tsfF(t.db, 1) + "</td><td>" + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td>"
       + '<td class="lkc"></td></tr>';
-    host.innerHTML = '<div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint">每日更新·填报完成后点击「提交」</span><span class="pg-money">单位：万方</span><button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></div>'
+    host.innerHTML = '<div class="card-head"><h2>施工日报填报</h2><span class="hint">仅填「当日完成数量」，累计与比例自动计算</span></div>'
       + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
       + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%">'
       + '<col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%"><col style="width:8%"></colgroup><thead>'
