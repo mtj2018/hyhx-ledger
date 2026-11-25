@@ -505,7 +505,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-pct-note b{font-weight:700}
 .pgc[readonly]{background:#F2F4F8!important;color:#5B6675!important;cursor:not-allowed;border-color:#DCE2EC!important}
 /* ===== 土石方日报 ===== */
-.tsf-cal{padding:8px 16px 12px}
+.tsf-cal{padding:6px 16px 10px}
 .tsf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
 .tsf-bar .pg-sel{min-width:92px}
 .tsf-step{width:30px;height:32px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--navy);cursor:pointer;font-family:inherit;font-size:13px;line-height:1}
@@ -519,8 +519,8 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-dot.red{background:#D14343}
 .tsf-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px}
 .tsf-week span{text-align:center;font-size:12px;color:#8A94A3;padding:2px 0}
-.tsf-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.tsf-day{position:relative;height:46px;line-height:46px;text-align:center;border:1px solid #E3E8F0;border-radius:5px;background:#fff;color:#20303F;font-size:14.5px;cursor:pointer;font-family:inherit;padding:0;font-variant-numeric:tabular-nums}
+.tsf-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.tsf-day{position:relative;height:34px;line-height:34px;text-align:center;border:1px solid #E3E8F0;border-radius:4px;background:#fff;color:#20303F;font-size:13px;cursor:pointer;font-family:inherit;padding:0;font-variant-numeric:tabular-nums}
 .tsf-day:hover{border-color:#16407F;color:#16407F}
 .tsf-day.past{background:#F2F4F7;border-color:#E8EBF1;color:#9AA6B5}
 .tsf-day.past:hover{border-color:#C9D2E0;color:#5B6675}
@@ -529,8 +529,8 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-day.sel{box-shadow:0 0 0 2px rgba(22,64,127,.28)}
 .tsf-day.off{background:#FAFBFC;border-color:#F1F3F7;color:#D8DEE6;cursor:default}
 .tsf-day.off:hover{border-color:#F1F3F7;color:#D8DEE6}
-.tsf-blank{display:block;height:46px}
-.tsf-day em{position:absolute;left:50%;bottom:7px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#2F6B3C}
+.tsf-blank{display:block;height:34px}
+.tsf-day em{position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#2F6B3C}
 .tsf-day.half em{background:#fff;border:1px solid #C08A2A}
 .tsf-day.miss em{background:#D14343;border:1px solid #D14343}
 .tsf-wrap{overflow-x:auto;padding:0 14px 12px}
@@ -1948,7 +1948,6 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<i><span class="tsf-dot"></span>已全部提交</i>'
       + '<i><span class="tsf-dot red"></span>有标段未提交</i>'
       + "</div></div>"
-      + '<div class="tsf-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>'
       + '<div class="tsf-days">' + cells + "</div>";
     host.querySelector("#tsf-y").addEventListener("change", function () { tsfGoMonth(+this.value, TS.m, 1); });
     host.querySelector("#tsf-m").addEventListener("change", function () { tsfGoMonth(TS.y, +this.value, 1); });
