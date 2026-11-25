@@ -3927,14 +3927,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (mon === null) mon = 0;
       return { mon: mon, cum: cum };
     }
-    /* 产值「合同额」：可编辑，落在台账数据 S 里（键 oc1…ocN），没有手工值时用模板值 */
-    function ctOf(i, baseV) {
-      var v;
-      try { v = S["oct" + i]; } catch (e) { v = null; }
-      if (v === undefined || v === null || v === "") return baseV;
-      var n = Number(String(v).replace(/,/g, ""));
-      return isFinite(n) ? n : baseV;
-    }
     function pplAt(t, ym) {
       var mgr = ev(t.tid, ym, "ppl", "mgr"), wkr = ev(t.tid, ym, "ppl", "worker");
       if (mgr === null) mgr = t.people.mgr || 0;
@@ -3984,6 +3976,13 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     }
 
     /* ---- 汇总：产值 ---- */
+    /* 合同额只读：直接取「合同清单」各章节合同额（万元），不再人工录入 */
+    var CTRCH = {"临时工程与设施":134232,"路基工程":504818,"路面工程":241476,"桥涵工程":448090,"绿化工程":27150,"改扩建工程":174747,"集采材料到工地价":616468,"交安工程":75299,"机电工程":98982};
+    var CTRALIAS = { "桥梁工程": "桥涵工程" };
+    function ctrChOf(n) {
+      var k = CTRALIAS[n] || n, v = CTRCH[k];
+      return (v === undefined || v === null) ? null : v;
+    }
     function aggOut(ym) {
       var map = {}, order = [];
       BASE.tenders.forEach(function (t) {
@@ -3999,8 +3998,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       FIX.forEach(function (n, i) { if (map[n]) { map[n].no = String(i + 1); ordered.push(map[n]); } });
       order.forEach(function (k) { if (FIX.indexOf(k) < 0) ordered.push(map[k]); });
       var rows = ordered;
-      /* 合同额支持人工修改：按固定行序生成键 oc1…ocN */
-      rows.forEach(function (r, i) { r.ci = i + 1; r.contract = ctOf(r.ci, r.contract); });
+      /* 合同额只读：按章节名取「合同清单」金额；无对应章节的行保留汇总值 */
+      rows.forEach(function (r, i) { r.ci = i + 1; var v = ctrChOf(r.name); if (v !== null) r.contract = v; });
       var tot = { name: "合计", no: "", contract: 0, mon: 0, cum: 0, ci: 0 };
       rows.forEach(function (r) { tot.contract += r.contract; tot.mon += r.mon; tot.cum += r.cum; });
       rows.push(tot);
@@ -4286,39 +4285,19 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     function outLabel(n) { return n === "集采材料到工地价" ? "集采材料" : n; }
     function renderOut() {
       var rows = aggOut(YM).map(function (r) {
-        var ctCell = (r.name === "合计")
-          ? '<td class="r">' + fmt(r.contract, 0) + "</td>"
-          : '<td class="r"><input class="pgi" data-k="oct' + r.ci + '" data-int="1" value="' + fmt(r.contract, 0)
-            + '" style="width:100%;max-width:118px;text-align:center" aria-label="合同额（万元）"></td>';
         return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + outLabel(r.name) + "</td>"
-          + ctCell + '<td class="r">' + fmt(r.mon, 0) + "</td>"
+          + '<td class="r">' + fmt(r.contract, 0) + "</td>"
+          + '<td class="r">' + fmt(r.mon, 0) + "</td>"
           + '<td class="r">' + fmt(r.cum, 0) + "</td>"
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
       }).join("");
       q("#pg-out").innerHTML = head("产值完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-        + '<th>项目</th><th style="width:124px" class="r">合同额</th>'
+        + '<th>项目</th><th style="width:118px" class="r">合同额</th>'
         + '<th style="width:114px" class="r">本月完成</th><th style="width:126px" class="r">累计完成</th>'
         + '<th style="width:86px" class="r">完成比例</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
-      bindCtInputs();
     }
-    /* 合同额手工输入：写入台账 S，触发一次保存 */
-    function bindCtInputs() {
-      Array.prototype.forEach.call(document.querySelectorAll('#pg-out input[data-k^="oc"]'), function (t) {
-        if (t.__ctBound) return;
-        t.__ctBound = true;
-        t.addEventListener("change", function () {
-          var k = t.dataset.k, v = t.value.replace(/,/g, "").trim();
-          try { S[k] = v === "" ? "" : String(Number(v)); } catch (e) {}
-          t.value = v === "" ? "" : fmt(Math.round(Number(v)), 0);
-          try { if (window.__pgSaveNow) window.__pgSaveNow(); } catch (e) {}
-          renderOut();
-        });
-        t.addEventListener("keydown", function (ev) {
-          if (ev.key === "Enter") { ev.preventDefault(); t.blur(); }
-        });
-      });
-    }
+    /* 合同额改为只读（取「合同清单」章节金额），不再提供手工录入框 */
 
     function renderPpl() {
       var rows = BASE.tenders.map(function (t) {
@@ -4380,12 +4359,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     function applyModLock() {
       var locked = false;
       try { locked = (typeof LOCKED !== "undefined") ? !!LOCKED : true; } catch (e) { locked = true; }
-      Array.prototype.forEach.call(document.querySelectorAll('#pg-out input[data-k^="oc"]'), function (t) {
-        lockOne(t, locked);
-        t.style.background = locked ? "#FFFFFF" : "#FFFDF1";
-        t.style.border = locked ? "1px solid #E3E8EF" : "1px solid #F1E6C3";
-        t.style.cursor = locked ? "default" : "text";
-      });
       Array.prototype.forEach.call(document.querySelectorAll(".view input, .view textarea"), function (t) {
         if (t.closest && t.closest("#pg-gate")) return;
         lockOne(t, locked);
