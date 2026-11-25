@@ -401,9 +401,9 @@ main{min-width:0}
   color:var(--navy);border-radius:3px;min-width:110px}
 .pg-sel:focus{outline:none;border-color:var(--blue)}
 .pg-hint{font-size:12px;color:var(--muted);margin-left:auto}
-.pg-cols{display:grid;grid-template-columns:minmax(0,1.98fr) minmax(0,1.02fr);gap:14px;align-items:start}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1.98fr) minmax(0,1.02fr);gap:14px;align-items:stretch}
 .pg-right{display:flex;flex-direction:column;gap:14px}
-.pg-cols2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:start}
+.pg-cols2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:stretch}
 @media (max-width:1180px){.pg-cols{grid-template-columns:1fr}.pg-cols2{grid-template-columns:1fr}}
 .pg-tbl{width:100%;table-layout:auto}
 .pg-tbl th{white-space:nowrap;font-size:12.5px;padding:6px 6px}
@@ -584,7 +584,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .pg-st-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
 .pg-st-ok .pg-st-dot{background:#2E9159}
 .pg-st-no .pg-st-dot{background:#C14343}
-.pg-split{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(0,512px);gap:14px;align-items:start}
+.pg-split{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(0,512px);gap:14px;align-items:stretch}
 .pg-right{display:flex;flex-direction:column;gap:14px;min-width:0}
 .pg-right .pg-tbl th:nth-child(2),.pg-right .pg-tbl td:nth-child(2){min-width:118px}
 .pg-right .pg-tbl{font-size:12.5px}
@@ -650,7 +650,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 <style>
 /* ===== 项目基本情况：标签通栏 + 合同清单 B/C 分区 ===== */
 .ov-tabs{display:flex;gap:8px;flex-wrap:wrap}
-.ov-split{display:grid;grid-template-columns:minmax(0,1.92fr) minmax(0,1fr);gap:14px;align-items:start}
+.ov-split{display:grid;grid-template-columns:minmax(0,1.92fr) minmax(0,1fr);gap:14px;align-items:stretch}
 @media (max-width:1180px){.ov-split{grid-template-columns:minmax(0,1fr)}}
 .ov-side .card{min-height:560px;background:#fff}
 .ctr-chap{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--hair)}
@@ -773,7 +773,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .pg-tbr{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}
 #pg-times{display:flex;align-items:center;gap:8px}
 .pg-cut{font-size:12px;color:var(--muted);white-space:nowrap}
-.seg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.seg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
 .seg-card{margin-bottom:0;padding:14px 16px 12px}
 .seg-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .seg-nm{font-size:15px;font-weight:700;color:#0F2C5C;letter-spacing:.03em}
@@ -805,19 +805,19 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
 <style id="a10css">
 /* ===== 形象进度：标段分项完成情况（三列 + 对比卡） ===== */
-.seg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
-.seg-cmp{grid-column:span 2}
+.seg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.seg-cmp{grid-column:span 2;display:flex;flex-direction:column}
 .seg-cmp .seg-sub{font-size:11.5px;color:#7A8798;white-space:nowrap}
 .seg-crows{margin-top:2px;border-top:1px solid #E9EEF6}
-.seg-cr{display:grid;grid-template-columns:26px minmax(0,.95fr) minmax(0,1.02fr) minmax(0,1.02fr) 58px 76px;
+.seg-cr{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr) minmax(0,.9fr) 64px 70px 40px;
   align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #F4F7FB;font-size:12px;color:#33465F;
   font-variant-numeric:tabular-nums}
 .seg-cr:last-child{border-bottom:0}
 .seg-cr.hd{font-size:11px;color:#8794A5;padding:7px 0 5px}
 .seg-cr.hd .seg-rate{color:#8794A5;font-weight:400}
-.seg-rk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
-  background:#EEF2F8;color:#61728A;font-size:11.5px;font-weight:700}
-.seg-cr.seg-top3 .seg-rk{background:#EEF4FE;color:#16407F}
+.seg-rk{text-align:center;font-size:11.5px;font-weight:700;color:#7A8798}
+.seg-cmp .seg-crows{flex:1}
+.seg-cmp .seg-cr{padding:4px 0}
 .seg-num{text-align:right}
 .seg-rate{text-align:right;color:#16407F;font-weight:600}
 .seg-cb{height:4px;background:#EDF1F7;border-radius:2px;overflow:hidden}
@@ -859,7 +859,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       <a class="nav-item" href="#files" data-view="files"><span>重要文档管理</span></a>
       <a class="nav-item" href="#other" data-view="other"><span>其他信息</span></a>
     </nav>
-    <a class="nav-jump" target="_blank" rel="noopener" href="https://mtj2018.github.io/hyhx-ledger/report.html" title="打开工程月报填报页（B 页，线上）"><span>基础数据填报</span></a>
+    <a class="nav-jump" target="_blank" rel="noopener" href="report.html" title="打开工程月报填报页（B 页）"><span>基础数据填报</span></a>
 
   </aside>
 
@@ -869,7 +869,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     <section class="view" id="view-progress">
       <div class="card" style="padding:14px 18px;margin-bottom:14px">
         <div class="pg-tb">
-          <div id="pg-tabs"><button type="button" class="fa-tab on" data-pg="overview">总览</button><button type="button" class="fa-tab" data-pg="tender">标段分项完成情况</button></div>
+          <div id="pg-tabs"><button type="button" class="fa-tab on" data-pg="overview">总览</button><button type="button" class="fa-tab" data-pg="tender">完成率统计</button></div>
           <div class="pg-tbr">
             <div id="pg-times">
               <select class="pg-sel" id="pg-year"></select>
@@ -4577,30 +4577,34 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       return SEG_OPT[tid];
     }
     function segCmpCard() {
-      var arr = [];
+      var arr = [], byRate = [];
       SEG_TEN.forEach(function (tid) {
         var t = segTender(tid); if (!t) return;
         var amt = segAmt(tid, SEG_CMP), cum = segCumAll(t, SEG_CMP), rate = amt ? cum / amt : 0;
-        arr.push({ nm: t.name, amt: amt, cum: cum, rate: rate });
+        arr.push({ tid: tid, nm: t.name, amt: amt, cum: cum, rate: rate });
       });
-      arr.sort(function (a, b) { return b.rate - a.rate; });
-      var rows = '<div class="seg-cr hd"><span class="seg-rk">#</span><span>标段</span>'
+      byRate = arr.slice().sort(function (a, b) { return b.rate - a.rate; });
+      var rankOf = {};
+      byRate.forEach(function (x, i) { rankOf[x.tid] = i + 1; });
+      var rows = '<div class="seg-cr hd"><span>标段</span>'
         + '<span class="seg-num">合同额</span><span class="seg-num">累计完成</span>'
-        + '<span class="seg-rate">完成比例</span><span></span></div>';
-      arr.forEach(function (x, i) {
-        rows += '<div class="seg-cr' + (i < 3 ? " seg-top3" : "") + '">'
-          + '<span class="seg-rk">' + (i + 1) + "</span>"
+        + '<span class="seg-rate">完成比例</span><span></span><span class="seg-rk">名次</span></div>';
+      arr.forEach(function (x) {
+        var rk = rankOf[x.tid], col = "#7A8798";
+        if (rk <= 3) col = "#C0392B"; else if (rk >= arr.length - 2) col = "#1E7B4B";
+        rows += '<div class="seg-cr">'
           + "<span>" + x.nm + "</span>"
           + '<span class="seg-num">' + fmt(x.amt, 0) + "</span>"
           + '<span class="seg-num">' + fmt(x.cum, 0) + "</span>"
           + '<span class="seg-rate">' + pct(x.rate) + "</span>"
           + '<span class="seg-cb"><i style="width:' + (Math.max(0, Math.min(1, x.rate)) * 100).toFixed(1) + '%"></i></span>'
+          + '<span class="seg-rk" style="color:' + col + '">' + rk + "</span>"
           + "</div>";
       });
       return '<div class="card seg-card seg-cmp">'
         + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
-        + '<span class="seg-sub">按完成比例排名 · 累计至 ' + (YM || "").replace("-", ".") + '</span></div>'
-        + '<div class="seg-opts" style="margin:10px 0 6px">'
+        + '<span class="seg-sub">累计至 ' + (YM || "").replace("-", ".") + '</span></div>'
+        + '<div class="seg-opts" style="margin:8px 0 4px">'
         + '<button type="button" class="seg-opt' + (SEG_CMP.zlj ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
         + '<button type="button" class="seg-opt' + (SEG_CMP.lm ? " on" : "") + '" data-copt="lm">含路面工程</button>'
         + "</div>"
@@ -4652,7 +4656,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       var yms = (YM || "").split("-");
       var cut = q("#pg-cut");
       if (cut) cut.textContent = "累计至 " + (yms[0] || "") + " 年 " + (parseInt(yms[1], 10) || "") + " 月";
-      var h = "";
+      var h = segCmpCard();
       SEG_TEN.forEach(function (tid) {
         var t = segTender(tid); if (!t) return;
         var ctr = SEG_CTR[tid] || {}, o = segOpt(tid);
@@ -4675,7 +4679,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           + '<div class="seg-proj">' + segProjRows(t, ctr, o) + "</div>"
           + "</div>";
       });
-      h += segCmpCard();
       host.innerHTML = h;
     }
 
