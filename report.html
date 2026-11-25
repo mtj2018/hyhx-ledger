@@ -2007,8 +2007,8 @@ td.nmc{white-space:nowrap;font-size:12px}
       if (s === TS.sel) cls += " sel";
       var n = tsfDone(s), dot = "";
       if (!off) {
-        if (s < td) { dot = "<em></em>"; if (n < TG.rows.length) cls += " miss"; }
-        else if (n > 0) { dot = "<em></em>"; if (n < TG.rows.length) cls += " half"; }
+        if (s < td) { dot = "<em></em>"; if (n < tsfGrpN()) cls += " miss"; }
+        else if (n > 0) { dot = "<em></em>"; if (n < tsfGrpN()) cls += " half"; }
       }
       cells += '<button type="button" class="' + cls + '" data-tsf-d="' + s + '"' + (off ? " disabled" : "") + ">" + dd + dot + "</button>";
     }
@@ -2254,16 +2254,7 @@ td.nmc{white-space:nowrap;font-size:12px}
     var side = (t.dataset.tsfA !== undefined) ? "a" : "b", val = t.value;
     if (val !== "" && !/^\d*\.?\d*$/.test(val)) { t.classList.add("bad"); return; }
     var rec = tsfRec(TS.sel, k, true), n = (val === "") ? "" : Number(val);
-    var other = (side === "a") ? rec.b : rec.a;
-    var on = (other === undefined || other === "" || other === null) ? 0 : Number(other);
-    if (side === "b" && n !== "" && n > on) {
-      t.value = (other === undefined || other === "" || other === null) ? "" : tsfF(on, 2);
-      flag("仅保通侧的当日完成数量不得大于整体情况", false); return;
-    }
-    if (side === "a" && n !== "" && n < on) {
-      t.value = tsfF(on, 2);
-      flag("整体情况的当日完成数量不得小于仅保通侧", false); return;
-    }
+    /* 今日完成不再做整体/仅保通侧的大小限制，允许任意录入 */
     t.classList.remove("bad");
     rec[side] = n; DIRTY = true;
     tsfPaint(k); tsfPaintTotals(); tsfRenderSum();
