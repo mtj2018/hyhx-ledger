@@ -556,6 +556,11 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-exp{margin-left:auto;display:flex;align-items:center;gap:14px}
 .tsf-exp-d{font-size:12px;color:#5F7086;white-space:nowrap}
 .tsf-exp-d b{margin-left:4px;font-size:13.5px;color:#16407F;font-weight:700;font-variant-numeric:tabular-nums}
+.tsf-sync{display:none;align-items:center;gap:5px;font-size:11px;line-height:1;color:#5F7086;letter-spacing:.02em}
+.tsf-sync.on{display:inline-flex}
+.tsf-sync i{width:6px;height:6px;border-radius:50%;background:#2E8B57;display:block;flex:0 0 6px}
+.tsf-sync.err i{background:#C08A2A}
+.tsf-sync em{font-style:normal}
 .tsf-pdf{margin-left:0;padding:6px 14px;border:1px solid #16407F;border-radius:5px;background:#fff;color:#16407F;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap}
 .tsf-pdf:hover{background:#16407F;color:#fff}
 .tsf-tbl .pg-lk{margin:0;padding:4px 10px;font-size:12px;border-radius:4px;box-shadow:none;letter-spacing:.2px}
@@ -633,6 +638,10 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .pg-gate-tip{margin-top:2px;font-size:11.5px;color:#8A96A8;letter-spacing:.01em}
 .pg-gate-box.shake{animation:pgshake .38s}
 @keyframes pgshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+
+/* 地市州右栏顶部分隔线：颜色与左侧 KPI 底线一致，避免两条线深浅不一 */
+.fa-panel .fcr-head{border-bottom-color:#DCE3EF}
 
 </style>
 <style>
@@ -3367,6 +3376,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     var bar = b.closest ? b.closest(".wf-bar") : null;
     if (bar) bar.innerHTML = faFlowSteps(k);
     try { if (window.__pgSaveNow) window.__pgSaveNow(); } catch (e1) {}
+    try { if (window.__pgPushKey) window.__pgPushKey("faflow_" + k); } catch (e2) {}
   });
 
   function faCheckRail(c, cm) {
@@ -3602,16 +3612,31 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (p.style.display === "none") return;
       var head = p.querySelector(".fcr-head"), tbl = p.querySelector(".fa-tbl");
       if (!head || !tbl) return;
+      var ftbl = p.querySelector(".fcr-tbl");
+      if (ftbl) ftbl.style.marginTop = "0px";
       head.style.height = "0px";
-      var d = tbl.querySelector("thead tr").getBoundingClientRect().top - head.getBoundingClientRect().top;
+      var htop = head.getBoundingClientRect().top;
+      /* 顶部分隔线：与左侧 KPI 那一行的底线齐平（不再按表格首行推算） */
+      var kpi = p.querySelector(".kpi");
+      var d = kpi
+        ? kpi.getBoundingClientRect().bottom - htop
+        : tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
+      if (d > 300) d = tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
       head.style.height = (d > 0 ? Math.round(d) : 0) + "px";
-      var m0 = tbl.querySelector("tbody tr"), r0 = p.querySelector(".fcr-tbl tbody tr");
-      if (m0 && r0) {
+      /* 行对齐改由表格上外边距承担，避免把分隔线推走 */
+      var m0 = tbl.querySelector("tbody tr"), r0 = ftbl ? ftbl.querySelector("tbody tr") : null;
+      if (m0 && r0 && ftbl) {
         var delta = Math.round(m0.getBoundingClientRect().top - r0.getBoundingClientRect().top);
-        if (delta) head.style.height = Math.max(0, Math.round(d) + delta) + "px";
+        ftbl.style.marginTop = (delta > 0 ? delta : 0) + "px";
       }
     });
   }
+
+  var __faRailT = null;
+  window.addEventListener("resize", function () {
+    if (__faRailT) clearTimeout(__faRailT);
+    __faRailT = setTimeout(function () { __faRailT = null; try { faAlignRail(); } catch (e) {} }, 120);
+  });
 
   function showFA(k) {
     document.querySelectorAll("#fa-wrap .fa-panel").forEach(function (p) {
@@ -4484,7 +4509,13 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           if (led && led.data) {
             var localTs = Number(localStorage.getItem(CLOUD.ledgerTsKey) || 0);
             if (Number(led.ts || 0) > localTs) {
-              localStorage.setItem(KEY, JSON.stringify(led.data));
+              var __cur = {}, __mix = {}, __kk;
+              try { __cur = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e9) {}
+              for (__kk in led.data) { if (Object.prototype.hasOwnProperty.call(led.data, __kk)) __mix[__kk] = led.data[__kk]; }
+              for (__kk in __cur) {
+                if (/^faflow_/.test(__kk) && !Object.prototype.hasOwnProperty.call(__mix, __kk)) __mix[__kk] = __cur[__kk];
+              }
+              localStorage.setItem(KEY, JSON.stringify(__mix));
               localStorage.setItem(CLOUD.ledgerTsKey, String(led.ts || 0));
               location.reload();
             }
@@ -4542,6 +4573,50 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       pushQueue = pushQueue.then(doPush, doPush);
       return pushQueue;
     }
+    /* 单字段直写：流程状态这类“一点即变”的开关字段，不做 SYNC_OK 门槛，写后回读核对，失败重试 */
+    function writeKeyOnce(k, tryNo) {
+      return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (j) {
+          var led = parseFile((j.files || {})[CLOUD.ledger]);
+          var cloud = (led && led.data) ? led.data : {}, merged = {}, kk;
+          for (kk in cloud) { if (Object.prototype.hasOwnProperty.call(cloud, kk)) merged[kk] = cloud[kk]; }
+          merged[k] = S[k];
+          var ts2 = Date.now(), body = { files: {} };
+          body.files[CLOUD.ledger] = { content: JSON.stringify({ ts: ts2, data: merged }) };
+          return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) })
+            .then(function (r) { if (!r.ok) throw new Error(r.status); localStorage.setItem(CLOUD.ledgerTsKey, String(ts2)); });
+        })
+        .then(function () {
+          return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (jj) {
+              var back = parseFile((jj.files || {})[CLOUD.ledger]), d = back && back.data;
+              if (!d || JSON.stringify(d[k]) !== JSON.stringify(S[k])) throw new Error("verify");
+            });
+        })
+        .catch(function (e) {
+          if (tryNo > 0) {
+            return new Promise(function (res) { setTimeout(res, tryNo === 1 ? 700 : 1600); })
+              .then(function () { return writeKeyOnce(k, tryNo - 1); });
+          }
+          throw e;
+        });
+    }
+    function pushKey(k) {
+      if (!ONLINE) return Promise.resolve();
+      var run = function () {
+        return writeKeyOnce(k, 2).then(function () {
+          try { SNAP[k] = JSON.parse(JSON.stringify(S[k])); } catch (e0) {}
+        });
+      };
+      pushQueue = pushQueue.then(run, run).catch(function (e) {
+        console.warn("字段写回失败", k, e && e.message ? e.message : e);
+      });
+      return pushQueue;
+    }
+    window.__pgPushKey = pushKey;
+
     window.__pgPushLedger = pushLedger;
 
     /* ---- 自动保存：所有填报项停止输入约 1.2 秒后落盘（线上同时写回云端） ---- */
