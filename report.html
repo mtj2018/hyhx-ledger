@@ -415,6 +415,7 @@ td.c input.pgi,input.pgc{text-align:center}
 .card-head .pg-lk{white-space:nowrap;flex:0 0 auto}
 .card-head .hint.pg-flag{margin-left:14px;margin-right:auto;display:inline-flex;align-items:center;gap:6px;background:#FDECEA;border:1px solid #F2C3BC;border-left:3px solid #C0392B;border-radius:4px;padding:5px 11px;font-size:12.5px;line-height:1;color:#9E2B21;letter-spacing:.3px;white-space:nowrap;box-shadow:0 1px 2px rgba(192,57,43,.08)}
 .pg-flag b{color:#B3261E;font-weight:800}
+#tsf-hint b{font-weight:800}
 .pg-flag i{font-style:normal;color:#D58B82}
 .pg-lk{margin-left:12px;padding:7px 22px;border:1px solid #16407F;border-radius:6px;background:#16407F;color:#fff;font-size:13px;font-weight:700;letter-spacing:.6px;line-height:1.45;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto;box-shadow:0 2px 7px rgba(22,64,127,.32);transition:background .15s,box-shadow .15s,transform .12s}
 .pg-lk:hover{background:#1F5AA8;box-shadow:0 3px 10px rgba(22,64,127,.4)}
@@ -598,7 +599,7 @@ td.nmc{white-space:nowrap;font-size:12px}
   <main>
     <section class="view is-on" id="view-tsf">
       <div class="card">
-        <div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint">每日更新·填报完成后点击「提交」</span><span class="pg-money">单位：万方</span><button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></div>
+        <div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint" style="display:inline-block"><b>每日更新</b>·填报完成后点击「提交」</span><span class="pg-money">单位：万方</span><button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></div>
       </div>
       <div class="pg-cols">
         <div style="min-width:0"><div class="card" id="tsf-tbl"></div></div>
@@ -1699,10 +1700,26 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
   function api() { return "https://api.github.com/gists/" + CLOUD.gistId; }
   function hdr() { return { "Authorization": "Bearer " + CLOUD.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" }; }
+  var TSF_HINT_HTML = '<b>每日更新</b>·填报完成后点击「提交」';
+  var TSF_HINT_T = null;
   function flag(s, ok) {
     var h = $("#pg-hint");
     var tv = $("#view-tsf");
-    if (tv && tv.classList.contains("is-on") && $("#tsf-hint")) h = $("#tsf-hint");
+    /* 土石方页：自动保存、已提交、已解锁、已读取线上这类状态一律不提示 */
+    if (tv && tv.classList.contains("is-on")) {
+      if (ok) return;
+      h = $("#tsf-hint");
+      if (h) {
+        h.textContent = s; h.style.color = "#A24A18";
+        if (TSF_HINT_T) clearTimeout(TSF_HINT_T);
+        TSF_HINT_T = setTimeout(function () {
+          var e = $("#tsf-hint");
+          if (e) { e.innerHTML = TSF_HINT_HTML; e.style.color = ""; }
+          TSF_HINT_T = null;
+        }, 5000);
+      }
+      return;
+    }
     if (h) { h.textContent = s; h.style.color = ok ? "#2F6B3C" : "#A24A18"; }
   }
   /* 线上访问才写回云端；本机 file:// 只读 */
@@ -1993,11 +2010,11 @@ td.nmc{white-space:nowrap;font-size:12px}
         + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
         + '<td class="en">' + r.en + "</td>"
         + "<td>" + tsfF(r.da, 1) + "</td>"
-        + '<td><input class="pgi" data-tsf-a="' + r.k + '" value="' + (rec.a === undefined ? "" : tsfF(rec.a, 2)) + '" placeholder="0.00"' + ro + "></td>"
+        + '<td><input class="pgi" data-tsf-a="' + r.k + '" value="' + (rec.a === undefined ? "" : tsfF(rec.a, 2)) + '"' + ro + "></td>"
         + '<td id="tsf-ca-' + r.k + '">' + tsfF(cums[r.k].a, 1) + "</td>"
         + '<td id="tsf-ra-' + r.k + '">' + tsfP(cums[r.k].a, r.da) + "</td>"
         + "<td>" + tsfF(r.db, 1) + "</td>"
-        + '<td><input class="pgi" data-tsf-b="' + r.k + '" value="' + (rec.b === undefined ? "" : tsfF(rec.b, 2)) + '" placeholder="0.00"' + ro + "></td>"
+        + '<td><input class="pgi" data-tsf-b="' + r.k + '" value="' + (rec.b === undefined ? "" : tsfF(rec.b, 2)) + '"' + ro + "></td>"
         + '<td id="tsf-cb-' + r.k + '">' + tsfF(cums[r.k].b, 1) + "</td>"
         + '<td id="tsf-rb-' + r.k + '">' + tsfP(cums[r.k].b, r.db) + "</td>"
         + (r.nm ? '<td class="lkc"' + (two ? ' rowspan="2"' : "") + ">" + tsfLkBtn(r.k, lk) + "</td>" : "")
