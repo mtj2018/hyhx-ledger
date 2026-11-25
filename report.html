@@ -506,29 +506,21 @@ td.nmc{white-space:nowrap;font-size:12px}
 .pgc[readonly]{background:#F2F4F8!important;color:#5B6675!important;cursor:not-allowed;border-color:#DCE2EC!important}
 /* ===== 土石方日报 ===== */
 .tsf-cal{padding:8px 16px 12px}
-.tsf-cg{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:26px;align-items:start}
-@media (max-width:1100px){.tsf-cg{grid-template-columns:1fr}}
-.tsf-side{border-left:1px dashed #E1E7F0;padding:2px 0 2px 24px}
-@media (max-width:1100px){.tsf-side{border-left:0;padding-left:0;border-top:1px dashed #E1E7F0;padding-top:12px}}
-.tsf-sid-d{font-size:21px;font-weight:700;color:#16407F;letter-spacing:.6px;line-height:1.3}
-.tsf-sid-w{font-size:12px;color:#6B7684;margin-top:3px}
-.tsf-sid-s{margin-top:12px;font-size:12.5px;color:#3D4B5C}
-.tsf-sid-bar{height:6px;border-radius:3px;background:#EDF1F7;overflow:hidden;margin-top:6px;width:min(320px,100%)}
-.tsf-sid-bar i{display:block;height:100%;background:#16407F;border-radius:3px}
-.tsf-sid-l{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px 14px;font-size:11.5px;color:#6B7684}
-.tsf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:9px}
-.tsf-bar .pg-sel{min-width:88px}
-.tsf-step{width:28px;height:30px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--navy);cursor:pointer;font-family:inherit;font-size:13px;line-height:1}
+.tsf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.tsf-bar .pg-sel{min-width:92px}
+.tsf-step{width:30px;height:32px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--navy);cursor:pointer;font-family:inherit;font-size:13px;line-height:1}
 .tsf-step:hover{border-color:var(--blue);color:var(--blue)}
-.tsf-leg{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:11.5px;color:#6B7684}
-.tsf-leg i{font-style:normal;display:inline-flex;align-items:center;gap:5px}
-.tsf-sw{width:10px;height:10px;border-radius:2px;border:1px solid #E3E8F0;background:#fff;display:inline-block}
+.tsf-leg{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#6B7684}
+.tsf-leg i{font-style:normal;display:inline-flex;align-items:center;gap:6px}
+.tsf-sw{width:11px;height:11px;border-radius:2px;border:1px solid #E3E8F0;background:#fff;display:inline-block}
 .tsf-sw.past{background:#F2F4F7;border-color:#E8EBF1}
 .tsf-sw.today{background:#16407F;border-color:#16407F}
-.tsf-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:4px}
-.tsf-week span{text-align:center;font-size:11.5px;color:#8A94A3;padding:2px 0}
-.tsf-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
-.tsf-day{position:relative;height:32px;line-height:32px;text-align:center;border:1px solid #E3E8F0;border-radius:4px;background:#fff;color:#20303F;font-size:12.5px;cursor:pointer;font-family:inherit;padding:0}
+.tsf-dot{width:5px;height:5px;border-radius:50%;background:#2F6B3C;display:inline-block}
+.tsf-dot.red{background:#D14343}
+.tsf-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px}
+.tsf-week span{text-align:center;font-size:12px;color:#8A94A3;padding:2px 0}
+.tsf-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.tsf-day{position:relative;height:46px;line-height:46px;text-align:center;border:1px solid #E3E8F0;border-radius:5px;background:#fff;color:#20303F;font-size:14.5px;cursor:pointer;font-family:inherit;padding:0;font-variant-numeric:tabular-nums}
 .tsf-day:hover{border-color:#16407F;color:#16407F}
 .tsf-day.past{background:#F2F4F7;border-color:#E8EBF1;color:#9AA6B5}
 .tsf-day.past:hover{border-color:#C9D2E0;color:#5B6675}
@@ -537,20 +529,23 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-day.sel{box-shadow:0 0 0 2px rgba(22,64,127,.28)}
 .tsf-day.off{background:#FAFBFC;border-color:#F1F3F7;color:#D8DEE6;cursor:default}
 .tsf-day.off:hover{border-color:#F1F3F7;color:#D8DEE6}
-.tsf-blank{display:block;height:32px}
-.tsf-day em{position:absolute;left:50%;bottom:3px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#2F6B3C}
+.tsf-blank{display:block;height:46px}
+.tsf-day em{position:absolute;left:50%;bottom:7px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#2F6B3C}
 .tsf-day.half em{background:#fff;border:1px solid #C08A2A}
+.tsf-day.miss em{background:#D14343;border:1px solid #D14343}
 .tsf-wrap{overflow-x:auto;padding:0 14px 12px}
 .tsf-tbl{width:100%;table-layout:fixed;border-collapse:collapse}
 .tsf-tbl th,.tsf-tbl td{border:1px solid #E3E8F0;text-align:center;padding:3px;font-size:12.5px}
-.tsf-tbl th{background:#F2F6FB;color:#1E3A6E;font-weight:600;line-height:1.35}
+.tsf-tbl th{background:#F2F6FB;color:#1E3A6E;font-weight:600;line-height:1.35;font-size:12px}
+.tsf-tbl tbody tr{height:40px}
 .tsf-tbl td.nm{color:#1E3A6E;font-weight:600;line-height:1.3}
 .tsf-tbl td.en{color:#3D4B5C}
 .tsf-tbl tr.total td{background:#F7F9FC;color:#16407F;font-weight:700}
-.tsf-in{width:100%;border:0;background:transparent;text-align:center;font-family:inherit;font-size:12.5px;color:#16407F;padding:3px 0;border-radius:3px}
-.tsf-in:focus{outline:none;background:#EAF2FC}
-.tsf-in[readonly]{color:#5B6675}
-.tsf-in.bad{background:#FDECEC}
+.tsf-tbl td .pgi{width:100%;max-width:96px;margin:0 auto;border:1px solid #EFE6C6;border-radius:2px;background:#FFFDF0;font-family:inherit;font-size:12.5px;line-height:1.4;color:var(--navy);padding:2px 6px;text-align:center;font-variant-numeric:tabular-nums}
+.tsf-tbl td .pgi:hover{background:#FFF9E0;border-color:#E6D9A8}
+.tsf-tbl td .pgi:focus{outline:none;background:#FFF6D4;border-color:#D9C77A;box-shadow:inset 0 -2px 0 var(--blue)}
+.tsf-tbl td .pgi[readonly]{background:#F1F3F7;border-color:#E3E8EF;color:#5B6675;cursor:not-allowed}
+.tsf-tbl td .pgi.bad{background:#FDECEC;border-color:#E8B4B4}
 .tsf-tbl td.lkc{padding:2px}
 .tsf-sum-txt{padding:4px 16px 12px;font-size:13px;line-height:1.95;color:#25333F;white-space:pre-line;cursor:pointer;border-radius:4px}
 .tsf-sum-txt:hover{background:#F6F9FD}
@@ -1934,31 +1929,27 @@ td.nmc{white-space:nowrap;font-size:12px}
       else if (s === td) cls += " today";
       if (s === TS.sel) cls += " sel";
       var n = tsfDone(s), dot = "";
-      if (n > 0) { dot = "<em></em>"; if (n < TG.rows.length) cls += " half"; }
+      if (!off) {
+        if (s < td) { dot = "<em></em>"; if (n < TG.rows.length) cls += " miss"; }
+        else if (n > 0) { dot = "<em></em>"; if (n < TG.rows.length) cls += " half"; }
+      }
       cells += '<button type="button" class="' + cls + '" data-tsf-d="' + s + '"' + (off ? " disabled" : "") + ">" + dd + dot + "</button>";
     }
     for (j = 0; j < (7 - (lead + total) % 7) % 7; j++) cells += '<span class="tsf-blank"></span>';
-    var p = TS.sel.split("-"), wk = "日一二三四五六".charAt(new Date(+p[0], +p[1] - 1, +p[2]).getDay());
-    var dn = tsfDone(TS.sel), all = TG.rows.length, pw = all ? Math.round(dn / all * 100) : 0;
-    host.innerHTML = '<div class="tsf-cg"><div class="tsf-cal-main">'
-      + '<div class="tsf-bar">'
+    host.innerHTML = '<div class="tsf-bar">'
       + '<button type="button" class="tsf-step" data-tsf-mv="-1" title="上个月">‹</button>'
       + '<select class="pg-sel" id="tsf-y">' + oy + "</select>"
       + '<select class="pg-sel" id="tsf-m">' + om + "</select>"
       + '<button type="button" class="tsf-step" data-tsf-mv="1" title="下个月">›</button>'
-      + "</div>"
+      + '<div class="tsf-leg">'
+      + '<i><span class="tsf-sw past"></span>已过日期</i>'
+      + '<i><span class="tsf-sw today"></span>当天</i>'
+      + '<i><span class="tsf-sw"></span>未到日期</i>'
+      + '<i><span class="tsf-dot"></span>已全部提交</i>'
+      + '<i><span class="tsf-dot red"></span>有标段未提交</i>'
+      + "</div></div>"
       + '<div class="tsf-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>'
-      + '<div class="tsf-days">' + cells + "</div>"
-      + "</div><div class=\"tsf-side\">"
-      + '<div class="tsf-sid-d">' + TS.sel.replace(/-/g, ".") + "</div>"
-      + '<div class="tsf-sid-w">星期' + wk + (TS.sel === td ? " · 今天" : "") + "</div>"
-      + '<div class="tsf-sid-s">已提交标段 <b style=\"color:#16407F\">' + dn + " / " + all + "</b>" + (dn >= all ? "（当日已全部提交）" : "") + "</div>"
-      + '<div class="tsf-sid-bar"><i style="width:' + pw + '%"></i></div>'
-      + '<div class="tsf-sid-l"><i style="font-style:normal;display:inline-flex;align-items:center;gap:5px"><span class="tsf-sw past"></span>已过日期（灰）</i>'
-      + '<i style="font-style:normal;display:inline-flex;align-items:center;gap:5px"><span class="tsf-sw today"></span>当天（蓝）</i>'
-      + '<i style="font-style:normal;display:inline-flex;align-items:center;gap:5px"><span class="tsf-sw"></span>未到日期</i>'
-      + '<i style="font-style:normal">· 圆点为已提交</i></div>'
-      + "</div></div>";
+      + '<div class="tsf-days">' + cells + "</div>";
     host.querySelector("#tsf-y").addEventListener("change", function () { tsfGoMonth(+this.value, TS.m, 1); });
     host.querySelector("#tsf-m").addEventListener("change", function () { tsfGoMonth(TS.y, +this.value, 1); });
   }
@@ -1982,18 +1973,20 @@ td.nmc{white-space:nowrap;font-size:12px}
     TG.rows.forEach(function (r, i) {
       var rec = day[r.k] || {}, lk = !!rec.lk, ro = lk ? " readonly" : "";
       var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
+      var two = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm);
       body += "<tr>"
         + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
         + '<td class="en">' + r.en + "</td>"
         + "<td>" + tsfF(r.da, 1) + "</td>"
-        + '<td><input class="tsf-in" data-tsf-a="' + r.k + '" value="' + (rec.a === undefined ? "" : tsfF(rec.a, 2)) + '" placeholder="0.00"' + ro + "></td>"
+        + '<td><input class="pgi" data-tsf-a="' + r.k + '" value="' + (rec.a === undefined ? "" : tsfF(rec.a, 2)) + '" placeholder="0.00"' + ro + "></td>"
         + '<td id="tsf-ca-' + r.k + '">' + tsfF(cums[r.k].a, 1) + "</td>"
         + '<td id="tsf-ra-' + r.k + '">' + tsfP(cums[r.k].a, r.da) + "</td>"
         + "<td>" + tsfF(r.db, 1) + "</td>"
-        + '<td><input class="tsf-in" data-tsf-b="' + r.k + '" value="' + (rec.b === undefined ? "" : tsfF(rec.b, 2)) + '" placeholder="0.00"' + ro + "></td>"
+        + '<td><input class="pgi" data-tsf-b="' + r.k + '" value="' + (rec.b === undefined ? "" : tsfF(rec.b, 2)) + '" placeholder="0.00"' + ro + "></td>"
         + '<td id="tsf-cb-' + r.k + '">' + tsfF(cums[r.k].b, 1) + "</td>"
         + '<td id="tsf-rb-' + r.k + '">' + tsfP(cums[r.k].b, r.db) + "</td>"
-        + '<td class="lkc">' + tsfLkBtn(r.k, lk) + "</td></tr>";
+        + (r.nm ? '<td class="lkc"' + (two ? ' rowspan="2"' : "") + ">" + tsfLkBtn(r.k, lk) + "</td>" : "")
+        + "</tr>";
     });
     var t = tsfTotals(d, cums);
     body += '<tr class="total"><td class="nm" colspan="2">合计</td>'
@@ -2002,12 +1995,12 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<td class="lkc"></td></tr>';
     host.innerHTML = '<div class="card-head"><h2>填报明细</h2><span class="hint" id="tsf-info">' + tsfInfoHtml(d) + "</span></div>"
       + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
-      + '<col style="width:20%"><col style="width:9%"><col style="width:7.5%"><col style="width:8.5%"><col style="width:8%"><col style="width:7.5%">'
-      + '<col style="width:7.5%"><col style="width:8.5%"><col style="width:8%"><col style="width:7.5%"><col style="width:8%"></colgroup><thead>'
+      + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%">'
+      + '<col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%"><col style="width:8%"></colgroup><thead>'
       + '<tr><th rowspan="2">标段</th><th rowspan="2">工程<br>内容</th>'
       + '<th colspan="4">整体情况</th><th colspan="4">仅保通侧</th><th rowspan="2">提交</th></tr>'
-      + '<tr><th>设计量</th><th>当日完成<br>数量</th><th>累计完成<br>数量</th><th>累计完成<br>比例</th>'
-      + '<th>设计量</th><th>当日完成<br>数量</th><th>累计完成<br>数量</th><th>累计完成<br>比例</th></tr>'
+      + '<tr><th>设计量</th><th>当日完成<br>数量</th><th>累计完成量</th><th>比例</th>'
+      + '<th>设计量</th><th>当日完成<br>数量</th><th>累计完成量</th><th>比例</th></tr>'
       + "</thead><tbody>" + body + "</tbody></table></div>";
   }
   function tsfRenderSum() {
@@ -2067,39 +2060,48 @@ td.nmc{white-space:nowrap;font-size:12px}
       var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
       rows += "<tr>" + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
         + '<td class="en">' + r.en + "</td>"
-        + "<td>" + tsfF(r.da, 1) + "</td><td>" + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
+        + "<td>" + tsfF(r.da, 1) + '</td><td class="z">' + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
         + "<td>" + tsfF(cums[r.k].a, 1) + "</td><td>" + tsfP(cums[r.k].a, r.da) + "</td>"
-        + "<td>" + tsfF(r.db, 1) + "</td><td>" + tsfF(rec.b === undefined ? 0 : rec.b, 2) + "</td>"
+        + "<td>" + tsfF(r.db, 1) + '</td><td class="z">' + tsfF(rec.b === undefined ? 0 : rec.b, 2) + "</td>"
         + "<td>" + tsfF(cums[r.k].b, 1) + "</td><td>" + tsfP(cums[r.k].b, r.db) + "</td>"
         + '<td class="tag">' + r.tag + "</td></tr>";
     });
     rows += '<tr class="tot"><td class="nm" colspan="2">合计</td>'
-      + "<td>" + tsfF(t.da, 1) + "</td><td>" + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
-      + "<td>" + tsfF(t.db, 1) + "</td><td>" + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td><td></td></tr>";
+      + "<td>" + tsfF(t.da, 1) + '</td><td class="z">' + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
+      + "<td>" + tsfF(t.db, 1) + '</td><td class="z">' + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td><td></td></tr>";
     var dn = d.replace(/-/g, ".");
     return "<!DOCTYPE html><html><head><meta charset='utf-8'><title>土石方工程专项施工日报（" + dn + "）</title><style>"
-      + "@page{size:A4 portrait;margin:13mm 13mm}"
-      + "body{font-family:'SimSun','宋体',serif;color:#000;margin:0;padding:0}"
-      + "h1{font-size:19pt;font-weight:700;text-align:center;letter-spacing:1.5px;margin:0 0 12px}"
-      + ".meta{display:flex;justify-content:space-between;font-size:10.5pt;margin:0 2px 5px}"
-      + "table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9pt}"
-      + "th,td{border:1px solid #000;padding:4px 2px;text-align:center;vertical-align:middle;word-break:break-all}"
-      + "th{background:#EDF2F7;font-weight:600;line-height:1.3;font-size:8pt}"
-      + "td.nm{line-height:1.25;white-space:normal}"
-      + "tr.tot td{font-weight:700}"
-      + ".note{font-size:10.5pt;line-height:1.95;margin:10px 2px 0;text-indent:2em;text-align:justify}"
-      + ".note b{text-indent:0}"
+      + "@page{size:A4 portrait;margin:20mm 20mm}"
+      + "html{-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+      + "body{font-family:'FangSong','仿宋',serif;color:#000;margin:0;padding:0}"
+      + "h1{font-family:'SimHei','黑体',serif;font-size:18.7pt;font-weight:700;text-align:center;letter-spacing:.5pt;margin:0 0 9pt}"
+      + ".meta{display:flex;justify-content:space-between;font-family:'KaiTi','楷体',serif;font-size:9.4pt;margin:0 1pt 4pt}"
+      + "table{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Times New Roman',serif;font-size:9.4pt}"
+      + "th,td{border:.6pt solid #000;padding:0;text-align:center;vertical-align:middle;line-height:1.05}"
+      + "thead tr:first-child{height:26pt}"
+      + "thead tr:last-child{height:25pt}"
+      + "tbody tr{height:34.7pt}"
+      + "th{font-family:'SimHei','黑体',serif;font-weight:700;font-size:7.3pt;line-height:1.15}"
+      + "th.grp{font-size:10.3pt}"
+      + "td.z{background:#EBF8F7}"
+      + "td.nm{font-family:'FangSong','仿宋',serif;font-size:9.4pt;line-height:1.2}"
+      + "td.en{font-family:'FangSong','仿宋',serif;font-size:8.3pt}"
+      + "td.tag{font-family:'Times New Roman',serif;font-size:8.3pt}"
+      + "tr.tot td{font-weight:400}"
+      + ".note{font-family:'FangSong','仿宋',serif;font-size:12.5pt;line-height:1.22;margin:9pt 0 0;text-indent:2em;text-align:justify}"
+      + ".note b{font-weight:700}"
+      + ".note.n2{margin-top:16pt}"
       + "</style></head><body>"
       + "<h1>" + TG.title + "</h1>"
       + '<div class="meta"><span>统计日期：' + dn + '</span><span>单位：万方</span></div>'
       + "<table><thead>"
-      + '<tr><th rowspan="2" style="width:16%">标段</th><th rowspan="2" style="width:11%">工程<br>内容</th>'
-      + '<th colspan="4">整体情况</th><th colspan="4">仅保通侧</th><th rowspan="2" style="width:8%">备注</th></tr>'
-      + "<tr><th>设计量</th><th>当日完成<br>数量</th><th>累计完成<br>数量</th><th>累计完成<br>比例</th>"
-      + "<th>设计量</th><th>当日完成<br>数量</th><th>累计完成<br>数量</th><th>累计完成<br>比例</th></tr>"
+      + '<tr><th rowspan="2" style="width:12%">标段</th><th rowspan="2" style="width:10.2%">工程<br>内容</th>'
+      + '<th class="grp" colspan="4">整体情况</th><th class="grp" colspan="4">仅保通侧</th><th rowspan="2" style="width:9%">备注</th></tr>'
+      + '<tr><th>设计量</th><th class="z">当日完成<br>数量</th><th>累计完成量</th><th>比例</th>'
+      + '<th>设计量</th><th class="z">当日完成<br>数量</th><th>累计完成量</th><th>比例</th></tr>'
       + "</thead><tbody>" + rows + "</tbody></table>"
       + '<p class="note"><b>说明：</b>' + TG.note1 + "</p>"
-      + '<p class="note"><b>备注：</b>' + TG.note2 + "</p>"
+      + '<p class="note n2"><b>备注：</b>' + TG.note2 + "</p>"
       + "</body></html>";
   }
   function tsfPdf() {
