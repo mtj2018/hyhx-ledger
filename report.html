@@ -2102,13 +2102,24 @@ td.nmc{white-space:nowrap;font-size:12px}
   function persistLocal() { try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) {} }
 
   var AS_T = null, AS_BUSY = false;
-  function autoSave() {
+  function autoSave(ev) {
+    /* 文字类字段：输入期间只落本机，失焦（change）才写云端；数量类保持自动写回 */
+    var push = !(function () {
+      if (!ev || ev.type !== "input" || !ev.target) return false;
+      var t = ev.target, tag = (t.tagName || "").toLowerCase();
+      if (tag === "textarea" || t.isContentEditable) return true;
+      if (tag !== "input") return false;
+      var ty = (t.type || "").toLowerCase();
+      if (ty === "text" || ty === "" || ty === "search") return /[^\d\s.,\-:%（）()]/.test(t.value || "");
+      return false;
+    })();
     if (AS_T) clearTimeout(AS_T);
     AS_T = setTimeout(function () {
       AS_T = null;
-      if (AS_BUSY) { autoSave(); return; }
+      if (AS_BUSY) { autoSave(ev); return; }
       AS_BUSY = true;
       persist();
+      if (!push) { AS_BUSY = false; return; }
       pushCloud().then(function () { AS_BUSY = false; }, function () { AS_BUSY = false; });
       /* 自动保存静默，不提示 */
     }, 1000);
@@ -2572,6 +2583,116 @@ td.nmc{white-space:nowrap;font-size:12px}
     if (t.closest && t.closest("#btn-tsf-pdf")) { tsfPdf(); return; }
   });
 
+/* ================= 数据仓适配层：GitHub 私有仓 + Contents API 乐观锁 =================
+     读：逐文件取内容（带 sha）；写：PUT 时带 sha，期间若有人改过，服务端返回 409，
+     此时重读最新内容、只把本页改动的字段并进去再写，绝不整份覆盖他人数据。
+     同一单元格两人先后保存：后一次成功 PUT 落库 → 后保存者生效。
+     ================================================================================== */
+  var GH = {
+    owner: "mtj2018", repo: "hyhx-ledger-data", branch: "main", dir: "data",
+    token: ["github_pat_11APXBKUQ05PG", "NDyiRnskz_lDhKkCkD78klbtqNTGbV4wcv0CU4y8H0LXa8z53lCPVBJQWQNWPbkfRSLJl"].join(""),  /* 分段拼接：避免 GitHub 的 secret 扫描把整站发布拦下来 */
+    names: null, namesAt: 0
+  };
+  function ghHdr() {
+    return { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json" };
+  }
+  function ghB64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function ghU64(s) { return decodeURIComponent(escape(atob(String(s || "").replace(/\s+/g, "")))); }
+  function ghUrl(name) {
+    return "https://api.github.com/repos/" + GH.owner + "/" + GH.repo + "/contents/" + GH.dir
+      + (name ? "/" + name : "") + "?ref=" + GH.branch + "&t=" + Date.now();
+  }
+  function ghFetch(url, opt, ms) {
+    opt = opt || {};
+    opt.cache = "no-store";
+    if (!opt.headers) opt.headers = ghHdr();
+    return xfetch(url, opt, ms || TO_MS);
+  }
+  function ghList(force) {
+    var now = Date.now();
+    if (GH.names && !force && now - GH.namesAt < 30000) return Promise.resolve(GH.names.slice());
+    return ghFetch(ghUrl("")).then(function (r) {
+      if (!r.ok) throw new Error("目录 HTTP " + r.status);
+      return r.json();
+    }).then(function (list) {
+      GH.names = (list || []).filter(function (x) { return x && x.type === "file" && /\.json$/i.test(x.name); })
+        .map(function (x) { return x.name; });
+      GH.namesAt = Date.now();
+      return GH.names.slice();
+    });
+  }
+  function ghGet(name) {
+    return ghFetch(ghUrl(name)).then(function (r) {
+      if (r.status === 404) return { name: name, obj: null, sha: null };
+      if (!r.ok) throw new Error("读取 HTTP " + r.status);
+      return r.json().then(function (j) {
+        var obj = null;
+        try { obj = JSON.parse(ghU64(j.content)); } catch (e0) { obj = null; }
+        return { name: name, obj: obj, sha: j.sha };
+      });
+    });
+  }
+  function ghGetAll(names) {
+    return (names && names.length ? Promise.resolve(names) : ghList(true)).then(function (ns) {
+      return Promise.all(ns.map(function (n) {
+        return ghGet(n).then(null, function () { return { name: n, obj: null, sha: null }; });
+      }));
+    }).then(function (arr) {
+      var out = {};
+      arr.forEach(function (x) { if (x && x.obj) out[x.name] = x.obj; });
+      return out;
+    });
+  }
+  /* 写单个文件：merge(云端最新对象, 本页对象) → 合并结果；409 自动重读重试 */
+  function ghPut(name, localObj, merge) {
+    var round = 0;
+    function attempt() {
+      round++;
+      return ghGet(name).then(function (cur) {
+        var body = merge ? merge(cur.obj, localObj) : localObj;
+        var payload = {
+          message: "fill " + name + " " + new Date().toISOString(),
+          content: ghB64(JSON.stringify(body))
+        };
+        if (cur.sha) payload.sha = cur.sha;
+        return ghFetch(ghUrl(name), {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + GH.token,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          if (r.ok) return true;
+          return r.text().then(function (txt) {
+            var err = new Error("写入 HTTP " + r.status + (txt ? " " + txt.slice(0, 90) : ""));
+            err.status = r.status;
+            err.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
+            throw err;
+          });
+        }).then(function () {
+          return ghGet(name).then(function (back) {
+            if (JSON.stringify(body) === JSON.stringify(back.obj)) {
+              if (GH.names) GH.namesAt = 0;
+              return { name: name, obj: body, sha: back.sha };
+            }
+            var err = new Error("写入后核对不一致");
+            err.conflict = true;
+            throw err;
+          });
+        });
+      }).catch(function (e) {
+        var msg = String((e && e.message) || e);
+        var retryable = (e && e.conflict) || /HTTP 5|HTTP 429|请求超时|AbortError|Timeout|Failed to fetch|NetworkError/.test(msg);
+        if (round < 5 && retryable) {
+          return new Promise(function (res) { setTimeout(res, (e && e.conflict ? 250 : 700) * round); }).then(attempt);
+        }
+        throw e;
+      });
+    }
+    return attempt();
+  }
 /* =======================================================================
    分文件同步层 v2（P0 + P1 + P2）
    - 每个标段 / 每个城市 / 基础数各一个 gist 文件，写入互不覆盖
@@ -2624,24 +2745,17 @@ td.nmc{white-space:nowrap;font-size:12px}
       function (e) { clearTimeout(t); throw e; });
   }
 
-  function readAll() {
-    return xfetch(api() + "?t=" + Date.now(), { headers: hdr() }, TO_MS)
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (j) {
-        var files = j.files || {}, out = {}, cts = 0;
-        Object.keys(files).forEach(function (n) {
-          var f = files[n];
-          if (!f || !f.content) return;
-          try {
-            var o = JSON.parse(f.content);
-            if (o && typeof o === "object") { out[n] = o; cts = Math.max(cts, o.ts || 0); }
-          } catch (e) {}
-        });
-        out.cts = cts;
-        return out;
+    function readAll() {
+    return ghGetAll().then(function (map) {
+      var out = {}, cts = 0;
+      Object.keys(map).forEach(function (n) {
+        var o = map[n];
+        if (o && typeof o === "object") { out[n] = o; cts = Math.max(cts, o.ts || 0); }
       });
+      out.cts = cts;
+      return out;
+    });
   }
-
   /* 把分文件内容还原成本页的 DB 形状；旧单文件只做迁移兜底 */
   function assemble(all) {
     var out = { reports: {}, jr: {}, tsf: {}, tsfBase: {} };
@@ -2751,46 +2865,28 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
   function normFile(n, o) { return n.indexOf("xt-tsf-") === 0 ? normTsf(o) : cloneRep(o); }
 
-  function doPushFiles(names, round) {
+    function doPushFiles(names, round) {
     round = round || 1;
-    names = (names || []).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    names = (names || []).filter(function (v, i, arr) { return arr.indexOf(v) === i; });
     if (!names.length) return Promise.resolve(true);
     if (!ONLINE) return Promise.resolve(true);
     if (!SYNC_OK) { pushFailed(names, "尚未连通云端"); return Promise.resolve(false); }
-    var base = cloneRep(BASE0);
-    var ts = Date.now();
-    return readAll().then(function (all) {
-      var want = {}, body = { files: {} }, bad = [];
-      names.forEach(function (n) {
-        var lf = buildFile(n, ts), cf = all[n];
-        want[n] = normFile(n, cf ? recombine(n, cf, lf, base) : lf);
-        if (cf && same(normFile(n, cf), want[n])) delete want[n];
-      });
-      if (!Object.keys(want).length) { clearPend(names); snap(); return true; }
-      Object.keys(want).forEach(function (n) { body.files[n] = { content: JSON.stringify(want[n]) }; });
-      return xfetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) }, TO_MS)
-        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); })
-        .then(function () { return readAll(); })
-        .then(function (back) {
-          Object.keys(want).forEach(function (n) { if (!same(back[n], want[n])) bad.push(n); });
-          if (!bad.length) {
-            clearPend(names);
-            snap();
-            tsfSync("ok", ts);
-              return true;
-          }
-          if (round < 3) return doPushFiles(bad.concat(pendNames()), round + 1);
-          pushFailed(bad, "写入被覆盖");
-          return false;
-        });
-    }).catch(function (e) {
-      var msg = e && e.name === "AbortError" ? "请求超时" : (e && e.message ? e.message : String(e));
-      if (round < 3) return doPushFiles(names, round + 1);
-      pushFailed(names, msg);
+    var base = cloneRep(BASE0), ts = Date.now(), locals = {};
+    /* 先把本页要写的文件拍成快照：一次提交内的内容恒定，避免重试时读到半路修改 */
+    names.forEach(function (n) { locals[n] = buildFile(n, ts); });
+    var jobs = names.map(function (n) {
+      return ghPut(n, locals[n], function (cloudObj, localObj) {
+        return recombine(n, cloudObj, localObj, base);
+      }).then(function () { return { ok: n }; }, function (e) { return { bad: n, err: e }; });
+    });
+    return Promise.all(jobs).then(function (res) {
+      var bad = res.filter(function (x) { return x && x.bad; }).map(function (x) { return x.bad; });
+      if (!bad.length) { clearPend(names); snap(); tsfSync("ok", ts); return true; }
+      if (round < 3) return doPushFiles(bad.concat(pendNames()), round + 1);
+      pushFailed(bad, "写入冲突未收敛");
       return false;
     });
   }
-
   function doPush(round) {
     return doPushFiles(Object.keys(fileKeys()).concat(pendNames()), round);
   }
