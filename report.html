@@ -540,6 +540,9 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-tbl th,.tsf-tbl td{border:1px solid #E3E8F0;text-align:center;padding:3px;font-size:12.5px}
 .tsf-tbl th{background:#F2F6FB;color:#1E3A6E;font-weight:600;line-height:1.35;font-size:12px}
 .tsf-tbl tbody tr{height:40px}
+/* 鼠标悬停：表格行蓝色浅底（土石方日报 / 工程月报 的 B 区表格） */
+.tsf-tbl tbody tr:hover>td{background:#EAF2FE}
+#view-report .pg-tbl tbody tr:hover>td{background:#EAF2FE}
 .tsf-tbl td.nm{color:#1E3A6E;font-weight:600;line-height:1.3}
 .tsf-tbl td.en{color:#3D4B5C}
 .tsf-tbl tr.total td{background:#F7F9FC;color:#16407F;font-weight:700}
@@ -2089,8 +2092,8 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<span class="tsf-exp-d">填报日期 <b>' + dl + '</b></span>'
       + '<button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></span></div>'
       + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
-      + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%">'
-      + '<col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%"><col style="width:8%"></colgroup><thead>'
+      + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8.4%"><col style="width:8.4%"><col style="width:8.4%"><col style="width:8.1%">'
+      + '<col style="width:8.4%"><col style="width:8.4%"><col style="width:8.4%"><col style="width:8.1%"><col style="width:8%"></colgroup><thead>'
       + '<tr><th rowspan="2">标段</th><th rowspan="2">工程<br>内容</th>'
       + '<th colspan="4">整体情况</th><th colspan="4">仅保通侧</th><th rowspan="2">提交</th></tr>'
       + '<tr><th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th>'
