@@ -1970,12 +1970,15 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
   function tsfDone(d) {
     var rec = (DB.tsf || {})[d] || {}, n = 0;
-    TG.rows.forEach(function (r) { if (rec[r.k] && rec[r.k].lk) n++; });
+    TG.rows.forEach(function (r) {
+      if (!r.nm) return;
+      if (tsfGrp(r.k).every(function (x) { return rec[x] && rec[x].lk; })) n++;
+    });
     return n;
   }
-  function tsfHall(d) { var n = tsfDone(d); return n >= TG.rows.length && TG.rows.length > 0; }
+  function tsfHall(d) { var n = tsfDone(d), all = tsfGrpN(); return n >= all && all > 0; }
   function tsfInfoHtml(d) {
-    var n = tsfDone(d), all = TG.rows.length;
+    var n = tsfDone(d), all = tsfGrpN();
     return "统计日期 <b>" + d.replace(/-/g, ".") + "</b> · 已提交 " + n + "/" + all + " 标段" + (n >= all ? "（当日已全部提交）" : "");
   }
   function tsfLkBtn(k, on, wait) {
@@ -2074,7 +2077,8 @@ td.nmc{white-space:nowrap;font-size:12px}
     var host = $("#tsf-tbl"); if (!host) return;
     var d = TS.sel, cums = tsfCums(d), day = DB.tsf[d] || {}, body = "";
     TG.rows.forEach(function (r, i) {
-      var rec = day[r.k] || {}, lk = !!rec.lk, ro = lk ? " readonly" : "";
+      var rec = day[r.k] || {}, glk = tsfGrpLk(d, r.k), gw = tsfGrpWait(d, r.k);
+      var lk = glk, ro = lk ? " readonly" : "";
       var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
       var two = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm);
       body += "<tr>"
@@ -2088,7 +2092,7 @@ td.nmc{white-space:nowrap;font-size:12px}
         + '<td><input class="pgi" data-tsf-b="' + r.k + '" value="' + (rec.b === undefined ? "" : tsfF(rec.b, 2)) + '"' + ro + "></td>"
         + tsfFixCell("tsf-cb-" + r.k, r.k, "data-tsf-cb", cums[r.k].b, 1, lk)
         + '<td id="tsf-rb-' + r.k + '">' + tsfP(cums[r.k].b, tsfDb(r)) + "</td>"
-        + (r.nm ? '<td class="lkc"' + (two ? ' rowspan="2"' : "") + ">" + tsfLkBtn(r.k, lk, !!rec.lkw) + "</td>" : "")
+        + (r.nm ? '<td class="lkc"' + (two ? ' rowspan="2"' : "") + ">" + tsfLkBtn(r.k, lk, gw) + "</td>" : "")
         + "</tr>";
     });
     var t = tsfTotals(d, cums);
@@ -2302,13 +2306,14 @@ td.nmc{white-space:nowrap;font-size:12px}
     var lk = t.closest ? t.closest("[data-tsf-lk]") : null;
     if (lk) {
       var k = lk.getAttribute("data-tsf-lk"), rec = tsfRec(TS.sel, k, true);
-      if (rec.lkw) { flag("正在写入云端，请稍候…", false); return; }
-      if (!rec.lk) {
-        if (!ONLINE) { rec.lk = 1; DIRTY = false; persist(); tsfRenderAll(); return; }
-        rec.lkw = 1; DIRTY = false; persist(); tsfRenderAll();
+      var gks = tsfGrp(k), busy = tsfGrpWait(TS.sel, k);
+      if (busy) { flag("正在写入云端，请稍候…", false); return; }
+      if (!tsfGrpLk(TS.sel, k)) {
+        if (!ONLINE) { tsfGrpSet(TS.sel, k, "lk", true); DIRTY = false; persist(); tsfRenderAll(); return; }
+        tsfGrpSet(TS.sel, k, "lkw", true); DIRTY = false; persist(); tsfRenderAll();
         pushCloud().then(function (ok) {
-          if (ok) { delete rec.lkw; rec.lk = 1; }
-          else { delete rec.lkw; }
+          if (ok) { tsfGrpSet(TS.sel, k, "lk", true); }
+          else { tsfGrpSet(TS.sel, k, "lkw", false); }
           persist(); tsfRenderAll();
           if (!ok) { flag("提交未写入云端，请点「重试」再提交一次", false); return; }
           /* 数据已落云端，再把「已提交」标记单独写一次，保证别处看到的提交状态一致 */
@@ -2321,7 +2326,7 @@ td.nmc{white-space:nowrap;font-size:12px}
         var pw = prompt("该标段已提交锁定。请输入修改密码：");
         if (pw === null) return;
         if (pw.trim() !== "a") { alert("密码错误，无法解锁"); return; }
-        rec.lk = 0; DIRTY = false; persist(); pushCloud();
+        tsfGrpSet(TS.sel, k, "lk", false); DIRTY = false; persist(); pushCloud();
         flag("已解锁，可以修改", true); tsfRenderAll();
       }
       return;
@@ -2623,6 +2628,36 @@ td.nmc{white-space:nowrap;font-size:12px}
   setInterval(function () {
     if (ONLINE && SYNC_OK && PEND.length) pushCloud();
   }, 60000);
+
+
+  /* ---- 标段成组：土建10标 有「路基填筑(t10a)」「路基挖方(t10b)」两行，共用一个提交按钮 ---- */
+  function tsfGrp(k) {
+    var rows = TG.rows, i, a = -1, b;
+    for (i = 0; i < rows.length; i++) { if (rows[i].k === k) { a = i; break; } }
+    if (a < 0) return [k];
+    while (a > 0 && !rows[a].nm) a--;
+    b = a;
+    while (b + 1 < rows.length && !rows[b + 1].nm) b++;
+    var out = [];
+    for (var j = a; j <= b; j++) out.push(rows[j].k);
+    return out;
+  }
+  function tsfGrpN() { var n = 0; TG.rows.forEach(function (r) { if (r.nm) n++; }); return n; }
+  function tsfGrpLk(d, k) {
+    var day = (DB.tsf || {})[d] || {};
+    return tsfGrp(k).every(function (x) { return !!(day[x] && day[x].lk); });
+  }
+  function tsfGrpWait(d, k) {
+    var day = (DB.tsf || {})[d] || {};
+    return tsfGrp(k).some(function (x) { return !!(day[x] && day[x].lkw); });
+  }
+  function tsfGrpSet(d, k, field, on) {
+    tsfGrp(k).forEach(function (x) {
+      var r0 = tsfRec(d, x, true);
+      if (on) { r0[field] = 1; if (field === "lk") delete r0.lkw; }
+      else { delete r0[field]; if (field === "lk") r0.lk = 0; }
+    });
+  }
 
   tsfBoot();
   renderAll();
