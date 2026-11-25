@@ -505,22 +505,24 @@ td.nmc{white-space:nowrap;font-size:12px}
 .jr-pct-note b{font-weight:700}
 .pgc[readonly]{background:#F2F4F8!important;color:#5B6675!important;cursor:not-allowed;border-color:#DCE2EC!important}
 /* ===== 土石方日报 ===== */
-.tsf-cal{padding:6px 16px 10px}
+.tsf-bot{display:grid;grid-template-columns:minmax(0,352px) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1180px){.tsf-bot{grid-template-columns:1fr}}
+.tsf-cal{padding:4px 12px 12px}
 .tsf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
-.tsf-bar .pg-sel{min-width:92px}
-.tsf-step{width:30px;height:32px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--navy);cursor:pointer;font-family:inherit;font-size:13px;line-height:1}
+.tsf-bar .pg-sel{min-width:76px;font-size:12.5px;padding:4px 6px}
+.tsf-step{width:26px;height:28px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--navy);cursor:pointer;font-family:inherit;font-size:13px;line-height:1}
 .tsf-step:hover{border-color:var(--blue);color:var(--blue)}
-.tsf-leg{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#6B7684}
+.tsf-leg{display:flex;align-items:center;flex-wrap:wrap;gap:5px 12px;font-size:11px;color:#6B7684;margin-top:4px}
 .tsf-leg i{font-style:normal;display:inline-flex;align-items:center;gap:6px}
 .tsf-sw{width:11px;height:11px;border-radius:2px;border:1px solid #E3E8F0;background:#fff;display:inline-block}
 .tsf-sw.past{background:#F2F4F7;border-color:#E8EBF1}
 .tsf-sw.today{background:#16407F;border-color:#16407F}
 .tsf-dot{width:5px;height:5px;border-radius:50%;background:#2F6B3C;display:inline-block}
 .tsf-dot.red{background:#D14343}
-.tsf-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px}
-.tsf-week span{text-align:center;font-size:12px;color:#8A94A3;padding:2px 0}
-.tsf-days{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:5px}
-.tsf-day{position:relative;height:30px;line-height:30px;text-align:center;border:1px solid #E3E8F0;border-radius:3px;background:#fff;color:#20303F;font-size:12.5px;cursor:pointer;font-family:inherit;padding:0;font-variant-numeric:tabular-nums}
+.tsf-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:4px}
+.tsf-week span{text-align:center;font-size:11px;color:#8A94A3;padding:2px 0}
+.tsf-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.tsf-day{position:relative;height:29px;line-height:29px;text-align:center;border:1px solid #E3E8F0;border-radius:3px;background:#fff;color:#20303F;font-size:12px;cursor:pointer;font-family:inherit;padding:0;font-variant-numeric:tabular-nums}
 .tsf-day:hover{border-color:#16407F;color:#16407F}
 .tsf-day.past{background:#F2F4F7;border-color:#E8EBF1;color:#9AA6B5}
 .tsf-day.past:hover{border-color:#C9D2E0;color:#5B6675}
@@ -529,7 +531,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-day.sel{box-shadow:0 0 0 2px rgba(22,64,127,.28)}
 .tsf-day.off{background:#FAFBFC;border-color:#F1F3F7;color:#D8DEE6;cursor:default}
 .tsf-day.off:hover{border-color:#F1F3F7;color:#D8DEE6}
-.tsf-blank{display:block;height:30px}
+.tsf-blank{display:block;height:29px}
 .tsf-day em{position:absolute;left:50%;bottom:3px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#2F6B3C}
 .tsf-day.half em{background:#fff;border:1px solid #C08A2A}
 .tsf-day.miss em{background:#D14343;border:1px solid #D14343}
@@ -588,25 +590,25 @@ td.nmc{white-space:nowrap;font-size:12px}
 <div class="shell">
   <aside class="rail">
     <nav>
-      <a class="nav-item" href="#tsf" data-view="tsf"><span>土石方日报</span></a>
-      <a class="nav-item is-on" href="#report" data-view="report"><span>工程月报</span></a>
+      <a class="nav-item is-on" href="#tsf" data-view="tsf"><span>土石方日报</span></a>
+      <a class="nav-item" href="#report" data-view="report"><span>工程月报</span></a>
       <a class="nav-item" href="#jr" data-view="jr"><span>地市州月报</span></a>
       <a class="nav-item" href="#status" data-view="status"><span>数据填报情况</span></a>
     </nav>
   </aside>
 
   <main>
-    <section class="view" id="view-tsf">
-      <div class="card">
-        <div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint"><b>每日更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">单位：万方</span></div>
-        <div class="tsf-cal" id="tsf-cal"></div>
-      </div>
-      <div class="pg-cols">
-        <div style="min-width:0"><div class="card" id="tsf-tbl"></div></div>
-        <div class="pg-right"><div class="card" id="tsf-sum"></div></div>
+    <section class="view is-on" id="view-tsf">
+      <div class="card" id="tsf-tbl"></div>
+      <div class="tsf-bot">
+        <div class="card">
+          <div class="card-head"><h2>填报日期</h2><span class="hint">点击日期切换</span></div>
+          <div class="tsf-cal" id="tsf-cal"></div>
+        </div>
+        <div class="card" id="tsf-sum"></div>
       </div>
     </section>
-    <section class="view is-on" id="view-report">
+    <section class="view" id="view-report">
       <div class="card">
         <div class="card-head"><h2>工程月报填报</h2><span class="hint pg-flag" id="rep-hint"><b>每月20日更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">货币单位：万元</span></div>
         <div class="pg-bar">
@@ -1916,11 +1918,12 @@ td.nmc{white-space:nowrap;font-size:12px}
   function tsfRenderCal() {
     var host = $("#tsf-cal"); if (!host) return;
     var y = TS.y, m = TS.m, td = tday();
-    var total = ndays(y, m);
+    var lead = (new Date(y, m - 1, 1).getDay() + 6) % 7, total = ndays(y, m);
     var oy = "", om = "";
     for (var yy = 2026; yy <= 2029; yy++) oy += '<option value="' + yy + '"' + (yy === y ? " selected" : "") + ">" + yy + " 年</option>";
     for (var mm = 1; mm <= 12; mm++) om += '<option value="' + mm + '"' + (mm === m ? " selected" : "") + ">" + mm + " 月</option>";
     var cells = "", i, j;
+    for (i = 0; i < lead; i++) cells += '<span class="tsf-blank"></span>';
     for (var dd = 1; dd <= total; dd++) {
       var s = ds(y, m, dd), cls = "tsf-day", off = false;
       if (s < TG.min || s > TG.max) { cls += " off"; off = true; }
@@ -1934,20 +1937,21 @@ td.nmc{white-space:nowrap;font-size:12px}
       }
       cells += '<button type="button" class="' + cls + '" data-tsf-d="' + s + '"' + (off ? " disabled" : "") + ">" + dd + dot + "</button>";
     }
-    for (j = 0; j < 32 - total; j++) cells += '<span class="tsf-blank"></span>';
+    for (j = 0; j < (7 - (lead + total) % 7) % 7; j++) cells += '<span class="tsf-blank"></span>';
     host.innerHTML = '<div class="tsf-bar">'
       + '<button type="button" class="tsf-step" data-tsf-mv="-1" title="上个月">‹</button>'
       + '<select class="pg-sel" id="tsf-y">' + oy + "</select>"
       + '<select class="pg-sel" id="tsf-m">' + om + "</select>"
       + '<button type="button" class="tsf-step" data-tsf-mv="1" title="下个月">›</button>'
+      + "</div>"
+      + '<div class="tsf-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>'
+      + '<div class="tsf-days">' + cells + "</div>"
       + '<div class="tsf-leg">'
       + '<i><span class="tsf-sw past"></span>已过日期</i>'
       + '<i><span class="tsf-sw today"></span>当天</i>'
-      + '<i><span class="tsf-sw"></span>未到日期</i>'
-      + '<i><span class="tsf-dot"></span>已全部提交</i>'
+      + '<i><span class="tsf-dot"></span>全部提交</i>'
       + '<i><span class="tsf-dot red"></span>有标段未提交</i>'
-      + "</div></div>"
-      + '<div class="tsf-days">' + cells + "</div>";
+      + "</div>";
     host.querySelector("#tsf-y").addEventListener("change", function () { tsfGoMonth(+this.value, TS.m, 1); });
     host.querySelector("#tsf-m").addEventListener("change", function () { tsfGoMonth(TS.y, +this.value, 1); });
   }
@@ -1991,7 +1995,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       + "<td>" + tsfF(t.da, 1) + "</td><td>" + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
       + "<td>" + tsfF(t.db, 1) + "</td><td>" + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td>"
       + '<td class="lkc"></td></tr>';
-    host.innerHTML = '<div class="card-head"><h2>填报明细</h2><button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></div>'
+    host.innerHTML = '<div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint">每日更新·填报完成后点击「提交」</span><span class="pg-money">单位：万方</span><button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></div>'
       + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
       + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%">'
       + '<col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%"><col style="width:8%"></colgroup><thead>'
