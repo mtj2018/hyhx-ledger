@@ -4015,6 +4015,11 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     }
 
     function ndOf(sec) {
+      return (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程" || sec === "机电工程")
+        ? 2 : (sec === "桥梁工程" ? 0 : 4);
+    }
+    /* 总数量沿用原精度规则（机电工程仍按整数显示） */
+    function ndTotOf(sec) {
       return (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : (sec === "桥梁工程" ? 0 : 4);
     }
     function fnum(v, nd) {
@@ -4121,8 +4126,9 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           merges.push("B" + rowno + ":D" + rowno);
           put(rw, 4, g.unit || "", 5);
           var ns = nd === 0 ? 6 : (nd === 2 ? 7 : 8);
+          var ndT = ndTotOf(g.sec), nsT = ndT === 0 ? 6 : (ndT === 2 ? 7 : 8);
           var tot = g.pctRow ? 100 : (g.total || null);
-          if (tot) put(rw, 5, g.pctRow ? 100 : roundTo(tot, nd), g.pctRow ? 6 : ns, true);
+          if (tot) put(rw, 5, g.pctRow ? 100 : roundTo(tot, ndT), g.pctRow ? 6 : nsT, true);
           if (g.has) {
             var pv = roundTo(g.prev, nd), mo = roundTo(g.mon, nd), cu = roundTo(g.cum, nd);
             if (pv !== null) put(rw, 6, pv, ns, true);
@@ -4244,6 +4250,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     function renderShape() {
       var rows = aggShape(YM).map(function (g) {
         var nd = ndOf(g.sec), f = function (v) { return fnum(v, nd); };
+        var ftot = function (v) { return fnum(v, ndTotOf(g.sec)); };
         if (g.lv === 1 && !g.leaf) {
           return '<tr><td class="c sec">' + (g.secno || "") + '</td><td class="sec" colspan="7">' + g.name + "</td></tr>";
         }
@@ -4258,12 +4265,12 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         if (!g.has) {
           return "<tr" + rowo + "><td class='c sec'>" + no + "</td><td class='" + cls + "'>" + g.name + "</td>"
             + '<td class="c unit">' + (g.unit || "") + "</td>"
-            + '<td class="c">' + (g.total ? f(g.total) : "") + "</td>"
+            + '<td class="c">' + (g.total ? ftot(g.total) : "") + "</td>"
             + '<td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td></tr>';
         }
         return "<tr" + rowo + "><td class='c sec'>" + no + "</td><td class='" + cls + "'>" + g.name + "</td>"
           + '<td class="c unit">' + (g.unit || "") + "</td>"
-          + '<td class="c">' + (g.total ? f(g.total) : "") + "</td>"
+          + '<td class="c">' + (g.total ? ftot(g.total) : "") + "</td>"
           + '<td class="c">' + f(g.prev) + "</td>"
           + '<td class="c">' + f(g.mon) + "</td>"
           + '<td class="c">' + f(g.cum) + "</td>"
