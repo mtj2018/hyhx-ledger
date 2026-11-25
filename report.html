@@ -1537,6 +1537,16 @@ td.nmc{white-space:nowrap;font-size:12px}
     try { t.select(); } catch (e1) {}
     setTimeout(function () { try { if (document.activeElement === t) t.select(); } catch (e2) {} }, 0);
   });
+  /* 鼠标点击数值框：无论点在哪个位置，进入即全选，方便直接改数 */
+  ["mouseup", "touchend", "dblclick"].forEach(function (ev) {
+    document.addEventListener(ev, function (e) {
+      var t = e.target;
+      if (!isNumInput(t)) return;
+      if (t.readOnly || t.disabled) return;
+      var go = function () { try { if (document.activeElement === t) { t.select(); } } catch (e1) {} };
+      setTimeout(go, 0); setTimeout(go, 30);
+    }, true);
+  });
   function ndOfRow(row) {
     var sec = (row.agg || "").split("|")[0];
     return (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : (sec === "桥梁工程" ? 0 : 4);
