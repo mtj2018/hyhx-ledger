@@ -2442,45 +2442,65 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
 
   /* 顶部锁解锁后才能改的“设计量 / 累计完成”：各存各的字段（设计量存标段级、累计存当日标段级） */
+  /* 设计量 / 累计完成：打字过程中只做校验，失焦（blur/Enter）才写进本地并触发自动保存，
+     避免打字途中把「7」这类半成品值先落库、先推到云端（表现为 73.4 变成 7） */
+  function tsfFixCommit(t) {
+    if (!t || !t.dataset) return false;
+    var du = t.dataset.tsfDa, dd = t.dataset.tsfDb, cu = t.dataset.tsfCa, cd = t.dataset.tsfCb;
+    if (du === undefined && dd === undefined && cu === undefined && cd === undefined) return false;
+    var kk = du !== undefined ? du : (dd !== undefined ? dd : (cu !== undefined ? cu : cd));
+    var val = t.value;
+    if (val !== "" && !/^\d*\.?\d*$/.test(val)) { t.classList.add("bad"); return true; }
+    t.classList.remove("bad");
+    var n = (val === "") ? "" : Number(val);
+    if (du !== undefined || dd !== undefined) {
+      var bs = DB.tsfBase || (DB.tsfBase = {});
+      var bb = bs[kk] || (bs[kk] = {});
+      if (du !== undefined) bb.da = n; else bb.db = n;
+    } else {
+      /* 累计完成是「人工覆盖」值：从这一天起按它续算，明显低于自动值的输入先确认一次 */
+      var cums = tsfCums(TS.sel), base = cums[kk] ? cums[kk][cu !== undefined ? "a" : "b"] : 0;
+      if (n !== "" && n > 0 && base > 0 && n < base * 0.6) {
+        var okGo = window.confirm("累计完成 " + (n) + " 明显小于当前自动累计 " + tsfF(base, 1) + "，确认按 " + (n) + " 覆盖？");
+        if (!okGo) { t.value = tsfF(base, 1); t.classList.remove("bad"); return true; }
+      }
+      var rc = tsfRec(TS.sel, kk, true);
+      if (cu !== undefined) rc.ca = n; else rc.cb = n;
+    }
+    DIRTY = true;
+    tsfPaint(kk); tsfPaintTotals(); tsfRenderSum();
+    if (typeof autoSave === "function") autoSave();
+    return true;
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var t = e.target; if (!t || !t.dataset) return;
+    if (tsfFixCommit(t)) { try { t.blur(); } catch (e2) {} }
+  }, true);
   document.addEventListener("input", function (e) {
     var t = e.target; if (!t || !t.dataset) return;
     var du = t.dataset.tsfDa, dd = t.dataset.tsfDb, cu = t.dataset.tsfCa, cd = t.dataset.tsfCb;
     if (du !== undefined || dd !== undefined || cu !== undefined || cd !== undefined) {
-      var kk = du !== undefined ? du : (dd !== undefined ? dd : (cu !== undefined ? cu : cd));
       var val = t.value;
-      if (val !== "" && !/^\d*\.?\d*$/.test(val)) { t.classList.add("bad"); return; }
-      t.classList.remove("bad");
-      var n = (val === "") ? "" : Number(val);
-      if (du !== undefined || dd !== undefined) {
-        var bs = DB.tsfBase || (DB.tsfBase = {});
-        var bb = bs[kk] || (bs[kk] = {});
-        if (du !== undefined) bb.da = n; else bb.db = n;
-      } else {
-        var rc = tsfRec(TS.sel, kk, true);
-        if (cu !== undefined) rc.ca = n; else rc.cb = n;
-      }
-      DIRTY = true;
-      tsfPaint(kk); tsfPaintTotals(); tsfRenderSum();
+      if (val !== "" && !/^\d*\.?\d*$/.test(val)) t.classList.add("bad"); else t.classList.remove("bad");
       return;
     }
     var k = (t.dataset.tsfA !== undefined) ? t.dataset.tsfA : t.dataset.tsfB;
     if (k === undefined) return;
-    var side = (t.dataset.tsfA !== undefined) ? "a" : "b", val = t.value;
-    if (val !== "" && !/^\d*\.?\d*$/.test(val)) { t.classList.add("bad"); return; }
-    var rec = tsfRec(TS.sel, k, true), n = (val === "") ? "" : Number(val);
-    /* 今日完成不再做整体/仅保通侧的大小限制，允许任意录入 */
-    t.classList.remove("bad");
-    rec[side] = n; DIRTY = true;
-    tsfPaint(k); tsfPaintTotals(); tsfRenderSum();
+    var val = t.value;
+    if (val !== "" && !/^\d*\.?\d*$/.test(val)) t.classList.add("bad"); else t.classList.remove("bad");
+    /* 今日完成同样只在失焦时落库，避免半成品值被自动保存推上云端 */
   });
 
   document.addEventListener("blur", function (e) {
     var t = e.target; if (!t || !t.dataset) return;
     if (t.dataset.tsfDa !== undefined || t.dataset.tsfDb !== undefined
         || t.dataset.tsfCa !== undefined || t.dataset.tsfCb !== undefined) {
-      t.classList.remove("bad");
+      tsfFixCommit(t);
       var v = toNum(t.value);
       t.value = (v === null) ? "" : tsfF(v, 1);
+      tsfPaint(t.dataset.tsfDa || t.dataset.tsfDb || t.dataset.tsfCa || t.dataset.tsfCb);
+      tsfPaintTotals(); tsfRenderSum();
       return;
     }
     var k = (t.dataset.tsfA !== undefined) ? t.dataset.tsfA : t.dataset.tsfB;
