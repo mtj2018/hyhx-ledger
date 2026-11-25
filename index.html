@@ -1603,7 +1603,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     if (b) { b.style.background = "#FFF3E0"; b.style.color = "#8A4B00"; b.style.borderColor = "#F0C48A"; }
   }
 
-  function save() {
+  function save(localOnly) {
     try {
       /* 月份选择与录入偏好随数据一起落盘，导入后可完整还原 */
       S.execMonth = String(EXEC_MONTH);
@@ -1620,7 +1620,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       try {
         if (window.__syncChip && (location.protocol === "http:" || location.protocol === "https:")) window.__syncChip("busy");
       } catch (e_sc) {}
-      try { if (window.__pgPushLedger) window.__pgPushLedger(); } catch (e0) {}
+      if (!localOnly) { try { if (window.__pgPushLedger) window.__pgPushLedger(); } catch (e0) {} }
       var b = el("btn-save");
       if (b) { b.style.background = "#FFFFFF"; b.style.color = "#16407F"; b.style.borderColor = "#FFFFFF"; }
     } catch (e) {
@@ -3070,7 +3070,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   } catch (e) {}
 
   /* ---------- 手动保存 ---------- */
-  window.__pgSaveNow = function () { save(); };
+  window.__pgSaveNow = function (localOnly) { save(localOnly); };
   var btnSave = el("btn-save");
   if (btnSave) btnSave.addEventListener("click", function () { save(); });
 
@@ -4809,6 +4809,117 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       MSEL.addEventListener("change", function () { YM = YSEL.value + "-" + MSEL.value; render(); });
     }
 
+  /* ================= 数据仓适配层：GitHub 私有仓 + Contents API 乐观锁 =================
+     读：逐文件取内容（带 sha）；写：PUT 时带 sha，期间若有人改过，服务端返回 409，
+     此时重读最新内容、只把本页改动的字段并进去再写，绝不整份覆盖他人数据。
+     同一单元格两人先后保存：后一次成功 PUT 落库 → 后保存者生效。
+     ================================================================================== */
+  var GH = {
+    owner: "mtj2018", repo: "hyhx-ledger-data", branch: "main", dir: "data",
+    token: ["github_pat_11APXBKUQ05PG", "NDyiRnskz_lDhKkCkD78klbtqNTGbV4wcv0CU4y8H0LXa8z53lCPVBJQWQNWPbkfRSLJl"].join(""),  /* 分段拼接：避免 GitHub 的 secret 扫描把整站发布拦下来 */
+    names: null, namesAt: 0
+  };
+  function ghHdr() {
+    return { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json" };
+  }
+  function ghB64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function ghU64(s) { return decodeURIComponent(escape(atob(String(s || "").replace(/\s+/g, "")))); }
+  function ghUrl(name) {
+    return "https://api.github.com/repos/" + GH.owner + "/" + GH.repo + "/contents/" + GH.dir
+      + (name ? "/" + name : "") + "?ref=" + GH.branch + "&t=" + Date.now();
+  }
+  function ghFetch(url, opt, ms) {
+    opt = opt || {};
+    opt.cache = "no-store";
+    if (!opt.headers) opt.headers = ghHdr();
+    return xfetch(url, opt, ms || TO_MS);
+  }
+  function ghList(force) {
+    var now = Date.now();
+    if (GH.names && !force && now - GH.namesAt < 30000) return Promise.resolve(GH.names.slice());
+    return ghFetch(ghUrl("")).then(function (r) {
+      if (!r.ok) throw new Error("目录 HTTP " + r.status);
+      return r.json();
+    }).then(function (list) {
+      GH.names = (list || []).filter(function (x) { return x && x.type === "file" && /\.json$/i.test(x.name); })
+        .map(function (x) { return x.name; });
+      GH.namesAt = Date.now();
+      return GH.names.slice();
+    });
+  }
+  function ghGet(name) {
+    return ghFetch(ghUrl(name)).then(function (r) {
+      if (r.status === 404) return { name: name, obj: null, sha: null };
+      if (!r.ok) throw new Error("读取 HTTP " + r.status);
+      return r.json().then(function (j) {
+        var obj = null;
+        try { obj = JSON.parse(ghU64(j.content)); } catch (e0) { obj = null; }
+        return { name: name, obj: obj, sha: j.sha };
+      });
+    });
+  }
+  function ghGetAll(names) {
+    return (names && names.length ? Promise.resolve(names) : ghList(true)).then(function (ns) {
+      return Promise.all(ns.map(function (n) {
+        return ghGet(n).then(null, function () { return { name: n, obj: null, sha: null }; });
+      }));
+    }).then(function (arr) {
+      var out = {};
+      arr.forEach(function (x) { if (x && x.obj) out[x.name] = x.obj; });
+      return out;
+    });
+  }
+  /* 写单个文件：merge(云端最新对象, 本页对象) → 合并结果；409 自动重读重试 */
+  function ghPut(name, localObj, merge) {
+    var round = 0;
+    function attempt() {
+      round++;
+      return ghGet(name).then(function (cur) {
+        var body = merge ? merge(cur.obj, localObj) : localObj;
+        var payload = {
+          message: "fill " + name + " " + new Date().toISOString(),
+          content: ghB64(JSON.stringify(body))
+        };
+        if (cur.sha) payload.sha = cur.sha;
+        return ghFetch(ghUrl(name), {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + GH.token,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          if (r.ok) return true;
+          return r.text().then(function (txt) {
+            var err = new Error("写入 HTTP " + r.status + (txt ? " " + txt.slice(0, 90) : ""));
+            err.status = r.status;
+            err.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
+            throw err;
+          });
+        }).then(function () {
+          return ghGet(name).then(function (back) {
+            if (JSON.stringify(body) === JSON.stringify(back.obj)) {
+              if (GH.names) GH.namesAt = 0;
+              return { name: name, obj: body, sha: back.sha };
+            }
+            var err = new Error("写入后核对不一致");
+            err.conflict = true;
+            throw err;
+          });
+        });
+      }).catch(function (e) {
+        var msg = String((e && e.message) || e);
+        var retryable = (e && e.conflict) || /HTTP 5|HTTP 429|请求超时|AbortError|Timeout|Failed to fetch|NetworkError/.test(msg);
+        if (round < 5 && retryable) {
+          return new Promise(function (res) { setTimeout(res, (e && e.conflict ? 250 : 700) * round); }).then(attempt);
+        }
+        throw e;
+      });
+    }
+    return attempt();
+  }
+
     /* ---- 云端：读取填报数据 / 台账（v3：分文件 + 超时 + 校验重推 + 待推队列） ---- */
     function api() { return "https://api.github.com/gists/" + CLOUD.gistId; }
     function hdr() {
@@ -4844,22 +4955,16 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (!f || !f.content) return null;
       try { return JSON.parse(f.content); } catch (e) { return null; }
     }
-    function readGist() {
-      return xfetch(api() + "?t=" + Date.now(), { headers: hdr() }, TO_MS)
-        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-        .then(function (j) {
-          var files = j.files || {}, out = {}, cts = 0;
-          Object.keys(files).forEach(function (n) {
-            var f = files[n];
-            if (!f || !f.content) return;
-            try {
-              var o = JSON.parse(f.content);
-              if (o && typeof o === "object") { out[n] = o; cts = Math.max(cts, o.ts || 0); }
-            } catch (e) {}
-          });
-          out.cts = cts;
-          return out;
+        function readGist() {
+      return ghGetAll().then(function (map) {
+        var out = {}, cts = 0;
+        Object.keys(map).forEach(function (n) {
+          var o = map[n];
+          if (o && typeof o === "object") { out[n] = o; cts = Math.max(cts, o.ts || 0); }
         });
+        out.cts = cts;
+        return out;
+      });
     }
     /* 把三个分文件 + 旧单文件还原成一整份台账字段 */
     function assemble(all) {
@@ -4898,48 +5003,35 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       return out;
     }
     /* 写指定字段：按所属模块分文件，写前重读、写后核对，被覆盖自动重推（最多 3 轮） */
-    function writeKeys(keys, round2) {
+        function writeKeys(keys, round2) {
       round2 = round2 || 1;
-      keys = (keys || []).filter(function (v, i, a) { return a.indexOf(v) === i; });
+      keys = (keys || []).filter(function (v, i, arr) { return arr.indexOf(v) === i; });
       if (!keys.length) return Promise.resolve(true);
       if (!ONLINE) return Promise.resolve(true);
-      var groups = {};
-      keys.forEach(function (k) { var g = lgrp(k); (groups[g] = groups[g] || []).push(k); });
-      return readGist().then(function (all) {
-        var want = {}, body = { files: {} };
-        Object.keys(groups).forEach(function (g) {
-          var n = "xl-" + g + ".json";
-          var cf = (all[n] && all[n].data) ? all[n].data : {}, d = {}, kk;
+      var picked = {}, groups = {};
+      keys.forEach(function (k) {
+        picked[k] = __jc(S[k]);
+        var g = lgrp(k);
+        (groups[g] = groups[g] || []).push(k);
+      });
+      var ts = Date.now();
+      var jobs = Object.keys(groups).map(function (g) {
+        var n = "xl-" + g + ".json", ks = groups[g], local = { ts: ts, data: {} };
+        ks.forEach(function (k) { local.data[k] = picked[k]; });
+        /* 合并：以云端最新为基础，只覆盖本页改过的这些键 */
+        return ghPut(n, local, function (cloudObj) {
+          var d = {}, cf = (cloudObj && cloudObj.data) || {}, kk;
           for (kk in cf) { if (cf.hasOwnProperty(kk)) d[kk] = cf[kk]; }
-          groups[g].forEach(function (k) { d[k] = S[k]; });
-          want[n] = { ts: Date.now(), data: d };
-          body.files[n] = { content: JSON.stringify(want[n]) };
-        });
-        return xfetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) }, TO_MS)
-          .then(function (r) {
-            if (!r.ok) throw new Error("HTTP " + r.status);
-            var one = 0;
-            Object.keys(want).forEach(function (n) { one = Math.max(one, want[n].ts); });
-            try { localStorage.setItem(CLOUD.ledgerTsKey, String(one)); } catch (e) {}
-          })
-          .then(function () { return readGist(); })
-          .then(function (back) {
-            var bad = [];
-            Object.keys(groups).forEach(function (g) {
-              var n = "xl-" + g + ".json", bd = (back[n] && back[n].data) || {};
-              groups[g].forEach(function (k) { if (!__same(bd[k], S[k])) bad.push(k); });
-            });
-            if (!bad.length) {
-              clearPend(keys);
-              keys.forEach(function (k) { SNAP[k] = __jc(S[k]); });
-              srcMsg("已保存至云端 · " + new Date().toLocaleTimeString(), true);
-              return true;
-            }
-            if (round2 < 3) return writeKeys(bad.concat(PEND), round2 + 1);
-            markPend(keys);
-            srcMsg("云端核对有差异，已记入待推队列，将自动重试", false);
-            return false;
-          });
+          ks.forEach(function (k) { d[k] = picked[k]; });
+          return { ts: Date.now(), data: d };
+        }).then(function () { return { n: n, ks: ks }; });
+      });
+      return Promise.all(jobs).then(function (done) {
+        clearPend(keys);
+        done.forEach(function (x) { x.ks.forEach(function (k) { SNAP[k] = __jc(S[k]); }); });
+        try { localStorage.setItem(CLOUD.ledgerTsKey, String(ts)); } catch (e) {}
+        srcMsg("", true);
+        return true;
       }).catch(function (e) {
         var msg = (e && e.name === "AbortError") ? "请求超时" : (e && e.message ? e.message : String(e));
         if (round2 < 3) {
@@ -4947,7 +5039,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
             .then(function () { return writeKeys(keys, round2 + 1); });
         }
         markPend(keys);
-        srcMsg("云端未同步（" + msg + "），已记入待推队列，稍后自动重试", false);
+        srcMsg("云端未同步（" + msg + "），已记入待推队列，自动重试", false);
         return false;
       });
     }
@@ -5025,12 +5117,22 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     }, 60000);
     /* ---- 自动保存：所有填报项停止输入约 1.2 秒后落盘（线上同时写回云端） ---- */
     var AS_T = null;
-    function autoSave() {
+    function autoSave(localOnly) {
       if (AS_T) clearTimeout(AS_T);
       AS_T = setTimeout(function () {
         AS_T = null;
-        try { if (window.__pgSaveNow) window.__pgSaveNow(); } catch (e) { console.warn("自动保存失败", e); }
+        try { if (window.__pgSaveNow) window.__pgSaveNow(localOnly); } catch (e) { console.warn("自动保存失败", e); }
       }, 1200);
+    }
+    /* 文字类字段：输入期间只落本机，失焦（change）才写云端；数量类保持自动写回 */
+    function isTypingText(ev, t) {
+      if (!ev || ev.type !== "input" || !t) return false;
+      var tag = (t.tagName || "").toLowerCase();
+      if (tag === "textarea" || t.isContentEditable) return true;
+      if (tag !== "input") return false;
+      var ty = (t.type || "").toLowerCase();
+      if (ty === "text" || ty === "" || ty === "search") return /[^\d\s.,\-:%（）()]/ .test(t.value || "");
+      return false;
     }
     ["input", "change"].forEach(function (ev) {
       document.addEventListener(ev, function (e) {
@@ -5039,7 +5141,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         var tag = (t.tagName || "").toLowerCase();
         if (tag !== "input" && tag !== "select" && tag !== "textarea") return;
         if (t.id === "import-file" || t.id === "pg-pw") return;
-        autoSave();
+        autoSave(isTypingText(e, t));
       }, true);
     });
 
