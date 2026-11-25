@@ -541,6 +541,9 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-tbl th,.tsf-tbl td{border:1px solid #E3E8F0;text-align:center;padding:3px;font-size:12.5px}
 .tsf-tbl th{background:#F2F6FB;color:#1E3A6E;font-weight:600;line-height:1.35;font-size:12px}
 .tsf-tbl tbody tr{height:40px}
+/* 鼠标悬停：表格行蓝色浅底（土石方日报 / 工程月报 的 B 区表格） */
+.tsf-tbl tbody tr:hover>td{background:#EAF2FE}
+#view-report .pg-tbl tbody tr:hover>td{background:#EAF2FE}
 .tsf-tbl td.nm{color:#1E3A6E;font-weight:600;line-height:1.3}
 .tsf-tbl td.en{color:#3D4B5C}
 .tsf-tbl tr.total td{background:#F7F9FC;color:#16407F;font-weight:700}
@@ -699,6 +702,17 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .wf-step.cur{background:#16407F;color:#fff;font-weight:700}
 .wf-step:hover{color:#16407F}
 .wf-step.cur:hover{color:#fff}
+</style>
+<style id="a4css">
+/* ===== 形象进度汇总表：表头吸顶 ===== */
+#pg-shape .pg-scroll{overflow:visible}
+#pg-shape .pg-tbl thead th{position:-webkit-sticky;position:sticky;top:var(--pgTopH,72px);z-index:6;
+  background:var(--mist,#EFF3F9);box-shadow:inset 0 -1px 0 var(--line,#E3E8F0)}
+/* ===== 地市州 B 区：合计下方黄色提示 ===== */
+.fcr-tip td{background:#FDF3CE;color:#7A5300;font-size:11.5px;line-height:1.55;text-align:left;
+  padding:6px 8px 7px;border-bottom:0;white-space:normal}
+.fcr-tip .fcr-tipb{display:inline-block;background:#F4C33B;color:#4A3200;font-size:10.5px;font-weight:700;
+  border-radius:3px;padding:1px 5px;margin-right:5px;letter-spacing:.05em;vertical-align:1px}
 </style>
 </head>
 <body class="is-masked">
@@ -3488,6 +3502,12 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       + faTd(fmt(jn + on), "num hlm", "ft_" + c.k + "_n")
       + faTd(fmt(htB + htO - tAll), "num faint", "ft_" + c.k + "_r") + '</tr>';
 
+    /* 合计下方提示：截至上月末累计报送（= 截至本月累计 − 本月当月） */
+    var lastB = jc2 - jn, lastAll = (jc2 - jn) + (oc2 - on);
+    rows += '<tr class="fcr-tip"><td colspan="9"><span class="fcr-tipb">提示</span>'
+      + '截止上月末，累计报送投资' + fmt(lastAll) + '万元，其中建安费累计报送' + fmt(lastB)
+      + '万元，占已报投资的' + (lastAll ? Math.round(lastB / lastAll * 100) : 0) + '%。</td></tr>';
+
     var cols = '<col style="width:4.8%"><col style="width:12.6%"><col style="width:10.4%">'
       + '<col style="width:10.4%"><col style="width:12.6%"><col style="width:10.4%">'
       + '<col style="width:10.6%"><col style="width:10.4%"><col style="width:10%">';
@@ -3651,6 +3671,18 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     if (h) h.textContent = "单位：万元";
     setTimeout(faAlignRail, 0);
   }
+
+
+  /* 吸顶表头偏移＝顶部深色标题条高度 */
+  (function () {
+    function pgTopH() {
+      var t = document.querySelector(".top");
+      var h = t ? Math.round(t.getBoundingClientRect().height) : 0;
+      document.documentElement.style.setProperty("--pgTopH", (h || 72) + "px");
+    }
+    pgTopH();
+    window.addEventListener("resize", function () { setTimeout(pgTopH, 60); });
+  })();
 
   function faRefresh() {
     if (!FA_READY) return;
@@ -4000,6 +4032,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       var rows = ordered;
       /* 合同额只读：按章节名取「合同清单」金额；无对应章节的行保留汇总值 */
       rows.forEach(function (r, i) { r.ci = i + 1; var v = ctrChOf(r.name); if (v !== null) r.contract = v; });
+      /* 合计行＝本表各行的合计，独立现算，不引用章节合计 */
       var tot = { name: "合计", no: "", contract: 0, mon: 0, cum: 0, ci: 0 };
       rows.forEach(function (r) { tot.contract += r.contract; tot.mon += r.mon; tot.cum += r.cum; });
       rows.push(tot);
