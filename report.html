@@ -1070,7 +1070,7 @@ td.nmc{white-space:nowrap;font-size:12px}
           return '<td class="' + cls + '"><input class="pgi pgc" data-reg="' + r.city + '|' + k + '" value="' + fmt(v, d) + '"></td>';
         }
         return '<tr><td class="c" rowspan="1">' + DSP(r.city) + "</td>"
-          + cell("outPlan", r.outPlan) + cell("outDone", r.outDone, 1)
+          + cell("outPlan", r.outPlan, 1) + cell("outDone", r.outDone)
           + cell("glPlan", r.glPlan, 1) + cell("glDone", r.glDone)
           + cell("fhPlan", r.fhPlan, 1) + cell("fhDone", r.fhDone)
           + cell("bzPlan", r.bzPlan, 1) + cell("bzDone", r.bzDone) + "</tr>";
@@ -1079,11 +1079,11 @@ td.nmc{white-space:nowrap;font-size:12px}
       host.innerHTML = head("分地市州填报", subTitle(t), "reg")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead>'
         + '<tr><th rowspan="2" style="width:76px" class="c">地市州</th>'
-        + '<th colspan="2" class="c">产值（万元）</th>'
+        + '<th colspan="2" class="c sep">产值（万元）</th>'
         + '<th colspan="2" class="c sep">隔离栅（公里）</th>'
         + '<th colspan="2" class="c sep">护栏（公里）</th>'
         + '<th colspan="2" class="c sep">标志标牌（个）</th></tr>'
-        + '<tr><th class="c"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
+        + '<tr><th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
         + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
         + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
         + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th></tr>'
