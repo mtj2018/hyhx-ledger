@@ -542,6 +542,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .tsf-tbl tbody tr{height:40px}
 /* 鼠标悬停：表格行蓝色浅底（土石方日报 / 工程月报 的 B 区表格） */
 .tsf-tbl tbody tr:hover>td{background:#EAF2FE}
+.tsf-tbl tbody tr.total:hover>td,.tsf-tbl tbody tr.tot:hover>td{background:transparent}
 #view-report .pg-tbl tbody tr:hover>td{background:#EAF2FE}
 .tsf-tbl td.nm{color:#1E3A6E;font-weight:600;line-height:1.3}
 .tsf-tbl td.en{color:#3D4B5C}
@@ -590,6 +591,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 <style id="bwxcss">
 /* ===== 晴雨表 ===== */
 .wx-years{display:flex;gap:6px;margin-left:auto}
+.wx-yearsel{appearance:none;-webkit-appearance:none;border:1px solid #C9D6E6;background:#FFFFFF;color:#33465F;font-size:12px;line-height:1.4;padding:4px 24px 4px 9px;border-radius:6px;margin-left:auto;cursor:pointer;font-family:inherit;background-image:linear-gradient(45deg,transparent 50%,#7A8798 50%),linear-gradient(135deg,#7A8798 50%,transparent 50%);background-position:calc(100% - 13px) 50%,calc(100% - 8px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
 .wx-yb{border:1px solid #C9D6E6;background:#FFFFFF;color:#33465F;font:600 12px/1 inherit;padding:6px 11px;
   border-radius:4px;cursor:pointer;letter-spacing:.02em}
 .wx-yb:hover{border-color:#8FB0DA;color:#16407F}
@@ -747,7 +749,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       <div class="wx-two">
         <div class="card">
           <div class="card-head"><h2>月度雨雪天数</h2><span class="hint" id="wx-note">雨雪天数 ÷ 当月天数</span>
-            <div class="wx-years" id="wx-years"></div></div>
+            <select class="wx-yearsel" id="wx-years" aria-label="晴雨表年份"></select></div>
           <div class="card-body" style="padding:0 18px 14px"><div id="wx-month"></div></div>
         </div>
         <div class="card">
@@ -1681,7 +1683,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       head += '</div>';
       WX.cities.forEach(function (c, ci) {
         rows += '<div class="wx-frow"><div class="wx-c"><span class="wx-city">' + c.name + '</span>'
-          + '<span class="wx-sub">' + (c.sub ? c.sub + " · " : "") + c.seg + '</span></div>';
+          + '<span class="wx-sub">' + c.seg + '</span></div>';
         var f = WX_FC && WX_FC[ci];
         for (var i = 0; i < 7; i++) {
           rows += '<div class="wx-d">' + (f ? wxIcon(f.daily.weather_code[i]) : '<span class="wx-na">—</span>') + '</div>';
@@ -1696,7 +1698,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       var rows = '';
       var head = '<tr><th>月份</th>';
       WX.cities.forEach(function (c) {
-        head += '<th>' + c.name + '<span class="s">' + (c.sub ? c.sub + " · " : "") + c.seg + '</span></th>';
+        head += '<th>' + c.name + '<span class="s">' + c.seg + '</span></th>';
       });
       head += '</tr>';
       var tot = [], td = [];
@@ -1728,20 +1730,16 @@ td.nmc{white-space:nowrap;font-size:12px}
     function renderRain() {
       var years = document.getElementById("wx-years");
       if (years && !years.hasAttribute("data-b")) {
-        var h = "";
-        for (var y = 2025; y <= 2027; y++) h += '<button type="button" class="wx-yb" data-wxy="' + y + '">' + y + " 年</button>";
-        years.innerHTML = h;
+        var yh = "";
+        for (var y = 2025; y <= 2027; y++) yh += '<option value="' + y + '">' + y + " 年</option>";
+        years.innerHTML = yh;
         years.setAttribute("data-b", "1");
-        years.addEventListener("click", function (e) {
-          var b = e.target.closest ? e.target.closest("[data-wxy]") : null;
-          if (!b) return;
-          WX_Y = parseInt(b.getAttribute("data-wxy"), 10);
+        years.addEventListener("change", function () {
+          WX_Y = parseInt(this.value, 10) || WX_Y;
           renderRain();
         });
       }
-      if (years) Array.prototype.forEach.call(years.querySelectorAll(".wx-yb"), function (b) {
-        b.classList.toggle("on", parseInt(b.getAttribute("data-wxy"), 10) === WX_Y);
-      });
+      if (years) years.value = String(WX_Y);
       var fc = document.getElementById("wx-forecast");
       if (fc) fc.innerHTML = wxForecastHtml();
       var mt = document.getElementById("wx-month");
@@ -1758,7 +1756,7 @@ td.nmc{white-space:nowrap;font-size:12px}
           : "雨雪天数 ÷ 当月天数　·　❄ 为当月降雪天数";
       }
       var hint = document.getElementById("wx-hint");
-      if (hint) hint.textContent = WX_FC_ERR ? "天气读取失败，请稍后刷新" : "武汉取蔡甸区 · 各地市州未来 7 天";
+      if (hint) hint.textContent = WX_FC_ERR ? "天气读取失败，请稍后刷新" : "";
     }
 
     function wxLoadForecast() {
