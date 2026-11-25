@@ -745,6 +745,26 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 #pg-seg .tbl tr.total td{background:#F7F9FC;font-weight:700;color:#16407F}
 #pg-seg .tbl th{white-space:nowrap}
 </style>
+
+<style id="a8css">
+/* ===== 顶部：自动保存并同步云端的状态提示（小锁左侧） ===== */
+.sync-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;align-self:center;
+  height:30px;padding:0 10px 0 9px;border-radius:6px;border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.10);color:#DCE7F8;font-size:12px;letter-spacing:.02em;white-space:nowrap;
+  box-sizing:border-box;margin-right:2px}
+.sync-chip .sc-dot{width:6px;height:6px;border-radius:50%;background:#5FD0A0;flex:0 0 auto;
+  box-shadow:0 0 0 2px rgba(95,208,160,.16)}
+.sync-chip .sc-t{line-height:1}
+.sync-chip.is-busy .sc-dot{background:#F4C33B;box-shadow:0 0 0 2px rgba(244,195,59,.18);
+  animation:scPulse 1s ease-in-out infinite}
+@keyframes scPulse{0%,100%{opacity:1}50%{opacity:.45}}
+.sync-chip.is-warn{border-color:rgba(255,196,138,.55);color:#FFE2C4}
+.sync-chip.is-warn .sc-dot{background:#E8925A;box-shadow:0 0 0 2px rgba(232,146,90,.18)}
+/* ===== 形象进度 B 区：鼠标悬停行浅蓝底 ===== */
+#pg-out .pg-tbl tbody tr:hover>td,#pg-ppl .pg-tbl tbody tr:hover>td{background:#EAF2FE}
+/* ===== 地市州右栏：报送流程块靠底对齐，避免留出大片空白或被裁掉 ===== */
+.fa-panel .fcr-head{justify-content:flex-end;overflow:visible;min-height:58px;padding-bottom:10px}
+</style>
 </head>
 <body class="is-masked">
 
@@ -757,7 +777,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       <div class="top-sub">建设单位 <span data-mirror="builder">湖北汉宜高速公路有限公司</span>　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
     </div>
     <div class="top-meta">
-            <button id="top-lock" type="button" title="已锁定，点击解锁编辑" aria-label="锁定 / 解锁"
+            <div class="sync-chip" id="sync-chip" title="本页改动会自动保存并写回云端"><span class="sc-dot"></span><span class="sc-t">已自动保存并同步云端</span></div>
+      <button id="top-lock" type="button" title="已锁定，点击解锁编辑" aria-label="锁定 / 解锁"
         style="flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;margin:0;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.10);border-radius:6px;cursor:pointer;color:#FFFFFF;box-sizing:border-box">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
       </button>
@@ -778,10 +799,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       <a class="nav-item" href="#files" data-view="files"><span>重要文档管理</span></a>
       <a class="nav-item" href="#other" data-view="other"><span>其他信息</span></a>
     </nav>
-    <a class="nav-jump" target="_blank" rel="noopener" href="https://mtj2018.github.io/hyhx-ledger/report.html" title="打开工程月报填报页（B 页，线上）"><span>基础数据管理</span></a>
-    <nav class="nav-extra">
-      <a class="nav-item" href="#changelog" data-view="changelog"><span>版本更新记录</span></a>
-    </nav>
+    <a class="nav-jump" target="_blank" rel="noopener" href="https://mtj2018.github.io/hyhx-ledger/report.html" title="打开工程月报填报页（B 页，线上）"><span>基础数据填报</span></a>
 
   </aside>
 
@@ -1282,13 +1300,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     </section>
     <!-- ===== /视图：重要文件台账 ===== -->
   
-    <!-- ===== 视图：版本更新记录 ===== -->
-    <section class="view" id="view-changelog">
-      <div class="card">
-        <div class="card-head"><h2>版本更新记录</h2><span id="cl-count" class="cl-cnt"></span></div>
-        <div class="card-body cl-body"><div id="cl-list"></div></div>
-      </div>
-    </section>
 
 </main>
 </div>
@@ -1701,6 +1712,9 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (s) { s.style.color = ""; }
       try { localStorage.setItem(KEY + "-ts", stamp); } catch (e) {}
       DIRTY = false;
+      try {
+        if (window.__syncChip && (location.protocol === "http:" || location.protocol === "https:")) window.__syncChip("busy");
+      } catch (e_sc) {}
       try { if (window.__pgPushLedger) window.__pgPushLedger(); } catch (e0) {}
       var b = el("btn-save");
       if (b) { b.style.background = "#FFFFFF"; b.style.color = "#16407F"; b.style.borderColor = "#FFFFFF"; }
@@ -3849,6 +3863,10 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (!head || !tbl) return;
       var ftbl = p.querySelector(".fcr-tbl");
       if (ftbl) ftbl.style.marginTop = "0px";
+      /* 先量出流程块自身需要的高度：右栏高度不足、或 KPI 尚未排版完成时，
+         也不会把「报送流程」压扁成 0 高而被 overflow 裁掉 */
+      head.style.height = "auto";
+      var needH = Math.round(head.getBoundingClientRect().height);
       head.style.height = "0px";
       var htop = head.getBoundingClientRect().top;
       /* 顶部分隔线：与左侧 KPI 那一行的底线齐平（不再按表格首行推算） */
@@ -3857,7 +3875,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         ? kpi.getBoundingClientRect().bottom - htop
         : tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
       if (d > 300) d = tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
-      head.style.height = (d > 0 ? Math.round(d) : 0) + "px";
+      head.style.height = Math.max(d > 0 ? Math.round(d) : 0, needH) + "px";
       /* 行对齐改由表格上外边距承担，避免把分隔线推走 */
       var m0 = tbl.querySelector("tbody tr"), r0 = ftbl ? ftbl.querySelector("tbody tr") : null;
       if (m0 && r0 && ftbl) {
@@ -4674,6 +4692,24 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         + '<th style="width:24%">完成百分比</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
     }
 
+
+    /* ---------- 顶部：自动保存 / 同步云端状态 ---------- */
+    var SC_T = null;
+    function syncChip(st, txt) {
+      var b = el("sync-chip");
+      if (!b) return;
+      var t = b.querySelector(".sc-t");
+      if (!t) return;
+      b.className = "sync-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
+      t.textContent = st === "warn" ? "未同步云端 · 已存本机"
+        : st === "busy" ? "正在保存并同步…"
+        : (ONLINE ? "已自动保存并同步云端" : "已自动保存（本机）");
+      if (txt) b.setAttribute("title", txt); else b.setAttribute("title", "本页改动会自动保存并写回云端");
+      if (SC_T) { clearTimeout(SC_T); SC_T = null; }
+      if (st === "busy") SC_T = setTimeout(function () { syncChip(ONLINE ? "ok" : "warn"); }, 12000);
+    }
+    window.__syncChip = syncChip;
+
     function render() { renderShape(); renderOut(); renderPpl(); applyModLock(); pgTabBind(); pgTabPaint(); }
     /* 页面小锁联动：未解锁时全页录入框只读（点右上角小锁解锁后才能输入） */
     var LOCK_TIP = "已锁定，点击右上角小锁解锁后可编辑";
@@ -4853,6 +4889,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       return s;
     }
     function srcMsg(t, ok) {
+      try { if (window.__syncChip) window.__syncChip(ok ? "ok" : "warn", ok ? "" : t); } catch (e_sc) {}
       var e = q("#pg-src");
       if (!e) return;
       /* 成功不打扰：只在失败时留字，成功后清空 */
