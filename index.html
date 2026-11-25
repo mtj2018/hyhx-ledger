@@ -714,6 +714,23 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .fcr-tip .fcr-tipb{display:inline-block;background:#F4C33B;color:#4A3200;font-size:10.5px;font-weight:700;
   border-radius:3px;padding:1px 5px;margin-right:5px;letter-spacing:.05em;vertical-align:1px}
 </style>
+
+<style>
+.rail nav.nav-extra{border-top:1px solid var(--line);margin-top:8px}
+</style>
+
+<style>
+.cl-body{padding:4px 18px 18px}
+.cl-day{font-size:12px;color:#8A96A8;font-weight:600;margin:14px 0 4px;letter-spacing:.04em}
+.cl-it{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid #F1F4F9}
+.cl-t{flex:0 0 46px;font-size:12px;color:#9AA7B8;font-variant-numeric:tabular-nums}
+.cl-b{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.cl-m{font-size:12px;color:#16407F;background:#F2F6FC;border:1px solid #E6EDF7;border-radius:3px;padding:1px 7px;white-space:nowrap}
+.cl-d{font-size:13px;color:#101827}
+.cl-x{font-size:12px;color:#8A96A8;font-variant-numeric:tabular-nums}
+.cl-empty{padding:28px 0;text-align:center;color:#8A96A8;font-size:13px}
+.cl-cnt{margin-left:auto;font-size:12px;color:#8A96A8}
+</style>
 </head>
 <body class="is-masked">
 
@@ -748,6 +765,10 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       <a class="nav-item" href="#other" data-view="other"><span>其他信息</span></a>
     </nav>
     <a class="nav-jump" target="_blank" rel="noopener" href="https://mtj2018.github.io/hyhx-ledger/report.html" title="打开工程月报填报页（B 页，线上）"><span>基础数据管理</span></a>
+    <nav class="nav-extra">
+      <a class="nav-item" href="#changelog" data-view="changelog"><span>版本更新记录</span></a>
+    </nav>
+
   </aside>
 
   <main>
@@ -933,7 +954,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
               <tr>
                 <td class="c">2026 年</td>
                 <td class="c"><span class="num" id="a2026">1,133,213</span></td>
-                <td class="c"><input data-k="p2026" data-int="1" value="1,250,000" inputmode="decimal" readonly aria-readonly="true" tabindex="-1" onmousedown="return false" style="text-align:center;color:#101827;font-weight:400;font-variant-numeric:tabular-nums;cursor:default;pointer-events:none"></td>
+                <td class="c"><input data-k="p2026" data-int="1" value="1,250,000" inputmode="decimal"></td>
                 <td class="c num" id="r2026">90.66%</td>
                 <td class="c" style="border-left:1px solid #E4EAF3"><input data-k="n2026" data-int="1" value="1,350,000" inputmode="decimal"></td>
                 <td class="c num" id="nrate2026">—</td>
@@ -941,7 +962,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
               <tr>
                 <td class="c">2025 年</td>
                 <td class="c"><span class="num" id="a2025">1,153,750</span></td>
-                <td class="c"><input data-k="p2025" data-int="1" value="963,000" inputmode="decimal" readonly aria-readonly="true" tabindex="-1" onmousedown="return false" style="text-align:center;color:#101827;font-weight:400;font-variant-numeric:tabular-nums;cursor:default;pointer-events:none"></td>
+                <td class="c"><input data-k="p2025" data-int="1" value="963,000" inputmode="decimal"></td>
                 <td class="c num" id="r2025">119.81%</td>
                 <td class="c" style="border-left:1px solid #E4EAF3"><input data-k="n2025" data-int="1" value="1,150,000" inputmode="decimal"></td>
                 <td class="c num" id="nrate2025">—</td>
@@ -949,7 +970,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
               <tr>
                 <td class="c">2024 年</td>
                 <td class="c"><span class="num" id="a2024">31,120</span></td>
-                <td class="c"><input data-k="p2024" data-int="1" value="31,120" inputmode="decimal" readonly aria-readonly="true" tabindex="-1" onmousedown="return false" style="text-align:center;color:#101827;font-weight:400;font-variant-numeric:tabular-nums;cursor:default;pointer-events:none"></td>
+                <td class="c"><input data-k="p2024" data-int="1" value="31,120" inputmode="decimal"></td>
                 <td class="c num" id="r2024">100.00%</td>
                 <td class="c" style="border-left:1px solid #E4EAF3"><input data-k="n2024" data-int="1" value="31,120" inputmode="decimal"></td>
                 <td class="c num" id="nrate2024">—</td>
@@ -1242,7 +1263,16 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       </div>
     </section>
     <!-- ===== /视图：重要文件台账 ===== -->
-  </main>
+  
+    <!-- ===== 视图：版本更新记录 ===== -->
+    <section class="view" id="view-changelog">
+      <div class="card">
+        <div class="card-head"><h2>版本更新记录</h2><span id="cl-count" class="cl-cnt"></span></div>
+        <div class="card-body cl-body"><div id="cl-list"></div></div>
+      </div>
+    </section>
+
+</main>
 </div>
 
 <script>
@@ -1470,6 +1500,164 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   }
 
   function two(n) { return ("0" + n).slice(-2); }
+
+
+  /* ---------- 版本更新记录：自动记录各页面字段的修改（时间倒序） ---------- */
+  var CL_MAX = 120, CLP = {};
+  var CL_UID = "";
+  try {
+    CL_UID = localStorage.getItem("hyhx-cl-uid") || "";
+    if (!CL_UID) { CL_UID = "u" + Math.random().toString(36).slice(2, 8); localStorage.setItem("hyhx-cl-uid", CL_UID); }
+  } catch (e) { if (!CL_UID) CL_UID = "u" + Math.random().toString(36).slice(2, 8); }
+  var CLKEY = "clog_" + CL_UID;
+  var CL_VIEW = { "view-overview": "项目基本情况", "view-investment": "概算执行管理", "view-progress": "形象进度管理",
+    "view-fixedasset": "固定投资管理", "view-files": "重要文档管理", "view-other": "其他信息" };
+  var CL_KEY = { name: "项目名称", builder: "建设单位", lineNature: "线路性质", buildNature: "建设性质",
+    status: "项目状态", duration: "计划工期", monthIdx: "统计月份" };
+  function clOwn() { try { var a = JSON.parse(S[CLKEY] || "[]"); return a && a.length ? a : []; } catch (e) { return []; } }
+  function clAll() {
+    var out = [], seen = {};
+    Object.keys(S).forEach(function (k) {
+      if (k.indexOf("clog_") !== 0) return;
+      var a = [];
+      try { a = JSON.parse(S[k] || "[]") || []; } catch (e) { a = []; }
+      a.forEach(function (it) {
+        if (!it || !it.t) return;
+        var id = it.t + "|" + (it.k || "") + "|" + (it.b || "");
+        if (seen[id]) return;
+        seen[id] = 1;
+        out.push(it);
+      });
+    });
+    out.sort(function (a, b) { return b.t - a.t; });
+    return out.slice(0, 240);
+  }
+  function clP2(n) { return ("0" + n).slice(-2); }
+  function clWhen(t) {
+    var d = new Date(t), now = new Date();
+    return {
+      day: (d.getFullYear() === now.getFullYear() ? "" : d.getFullYear() + "年") + clP2(d.getMonth() + 1) + "-" + clP2(d.getDate()),
+      hm: clP2(d.getHours()) + ":" + clP2(d.getMinutes())
+    };
+  }
+  function clClip(v) {
+    v = String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+    return v.length > 20 ? v.slice(0, 20) + "…" : v;
+  }
+  function clLabel(k) {
+    if (k.indexOf("files.") === 0) {
+      var seg = k.split(".");
+      return { m: "重要文档管理", r: "文档清单 第 " + (parseInt(seg[1], 10) + 1) + " 条" };
+    }
+    var cands = document.querySelectorAll('[data-k="' + k + '"]'), n = null;
+    for (var ci = 0; ci < cands.length; ci++) { if (cands[ci].closest(".view")) { n = cands[ci]; break; } }
+    if (!n && cands.length) n = cands[0];
+    var mod = "", row = "";
+    if (n) {
+      var card = n.closest(".card");
+      if (card) { var h = card.querySelector(".card-head h2"); if (h) mod = h.textContent.trim(); }
+      var f = n.closest(".field");
+      if (f) { var lb = f.querySelector("label"); if (lb) row = lb.textContent.trim(); }
+      if (!row) {
+        var tr = n.closest("tr");
+        if (tr) {
+          var tds = tr.querySelectorAll("td"), txts = [];
+          for (var i = 0; i < tds.length && txts.length < 2; i++) {
+            var s = tds[i].textContent.replace(/\s+/g, " ").trim();
+            if (s && !/^[\d,.%\-\s]+$/.test(s)) txts.push(s);
+          }
+          row = txts.join(" · ");
+        }
+      }
+      if (!row && n.parentElement) {
+        var pl = n.parentElement.querySelector("label,em,b,i,span");
+        if (pl && pl !== n) row = pl.textContent.trim();
+      }
+      if (!mod) {
+        var vw = n.closest(".view");
+        if (vw && CL_VIEW[vw.id]) mod = CL_VIEW[vw.id];
+      }
+    }
+    if (!row && CL_KEY[k]) row = CL_KEY[k];
+    return { m: clClip(mod || "台账数据"), r: clClip(row || k) };
+  }
+  function clNote(k, from, to) {
+    if (!k || k === CLKEY || k.indexOf("clog_") === 0) return;
+    if (String(from == null ? "" : from) === String(to == null ? "" : to)) return;
+    var L = clOwn(), now = Date.now(), p = clLabel(k);
+    if (L[0] && L[0].k === k && (now - L[0].t) < 5000) { L[0].t = now; L[0].b = clClip(to); }
+    else L.unshift({ t: now, k: k, m: p.m, r: p.r, a: clClip(from), b: clClip(to) });
+    if (L.length > CL_MAX) L.length = CL_MAX;
+    S[CLKEY] = JSON.stringify(L);
+    try { touch(); } catch (e) {}
+    clRender(true);
+  }
+  function clPrime() {
+    CLP = {};
+    Object.keys(S).forEach(function (k) {
+      if (k.indexOf("clog_") === 0) return;
+      CLP[k] = String(S[k] == null ? "" : S[k]);
+    });
+  }
+  function clRender(force) {
+    var wrap = el("cl-list");
+    if (!wrap) return;
+    var box = el("view-changelog");
+    if (!force && box && !box.classList.contains("is-on")) return;
+    var rows = clAll(), html = "", lastDay = "";
+    if (!rows.length) {
+      wrap.innerHTML = '<div class="cl-empty">还没有修改记录。改动任意页面字段后，这里会自动按时间倒序列出修改内容。</div>';
+      var c0 = el("cl-count"); if (c0) c0.textContent = "";
+      return;
+    }
+    rows.forEach(function (it) {
+      var w = clWhen(it.t);
+      if (w.day !== lastDay) {
+        if (lastDay) html += "</div>";
+        html += '<div class="cl-day">' + w.day + "</div>";
+        lastDay = w.day;
+      }
+      var chg = (it.a || it.b) ? '<span class="cl-x">' + esc(clClip(it.a) || "空") + " → " + esc(clClip(it.b) || "空") + "</span>" : "";
+      html += '<div class="cl-it"><div class="cl-t">' + w.hm + '</div><div class="cl-b"><span class="cl-m">'
+        + esc(it.m) + '</span><span class="cl-d">' + esc(it.r) + "</span>" + chg + "</div></div>";
+    });
+    if (lastDay) html += "</div>";
+    wrap.innerHTML = html;
+    var c = el("cl-count"); if (c) c.textContent = rows.length + " 条";
+  }
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || !t.dataset) return;
+    var k = t.dataset.k;
+    if (k) {
+      var isInp = t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT";
+      var ov = CLP[k], nv = isInp ? t.value : (t.textContent || "").trim();
+      if (ov === undefined) ov = String(S[k] == null ? "" : S[k]);
+      if (String(ov) !== String(nv)) { clNote(k, ov, nv); CLP[k] = String(nv); }
+      return;
+    }
+    if (t.classList && t.classList.contains("ce")) {
+      var fi = t.getAttribute("data-fi"), fc = t.getAttribute("data-fc");
+      if (fi == null) return;
+      var key = "files." + fi + "." + fc;
+      var ov2 = CLP[key], nv2 = (t.textContent || "").trim();
+      if (ov2 === undefined) ov2 = String(S[key] == null ? "" : S[key]);
+      if (String(ov2) !== String(nv2)) { clNote(key, ov2, nv2); CLP[key] = String(nv2); }
+    }
+  }, true);
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('[data-view="changelog"]') : null;
+    if (a) setTimeout(function () { clRender(true); }, 60);
+  });
+  setTimeout(function () {
+    clPrime();
+    if (!clAll().length) {
+      try {
+        S[CLKEY] = JSON.stringify([{ t: Date.now(), k: "__init", m: "系统", r: "版本更新记录上线，此后各页面的字段修改会自动记录", a: "", b: "" }]);
+      } catch (e) {}
+    }
+    clRender(false);
+  }, 700);
 
   var DIRTY = false;
 
@@ -2652,7 +2840,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 
   function invKeys(g) {
     var a = [], i;
-    if (g === "annual") return ["n2024", "n2025", "n2026"];
+    if (g === "annual") return ["n2024", "n2025", "n2026", "p2024", "p2025", "p2026"];
     if (g === "y2026") {
       for (i = 1; i <= 12; i++) a.push("m" + i);
       for (i = 1; i <= 4; i++) a.push("q" + i);
@@ -4331,7 +4519,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
           + '<td class="r">' + fmt(r.cum, 0) + "</td>"
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
       }).join("");
-      q("#pg-out").innerHTML = head("产值完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计")
+      q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
         + '<th>项目</th><th style="width:118px" class="r">合同额</th>'
         + '<th style="width:114px" class="r">本月完成</th><th style="width:126px" class="r">累计完成</th>'
@@ -4671,6 +4859,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         }
         render();
         try { renderStatus(); } catch (e) {}
+        try { if (typeof clPrime === "function") clPrime(); } catch (e) {}
+        try { if (typeof clRender === "function") clRender(true); } catch (e) {}
         srcMsg("已同步云端数据 · " + new Date(all.cts || Date.now()).toLocaleString(), true);
         SYNC_OK = true;
         if (changedKeys().length || PEND.length) pushLedger();
