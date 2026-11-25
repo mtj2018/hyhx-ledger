@@ -4492,51 +4492,83 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       MSEL.addEventListener("change", function () { YM = YSEL.value + "-" + MSEL.value; render(); });
     }
 
-    /* ---- 云端：读取填报数据 / 台账 ---- */
+    /* ---- 云端：读取填报数据 / 台账（v3：分文件 + 超时 + 校验重推 + 待推队列） ---- */
     function api() { return "https://api.github.com/gists/" + CLOUD.gistId; }
     function hdr() {
       return { "Authorization": "Bearer " + CLOUD.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" };
     }
-    function parseFile(f) {
-      if (!f) return null;
-      var c = f.content;
-      if (f.truncated && f.raw_url) return fetch(f.raw_url).then(function (r) { return r.text(); }).then(function (t) { return JSON.parse(t); });
-      try { return JSON.parse(c); } catch (e) { return null; }
+    var TO_MS = 15000;
+    var PKEY = KEY + "-pend";
+    var PEND = [];
+    try { PEND = JSON.parse(localStorage.getItem(PKEY) || "[]") || []; } catch (e_p0) { PEND = []; }
+    function savePend() { try { localStorage.setItem(PKEY, JSON.stringify(PEND)); } catch (e) {} }
+    function markPend(ks) { (ks || []).forEach(function (k) { if (PEND.indexOf(k) < 0) PEND.push(k); }); savePend(); }
+    function clearPend(ks) { PEND = PEND.filter(function (k) { return (ks || []).indexOf(k) < 0; }); savePend(); }
+    function __jc(o) { try { return JSON.parse(JSON.stringify(o === undefined ? null : o)); } catch (e) { return null; } }
+    function __same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+    function xfetch(url, opt, ms) {
+      opt = opt || {};
+      opt.cache = "no-store";
+      if (typeof AbortController === "undefined") return fetch(url, opt);
+      var ctl = new AbortController();
+      opt.signal = ctl.signal;
+      var t = setTimeout(function () { try { ctl.abort(); } catch (e) {} }, ms || TO_MS);
+      return fetch(url, opt).then(function (r) { clearTimeout(t); return r; },
+        function (e) { clearTimeout(t); throw e; });
     }
-    function pullAll() {
-      return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
-        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    /* 台账按模块拆成三个云端文件，写入只碰自己那一个 */
+    function lgrp(k) {
+      if (/^(x20\d\d_|x20\d\d$|xm11_)/.test(k)) return "inv";
+      if (/^(fa_|fah_|fak_|faflow_)/.test(k)) return "fa";
+      return "base";
+    }
+    function ledFile(k) { return "xl-" + lgrp(k) + ".json"; }
+    function parseFile(f) {
+      if (!f || !f.content) return null;
+      try { return JSON.parse(f.content); } catch (e) { return null; }
+    }
+    function readGist() {
+      return xfetch(api() + "?t=" + Date.now(), { headers: hdr() }, TO_MS)
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
         .then(function (j) {
-          var files = j.files || {};
-          var rep = parseFile(files[CLOUD.report]);
-          if (rep && rep.data && rep.data.reports && (rep.ts || 0) >= (DB.ts || 0)) {
-            DB = { ts: rep.ts, reports: rep.data.reports };
-            window.__REPDB = DB;
-            try { localStorage.setItem(RKEY, JSON.stringify(DB)); } catch (e) {}
-            render(); renderStatus();
-            if (window.__faReload) { try { window.__faReload(); } catch (er1) {} }
-            var s = q("#pg-src");
-            if (s) s.textContent = "已同步填报数据 · " + new Date(rep.ts).toLocaleString();
-          }
-          var led = parseFile(files[CLOUD.ledger]);
-          if (led && led.data) {
-            var localTs = Number(localStorage.getItem(CLOUD.ledgerTsKey) || 0);
-            if (Number(led.ts || 0) > localTs) {
-              var __cur = {}, __mix = {}, __kk;
-              try { __cur = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e9) {}
-              for (__kk in led.data) { if (Object.prototype.hasOwnProperty.call(led.data, __kk)) __mix[__kk] = led.data[__kk]; }
-              for (__kk in __cur) {
-                if (/^faflow_/.test(__kk) && !Object.prototype.hasOwnProperty.call(__mix, __kk)) __mix[__kk] = __cur[__kk];
-              }
-              localStorage.setItem(KEY, JSON.stringify(__mix));
-              localStorage.setItem(CLOUD.ledgerTsKey, String(led.ts || 0));
-              location.reload();
-            }
-          }
-        }).then(function () { SYNC_OK = true; }).catch(function (e) { console.warn("云端读取失败", e); });
+          var files = j.files || {}, out = {}, cts = 0;
+          Object.keys(files).forEach(function (n) {
+            var f = files[n];
+            if (!f || !f.content) return;
+            try {
+              var o = JSON.parse(f.content);
+              if (o && typeof o === "object") { out[n] = o; cts = Math.max(cts, o.ts || 0); }
+            } catch (e) {}
+          });
+          out.cts = cts;
+          return out;
+        });
+    }
+    /* 把三个分文件 + 旧单文件还原成一整份台账字段 */
+    function assemble(all) {
+      var s = {}, k;
+      ["xl-base.json", "xl-inv.json", "xl-fa.json"].forEach(function (n) {
+        var o = all[n];
+        if (o && o.data) { for (k in o.data) { if (o.data.hasOwnProperty(k)) s[k] = o.data[k]; } }
+      });
+      var leg = all[CLOUD.ledger];
+      if (leg && leg.data) {
+        var newer = (leg.ts || 0) > (all.cts || 0);
+        for (k in leg.data) {
+          if (!leg.data.hasOwnProperty(k)) continue;
+          if (newer || s[k] === undefined) s[k] = leg.data[k];
+        }
+      }
+      return s;
+    }
+    function srcMsg(t, ok) {
+      var e = q("#pg-src");
+      if (!e) return;
+      /* 成功不打扰：只在失败时留字，成功后清空 */
+      e.textContent = ok ? "" : t;
+      e.style.color = ok ? "" : "#A24A18";
     }
     var pushQueue = Promise.resolve();
-    /* 打开页面时的快照：用于判断本页到底改了哪些字段 */
     var SNAP = {};
     try { SNAP = JSON.parse(JSON.stringify(S)); } catch (e0) {}
     function changedKeys() {
@@ -4547,91 +4579,111 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       }
       return out;
     }
-    function doPush() {
-      var keys = changedKeys();
-      if (!keys.length) return Promise.resolve();
-      /* 先读回云端，只把本页真正改过的字段覆盖上去，未改动的以云端为准（防止旧页面把线上改回去） */
-      return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
-        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function (j) {
-          var led = parseFile((j.files || {})[CLOUD.ledger]);
-          var cloud = (led && led.data) ? led.data : {};
-          var merged = {}, k;
-          for (k in cloud) { if (Object.prototype.hasOwnProperty.call(cloud, k)) merged[k] = cloud[k]; }
-          keys.forEach(function (k2) { merged[k2] = S[k2]; });
-          var ts2 = Date.now();
-          var body = { files: {} };
-          body.files[CLOUD.ledger] = { content: JSON.stringify({ ts: ts2, data: merged }) };
-          return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) })
-            .then(function (r) { if (!r.ok) throw new Error(r.status); localStorage.setItem(CLOUD.ledgerTsKey, String(ts2)); })
-            .then(function () {
-              /* 回读核对：改过的字段必须在云端生效 */
-              return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
-                .then(function (r) { return r.json(); })
-                .then(function (jj) {
-                  var back = parseFile((jj.files || {})[CLOUD.ledger]);
-                  if (!back || !back.data) return;
-                  var bad = keys.filter(function (k2) { return JSON.stringify(back.data[k2]) !== JSON.stringify(S[k2]); });
-                  if (bad.length) console.warn("云端核对不一致：" + bad.join(","));
-                  var s = q("#pg-src");
-                  if (s && !bad.length) s.textContent = "已保存至云端 · " + new Date(ts2).toLocaleTimeString();
-                });
-            })
-            .then(function () { SNAP = JSON.parse(JSON.stringify(S)); });
-        })
-        .catch(function (e) { console.warn("台账写入失败", e && e.message ? e.message : e); });
+    /* 写指定字段：按所属模块分文件，写前重读、写后核对，被覆盖自动重推（最多 3 轮） */
+    function writeKeys(keys, round2) {
+      round2 = round2 || 1;
+      keys = (keys || []).filter(function (v, i, a) { return a.indexOf(v) === i; });
+      if (!keys.length) return Promise.resolve(true);
+      if (!ONLINE) return Promise.resolve(true);
+      var groups = {};
+      keys.forEach(function (k) { var g = lgrp(k); (groups[g] = groups[g] || []).push(k); });
+      return readGist().then(function (all) {
+        var want = {}, body = { files: {} };
+        Object.keys(groups).forEach(function (g) {
+          var n = "xl-" + g + ".json";
+          var cf = (all[n] && all[n].data) ? all[n].data : {}, d = {}, kk;
+          for (kk in cf) { if (cf.hasOwnProperty(kk)) d[kk] = cf[kk]; }
+          groups[g].forEach(function (k) { d[k] = S[k]; });
+          want[n] = { ts: Date.now(), data: d };
+          body.files[n] = { content: JSON.stringify(want[n]) };
+        });
+        return xfetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) }, TO_MS)
+          .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            var one = 0;
+            Object.keys(want).forEach(function (n) { one = Math.max(one, want[n].ts); });
+            try { localStorage.setItem(CLOUD.ledgerTsKey, String(one)); } catch (e) {}
+          })
+          .then(function () { return readGist(); })
+          .then(function (back) {
+            var bad = [];
+            Object.keys(groups).forEach(function (g) {
+              var n = "xl-" + g + ".json", bd = (back[n] && back[n].data) || {};
+              groups[g].forEach(function (k) { if (!__same(bd[k], S[k])) bad.push(k); });
+            });
+            if (!bad.length) {
+              clearPend(keys);
+              keys.forEach(function (k) { SNAP[k] = __jc(S[k]); });
+              srcMsg("已保存至云端 · " + new Date().toLocaleTimeString(), true);
+              return true;
+            }
+            if (round2 < 3) return writeKeys(bad.concat(PEND), round2 + 1);
+            markPend(keys);
+            srcMsg("云端核对有差异，已记入待推队列，将自动重试", false);
+            return false;
+          });
+      }).catch(function (e) {
+        var msg = (e && e.name === "AbortError") ? "请求超时" : (e && e.message ? e.message : String(e));
+        if (round2 < 3) {
+          return new Promise(function (res) { setTimeout(res, round2 === 1 ? 800 : 1800); })
+            .then(function () { return writeKeys(keys, round2 + 1); });
+        }
+        markPend(keys);
+        srcMsg("云端未同步（" + msg + "），已记入待推队列，稍后自动重试", false);
+        return false;
+      });
     }
+    function doPush() { return writeKeys(changedKeys().concat(PEND), 1); }
     function pushLedger() {
-      if (!ONLINE || !SYNC_OK) return Promise.resolve();
-      pushQueue = pushQueue.then(doPush, doPush);
+      if (!ONLINE) return Promise.resolve(true);
+      var run = function () { return doPush(); };
+      pushQueue = pushQueue.then(run, run);
       return pushQueue;
     }
-    /* 单字段直写：流程状态这类“一点即变”的开关字段，不做 SYNC_OK 门槛，写后回读核对，失败重试 */
-    function writeKeyOnce(k, tryNo) {
-      return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
-        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function (j) {
-          var led = parseFile((j.files || {})[CLOUD.ledger]);
-          var cloud = (led && led.data) ? led.data : {}, merged = {}, kk;
-          for (kk in cloud) { if (Object.prototype.hasOwnProperty.call(cloud, kk)) merged[kk] = cloud[kk]; }
-          merged[k] = S[k];
-          var ts2 = Date.now(), body = { files: {} };
-          body.files[CLOUD.ledger] = { content: JSON.stringify({ ts: ts2, data: merged }) };
-          return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify(body) })
-            .then(function (r) { if (!r.ok) throw new Error(r.status); localStorage.setItem(CLOUD.ledgerTsKey, String(ts2)); });
-        })
-        .then(function () {
-          return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
-            .then(function (r) { return r.json(); })
-            .then(function (jj) {
-              var back = parseFile((jj.files || {})[CLOUD.ledger]), d = back && back.data;
-              if (!d || JSON.stringify(d[k]) !== JSON.stringify(S[k])) throw new Error("verify");
-            });
-        })
-        .catch(function (e) {
-          if (tryNo > 0) {
-            return new Promise(function (res) { setTimeout(res, tryNo === 1 ? 700 : 1600); })
-              .then(function () { return writeKeyOnce(k, tryNo - 1); });
-          }
-          throw e;
-        });
-    }
+    window.__pgPushLedger = pushLedger;
+    /* 单字段直写（流程状态这类一点即变）：按其所属模块文件写入，写后核对 */
     function pushKey(k) {
-      if (!ONLINE) return Promise.resolve();
-      var run = function () {
-        return writeKeyOnce(k, 2).then(function () {
-          try { SNAP[k] = JSON.parse(JSON.stringify(S[k])); } catch (e0) {}
-        });
-      };
-      pushQueue = pushQueue.then(run, run).catch(function (e) {
-        console.warn("字段写回失败", k, e && e.message ? e.message : e);
-      });
+      if (!ONLINE) return Promise.resolve(true);
+      var run = function () { return writeKeys([k], 1); };
+      pushQueue = pushQueue.then(run, run);
       return pushQueue;
     }
     window.__pgPushKey = pushKey;
-
-    window.__pgPushLedger = pushLedger;
-
+    /* 读取：云端为准，但本页改过的字段、待推字段一律以本机为准，且不再整页刷新 */
+    function pullAll() {
+      return readGist().then(function (all) {
+        var cloudS = assemble(all), changed = changedKeys(), pend = PEND.slice(), k;
+        for (k in cloudS) {
+          if (!cloudS.hasOwnProperty(k)) continue;
+          if (changed.indexOf(k) >= 0) { if (S[k] === undefined) S[k] = cloudS[k]; continue; }
+          if (pend.indexOf(k) >= 0) continue;
+          S[k] = cloudS[k];
+        }
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+        try { localStorage.setItem(CLOUD.ledgerTsKey, String(all.cts || 0)); } catch (e) {}
+        var snap = {}, kk;
+        for (kk in cloudS) { if (cloudS.hasOwnProperty(kk)) snap[kk] = cloudS[kk]; }
+        SNAP = snap;
+        var rep = all[CLOUD.report];
+        if (rep && rep.data && rep.data.reports && (rep.ts || 0) >= (DB.ts || 0)) {
+          DB = { ts: rep.ts, reports: rep.data.reports };
+          try { localStorage.setItem(RKEY, JSON.stringify(DB)); } catch (e) {}
+        }
+        render();
+        try { renderStatus(); } catch (e) {}
+        srcMsg("已同步云端数据 · " + new Date(all.cts || Date.now()).toLocaleString(), true);
+        SYNC_OK = true;
+        if (changedKeys().length || PEND.length) pushLedger();
+        return true;
+      }).catch(function (e) {
+        SYNC_OK = false;
+        srcMsg("云端读取失败（" + (e && e.message ? e.message : e) + "），本页改动只存本机，稍后自动重试", false);
+        return false;
+      });
+    }
+    setInterval(function () {
+      if (ONLINE && (changedKeys().length || PEND.length)) pushLedger();
+    }, 60000);
     /* ---- 自动保存：所有填报项停止输入约 1.2 秒后落盘（线上同时写回云端） ---- */
     var AS_T = null;
     function autoSave() {
