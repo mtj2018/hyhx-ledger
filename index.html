@@ -669,8 +669,9 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .ctr-tj td.nm{font-size:11.5px}
 .ctr-sm th{font-size:11.5px;padding:6px 5px;white-space:normal;line-height:1.3}
 .ctr-sm td{font-size:12px;padding:5px 6px}
+.ctr-sm .ctr-toggle{font-size:11.5px}
 .ctr-toggle{font-family:inherit;font-size:12px;font-weight:600;color:#8A96A8;background:transparent;border:0;
-  border-bottom:1px dashed #B9C4D6;padding:0 1px 1px;cursor:pointer;letter-spacing:.02em;line-height:1.4}
+  border-bottom:1px dashed #B9C4D6;padding:0 1px 1px;cursor:pointer;letter-spacing:.02em;line-height:1.4;white-space:nowrap}
 .ctr-toggle.is-on{color:#16407F;border-bottom:1px solid #16407F}
 .ctr-toggle:hover{color:#1F5AA8}
 .ctr-duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
@@ -840,17 +841,17 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         <div class="ctr-chap"><div class="ctr-ci"><span class="k">临时工程与设施</span><span class="v">134,232</span></div><div class="ctr-ci"><span class="k">路基工程</span><span class="v">504,818</span></div><div class="ctr-ci"><span class="k">路面工程</span><span class="v">241,476</span></div><div class="ctr-ci"><span class="k">桥涵工程</span><span class="v">448,090</span></div><div class="ctr-ci"><span class="k">绿化工程</span><span class="v">27,150</span></div><div class="ctr-ci"><span class="k">改扩建工程</span><span class="v">174,747</span></div><div class="ctr-ci"><span class="k">集采材料到工地价</span><span class="v">616,468</span></div><div class="ctr-ci"><span class="k">交安工程</span><span class="v">75,299</span></div><div class="ctr-ci"><span class="k">机电工程</span><span class="v">98,982</span></div><div class="ctr-ci is-tot"><span class="k">章节合计</span><span class="v">2,321,262</span></div></div>
       </div>
       <div class="card">
-        <div class="card-head"><h2>土建标段</h2><span class="hint">点击「暂列金」「路面工程」切换是否计入合同额</span></div>
+        <div class="card-head"><h2>土建标段</h2><span class="hint">单位：万元</span></div>
         <div class="ctr-wrap"><table class="ctr-tbl ctr-tj" id="ctr-tj"><colgroup><col style="width:11%"><col style="width:12%"><col style="width:10%"><col style="width:9.57%"><col style="width:9.57%"><col style="width:9.57%"><col style="width:9.57%"><col style="width:9.57%"><col style="width:9.57%"><col style="width:9.57%"></colgroup><thead><tr><th>标段</th><th>合同额</th><th><button type="button" class="ctr-toggle" data-ctrt="zlj">暂列金</button></th><th>临时工程与设施</th><th>路基工程</th><th><button type="button" class="ctr-toggle is-on" data-ctrt="lm">路面工程</button></th><th>桥涵工程</th><th>绿化工程</th><th>改扩建工程</th><th>集采材料到工地价</th></tr></thead><tbody><tr><td class="nm">土建1标</td><td class="amt" data-amt="539259" data-zlj="26072" data-lm="61049">513,187</td><td class="z">26,072</td><td>35,466</td><td>103,402</td><td class="l">61,049</td><td>102,057</td><td>7,016</td><td>55,328</td><td>148,869</td></tr><tr><td class="nm">土建2标</td><td class="amt" data-amt="257748" data-zlj="13334" data-lm="0">244,414</td><td class="z">13,334</td><td>14,296</td><td>29,175</td><td class="l"><span style="color:#AEB8C6">—</span></td><td>102,165</td><td>1,129</td><td>7,308</td><td>90,341</td></tr><tr><td class="nm">土建3标</td><td class="amt" data-amt="135061" data-zlj="7418" data-lm="0">127,643</td><td class="z">7,418</td><td>9,144</td><td>39,048</td><td class="l"><span style="color:#AEB8C6">—</span></td><td>28,659</td><td>1,414</td><td>8,837</td><td>40,541</td></tr><tr><td class="nm">土建4标</td><td class="amt" data-amt="177118" data-zlj="9907" data-lm="34867">167,211</td><td class="z">9,907</td><td>8,167</td><td>43,476</td><td class="l">34,867</td><td>16,843</td><td>1,932</td><td>14,918</td><td>47,008</td></tr><tr><td class="nm">土建5标</td><td class="amt" data-amt="185962" data-zlj="10425" data-lm="0">175,537</td><td class="z">10,425</td><td>12,258</td><td>46,913</td><td class="l"><span style="color:#AEB8C6">—</span></td><td>47,231</td><td>1,566</td><td>9,084</td><td>58,485</td></tr><tr><td class="nm">土建6标</td><td class="amt" data-amt="203745" data-zlj="10420" data-lm="42860">193,325</td><td class="z">10,420</td><td>7,834</td><td>43,860</td><td class="l">42,860</td><td>27,096</td><td>1,129</td><td>9,532</td><td>61,014</td></tr><tr><td class="nm">土建7标</td><td class="amt" data-amt="265310" data-zlj="13564" data-lm="54488">251,746</td><td class="z">13,564</td><td>11,436</td><td>53,657</td><td class="l">54,488</td><td>42,331</td><td>3,182</td><td>25,767</td><td>60,885</td></tr><tr><td class="nm">土建8标</td><td class="amt" data-amt="176634" data-zlj="10580" data-lm="0">166,054</td><td class="z">10,580</td><td>14,127</td><td>56,532</td><td class="l"><span style="color:#AEB8C6">—</span></td><td>47,795</td><td>2,114</td><td>10,218</td><td>35,268</td></tr><tr><td class="nm">土建9标</td><td class="amt" data-amt="200344" data-zlj="10590" data-lm="48212">189,754</td><td class="z">10,590</td><td>9,838</td><td>43,673</td><td class="l">48,212</td><td>12,691</td><td>3,177</td><td>15,660</td><td>56,503</td></tr><tr><td class="nm">土建10标</td><td class="amt" data-amt="120065" data-zlj="6609" data-lm="0">113,456</td><td class="z">6,609</td><td>7,012</td><td>45,082</td><td class="l"><span style="color:#AEB8C6">—</span></td><td>21,222</td><td>4,491</td><td>18,095</td><td>17,554</td></tr><tr class="total"><td class="nm">合计</td><td id="ctr-t-amt">2,142,327</td><td class="z">118,919</td><td>129,578</td><td>504,818</td><td class="l">241,476</td><td>448,090</td><td>27,150</td><td>174,747</td><td>616,468</td></tr></tbody></table></div>
       </div>
       <div class="ctr-duo">
       <div class="card">
         <div class="card-head"><h2>交安标段</h2><span class="hint">单位：万元</span></div>
-        <div class="ctr-wrap"><table class="ctr-tbl ctr-sm"><colgroup><col style="width:24%"><col style="width:22%"><col style="width:16%"><col style="width:19%"><col style="width:19%"></colgroup><thead><tr><th>标段</th><th>合同额</th><th>暂列金</th><th>临时工程与设施</th><th>交安工程</th></tr></thead><tbody><tr><td class="nm">交安1标</td><td>13,224</td><td class="z">450</td><td>274</td><td>12,501</td></tr><tr><td class="nm">交安2标</td><td>20,307</td><td class="z">660</td><td>401</td><td>19,246</td></tr><tr><td class="nm">交安3标</td><td>13,620</td><td class="z">450</td><td>324</td><td>12,846</td></tr><tr><td class="nm">交安4标</td><td>18,112</td><td class="z">600</td><td>431</td><td>17,081</td></tr><tr><td class="nm">交安5标</td><td>14,383</td><td class="z">480</td><td>278</td><td>13,625</td></tr><tr class="total"><td class="nm">合计</td><td>79,646</td><td class="z">2,640</td><td>1,708</td><td>75,299</td></tr></tbody></table></div>
+        <div class="ctr-wrap"><table class="ctr-tbl ctr-sm" id="ctr-ja"><colgroup><col style="width:21%"><col style="width:20%"><col style="width:16%"><col style="width:22%"><col style="width:21%"></colgroup><thead><tr><th>标段</th><th>合同额</th><th><button type="button" class="ctr-toggle" data-ctrt="zja">暂列金</button></th><th>临时工程<br>与设施</th><th>交安工程</th></tr></thead><tbody><tr><td class="nm">交安1标</td><td class="amt" data-amt="13224" data-zlj="450">12,774</td><td class="z">450</td><td>274</td><td>12,501</td></tr><tr><td class="nm">交安2标</td><td class="amt" data-amt="20307" data-zlj="660">19,647</td><td class="z">660</td><td>401</td><td>19,246</td></tr><tr><td class="nm">交安3标</td><td class="amt" data-amt="13620" data-zlj="450">13,170</td><td class="z">450</td><td>324</td><td>12,846</td></tr><tr><td class="nm">交安4标</td><td class="amt" data-amt="18112" data-zlj="600">17,512</td><td class="z">600</td><td>431</td><td>17,081</td></tr><tr><td class="nm">交安5标</td><td class="amt" data-amt="14383" data-zlj="480">13,903</td><td class="z">480</td><td>278</td><td>13,625</td></tr><tr class="total"><td class="nm">合计</td><td class="stot">77,006</td><td class="z">2,640</td><td>1,708</td><td>75,299</td></tr></tbody></table></div>
       </div>
       <div class="card">
         <div class="card-head"><h2>机电标段</h2><span class="hint">单位：万元</span></div>
-        <div class="ctr-wrap"><table class="ctr-tbl ctr-sm"><colgroup><col style="width:24%"><col style="width:22%"><col style="width:16%"><col style="width:19%"><col style="width:19%"></colgroup><thead><tr><th>标段</th><th>合同额</th><th>暂列金</th><th>临时工程与设施</th><th>机电工程</th></tr></thead><tbody><tr><td class="nm">机电1标</td><td>68,542</td><td class="z">3,000</td><td>1,945</td><td>62,700</td></tr><tr><td class="nm">机电2标</td><td>17,816</td><td class="z">600</td><td>434</td><td>16,781</td></tr><tr><td class="nm">机电3标</td><td>20,777</td><td class="z">710</td><td>567</td><td>19,501</td></tr><tr class="total"><td class="nm">合计</td><td>107,135</td><td class="z">4,310</td><td>2,946</td><td>98,982</td></tr></tbody></table></div>
+        <div class="ctr-wrap"><table class="ctr-tbl ctr-sm" id="ctr-jd"><colgroup><col style="width:21%"><col style="width:20%"><col style="width:16%"><col style="width:22%"><col style="width:21%"></colgroup><thead><tr><th>标段</th><th>合同额</th><th><button type="button" class="ctr-toggle" data-ctrt="zjd">暂列金</button></th><th>临时工程<br>与设施</th><th>机电工程</th></tr></thead><tbody><tr><td class="nm">机电1标</td><td class="amt" data-amt="68542" data-zlj="3000">65,542</td><td class="z">3,000</td><td>1,945</td><td>62,700</td></tr><tr><td class="nm">机电2标</td><td class="amt" data-amt="17816" data-zlj="600">17,216</td><td class="z">600</td><td>434</td><td>16,781</td></tr><tr><td class="nm">机电3标</td><td class="amt" data-amt="20777" data-zlj="710">20,067</td><td class="z">710</td><td>567</td><td>19,501</td></tr><tr class="total"><td class="nm">合计</td><td class="stot">102,825</td><td class="z">4,310</td><td>2,946</td><td>98,982</td></tr></tbody></table></div>
       </div>
       </div>
         </div>
@@ -4824,7 +4825,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     if (b2) b2.style.display = k === "ctr" ? "" : "none";
   }
 
-  var ON = { zlj: false, lm: true };
+  var ON = { zlj: false, lm: true, zja: false, zjd: false };
   function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
   function paintCtr() {
     var total = 0;
@@ -4844,6 +4845,20 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     });
     Array.prototype.forEach.call(document.querySelectorAll("#ctr-tj td.l"), function (c) {
       c.classList.toggle("is-off", !ON.lm);
+    });
+    /* 交安 / 机电：暂列金同样可切换是否计入合同额 */
+    [["zja", "ctr-ja"], ["zjd", "ctr-jd"]].forEach(function (x) {
+      var tb = document.getElementById(x[1]);
+      if (!tb) return;
+      var on = !!ON[x[0]], tot = 0;
+      Array.prototype.forEach.call(tb.querySelectorAll("td.amt"), function (c) {
+        var amt = +c.getAttribute("data-amt"), z = +c.getAttribute("data-zlj");
+        var v = amt - (on ? 0 : z);
+        c.textContent = fmt(v);
+        tot += v;
+      });
+      Array.prototype.forEach.call(tb.querySelectorAll("td.stot"), function (c) { c.textContent = fmt(tot); });
+      Array.prototype.forEach.call(tb.querySelectorAll("td.z"), function (c) { c.classList.toggle("is-off", !on); });
     });
   }
 
