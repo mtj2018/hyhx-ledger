@@ -730,6 +730,11 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .cl-x{font-size:12px;color:#8A96A8;font-variant-numeric:tabular-nums}
 .cl-empty{padding:28px 0;text-align:center;color:#8A96A8;font-size:13px}
 .cl-cnt{margin-left:auto;font-size:12px;color:#8A96A8}
+/* 分地市州「提示」条：不参与行悬停高亮，始终维持黄色 */
+.fa-tbl tbody tr.fcr-tip:hover td,.fcr-tbl tbody tr.fcr-tip:hover td,
+.fa-tbl tbody tr.fcr-tip.fa-hov td,.fcr-tbl tbody tr.fcr-tip.fa-hov td{background:#FDF3CE}
+.fa-tbl tbody tr.fcr-tip td,.fcr-tbl tbody tr.fcr-tip td{transition:none}
+.fcr-tipb{cursor:default}
 </style>
 </head>
 <body class="is-masked">
