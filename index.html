@@ -667,6 +667,29 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .ctr-duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
 .ctr-duo .card{margin-bottom:16px}
 </style>
+<style>
+/* ===== 合同清单 C 区：标段及施工单位名录 ===== */
+.ctr-man{min-width:0}
+.ctr-man col{width:auto}
+.ctr-man th:first-child{width:33%}
+.ctr-man th:nth-child(2){width:67%}
+.ctr-man td{border-left:0;border-right:0;border-top:0;border-bottom:1px solid var(--hair);
+  text-align:left;padding:5px 9px;font-size:12px;line-height:1.45}
+.ctr-man td.s{color:#16407F;font-weight:600;white-space:nowrap}
+.ctr-man tr.band td{border-bottom:0;background:transparent;padding:11px 2px 2px;
+  color:#5F7086;font-size:11px;letter-spacing:.06em}
+/* ===== 地市州 C 区：报送流程 ===== */
+.wf-cap{width:100%;text-align:left;font-size:11px;color:#5F7086;letter-spacing:.06em}
+.wf-bar{display:flex;width:100%;margin-top:6px;border:1px solid #E1E8F4;border-radius:6px;overflow:hidden}
+.wf-step{flex:1 1 0;min-width:0;font-family:inherit;font-size:11px;line-height:1;padding:8px 0 7px;
+  border:0;border-right:1px solid #E1E8F4;background:#fff;color:#8A96A8;cursor:pointer;
+  white-space:nowrap;letter-spacing:0}
+.wf-step:last-child{border-right:0}
+.wf-step.done{background:#EFF5FC;color:#16407F}
+.wf-step.cur{background:#16407F;color:#fff;font-weight:700}
+.wf-step:hover{color:#16407F}
+.wf-step.cur:hover{color:#fff}
+</style>
 </head>
 <body class="is-masked">
 
@@ -823,7 +846,16 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       </div>
         </div>
         <div class="ov-side">
-          <div class="card"></div>
+      <div class="card">
+        <div class="card-head"><h2>标段及施工单位</h2><span class="hint">共 18 个标段</span></div>
+        <div class="ctr-wrap" style="padding-top:8px">
+          <table class="ctr-tbl ctr-man">
+            <colgroup><col style="width:33%"><col style="width:67%"></colgroup>
+            <thead><tr><th>标段</th><th>施工单位</th></tr></thead>
+            <tbody><tr class="band"><td colspan="2">土建标段 · 10 个</td></tr><tr><td class="s">土建1标</td><td>湖北交投建设集团有限公司</td></tr><tr><td class="s">土建2标</td><td>中铁十九局集团有限公司</td></tr><tr><td class="s">土建3标</td><td>中铁二十五局集团有限公司</td></tr><tr><td class="s">土建4标</td><td>中铁十七局集团有限公司</td></tr><tr><td class="s">土建5标</td><td>中国葛洲坝集团路桥工程有限公司</td></tr><tr><td class="s">土建6标</td><td>中国建筑第八工程局有限公司</td></tr><tr><td class="s">土建7标</td><td>中交一公局集团有限公司</td></tr><tr><td class="s">土建8标</td><td>中交路桥建设有限公司</td></tr><tr><td class="s">土建9标</td><td>中铁五局集团有限公司</td></tr><tr><td class="s">土建10标</td><td>中电建路桥集团有限公司</td></tr><tr class="band"><td colspan="2">交安标段 · 5 个</td></tr><tr><td class="s">交安1标</td><td>陕西金宝迪交通工程建设有限公司</td></tr><tr><td class="s">交安2标</td><td>徐州市交通工程总承包有限公司</td></tr><tr><td class="s">交安3标</td><td>山西路桥建设集团有限公司</td></tr><tr><td class="s">交安4标</td><td>安徽省交通建设股份有限公司</td></tr><tr><td class="s">交安5标</td><td>路安通智科技集团有限公司</td></tr><tr class="band"><td colspan="2">机电标段 · 3 个</td></tr><tr><td class="s">机电1标</td><td>中咨泰克交通工程集团有限公司</td></tr><tr><td class="s">机电2标</td><td>中远海运科技股份有限公司</td></tr><tr><td class="s">机电3标</td><td>山西交通科学研究院集团有限公司</td></tr></tbody>
+          </table>
+        </div>
+      </div>
         </div>
       </div>
     </section>
@@ -3169,7 +3201,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       + '<th class="r">建安费</th><th class="r">其他费</th><th class="r">小计</th>'
       + '<th class="r">建安费</th><th class="r">其他费</th><th class="r">小计</th>'
       + '</tr></thead><tbody>' + rows + '</tbody></table></div>'
-      + '<div class="note" style="padding:9px 0 0;border-top:0">说明：2026 年已报送＝截至 10 月末基数＋2026 年各月录入；当月投资＝各地市州当前所选月份的当月数；累计报送＝各年基数＋全部月份录入。</div>'
       + '</div></div>';
   }
 
@@ -3307,6 +3338,37 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     }
     return faGet("fak_" + c.k + "_0_" + i);
   }
+  /* 报送流程：已报审 → 编制资料 → 已提交 → 已上报；点哪个表示当前停在哪个环节 */
+  var FA_FLOW_LB = ["已报审", "编制资料", "已提交", "已上报"];
+  function faFlow(k) {
+    var v = S["faflow_" + k];
+    v = (v === undefined || v === null || v === "") ? 0 : parseInt(v, 10);
+    return (v >= 1 && v <= 4) ? v : 0;
+  }
+  function faFlowSteps(k) {
+    var cur = faFlow(k), h = "", i;
+    for (i = 0; i < 4; i++) {
+      h += '<button type="button" class="wf-step' + (cur === i + 1 ? " cur" : (cur > i + 1 ? " done" : "")) + '"'
+        + ' data-wf="' + k + '" data-wfv="' + (i + 1) + '">' + FA_FLOW_LB[i] + '</button>';
+    }
+    return h;
+  }
+  function faFlowHead(c) {
+    return '<div class="fcr-head" id="fcp_' + c.k + '">'
+      + '<div class="wf-cap">报送流程</div>'
+      + '<div class="wf-bar" data-wfc="' + c.k + '">' + faFlowSteps(c.k) + '</div>'
+      + '</div>';
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target && e.target.closest ? e.target.closest("[data-wf]") : null;
+    if (!b) return;
+    var k = b.getAttribute("data-wf"), v = parseInt(b.getAttribute("data-wfv"), 10);
+    S["faflow_" + k] = v;
+    var bar = b.closest ? b.closest(".wf-bar") : null;
+    if (bar) bar.innerHTML = faFlowSteps(k);
+    try { if (window.__pgSaveNow) window.__pgSaveNow(); } catch (e1) {}
+  });
+
   function faCheckRail(c, cm) {
     var rows = "", k, act, cum, diff, sumAct = null, sumCum = 0;
     var sumAll = 0, htAllSum = faHtBand(c) + faHtOther(c);
@@ -3339,12 +3401,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       + '<td id="fsum_' + c.k + '">' + (sumAct == null ? "—" : fmt(sumAct)) + '</td>'
       + '<td id="fqs_' + c.k + '"' + (sDiff != null && sDiff < 0 ? ' style="color:#C0392B"' : '') + '>'
       + (sDiff == null ? "—" : fmt(sDiff)) + '</td></tr>' + rows;
-    return '<div class="fcr-head" id="fcp_' + c.k + '">'
-      + '<div class="fcr-top">实际投资情况</div>'
-      + '<div class="fcr-sub" id="fcr_sub_' + c.k + '">实际完成 ' + fmt(sumAll)
-      + ' 万元，占合同额 ' + pctTxt(htAllSum ? sumAll / htAllSum : 0)
-      + '，占概算投资 ' + pctTxt(faInv(c) ? sumAll / faInv(c) : 0) + '</div>'
-      + '</div>'
+    return faFlowHead(c)
       + '<table class="fcr-tbl"><colgroup><col><col style="width:70px"><col style="width:64px"></colgroup>'
       + '<thead><tr><th>标段</th><th>实际投资</th><th>差额</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table>';
