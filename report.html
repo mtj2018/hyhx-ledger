@@ -1732,8 +1732,8 @@ td.nmc{white-space:nowrap;font-size:12px}
   /* 打开页面时的快照：用来判断本页改动了哪些表格段，写入时只覆盖这些段 */
   var BASE0 = null;
   function snap() {
-    try { BASE0 = JSON.parse(JSON.stringify({ reports: DB.reports || {}, jr: DB.jr || {}, tsf: DB.tsf || {} })); }
-    catch (e) { BASE0 = { reports: {}, jr: {}, tsf: {} }; }
+    try { BASE0 = JSON.parse(JSON.stringify({ reports: DB.reports || {}, jr: DB.jr || {}, tsf: DB.tsf || {}, tsfBase: DB.tsfBase || {} })); }
+    catch (e) { BASE0 = { reports: {}, jr: {}, tsf: {}, tsfBase: {} }; }
   }
   snap();
   function cloneRep(o) { try { return JSON.parse(JSON.stringify(o || {})); } catch (e) { return {}; } }
@@ -1756,7 +1756,7 @@ td.nmc{white-space:nowrap;font-size:12px}
     return out;
   }
   function mergeInto(cloud) {
-    var merged = { reports: cloneRep(cloud.reports), jr: cloneRep(cloud.jr), tsf: cloneRep(cloud.tsf) };
+    var merged = { reports: cloneRep(cloud.reports), jr: cloneRep(cloud.jr), tsf: cloneRep(cloud.tsf), tsfBase: cloneRep(cloud.tsfBase) };
     var b = BASE0 || {};
     Object.keys(DB.reports || {}).forEach(function (tid) {
       merged.reports[tid] = mrg(merged.reports[tid], DB.reports[tid], (b.reports || {})[tid]);
@@ -1766,6 +1766,9 @@ td.nmc{white-space:nowrap;font-size:12px}
     });
     Object.keys(DB.tsf || {}).forEach(function (d) {
       merged.tsf[d] = mrg(merged.tsf[d], DB.tsf[d], (b.tsf || {})[d]);
+    });
+    Object.keys(DB.tsfBase || {}).forEach(function (k) {
+      merged.tsfBase[k] = mrg(merged.tsfBase[k], DB.tsfBase[k], (b.tsfBase || {})[k]);
     });
     return merged;
   }
@@ -1782,7 +1785,7 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
   function changedPaths() {
     var now = {}, base = {};
-    [[DB.reports || {}, (BASE0 || {}).reports || {}, "reports"], [DB.jr || {}, (BASE0 || {}).jr || {}, "jr"], [DB.tsf || {}, (BASE0 || {}).tsf || {}, "tsf"]]
+    [[DB.reports || {}, (BASE0 || {}).reports || {}, "reports"], [DB.jr || {}, (BASE0 || {}).jr || {}, "jr"], [DB.tsf || {}, (BASE0 || {}).tsf || {}, "tsf"], [DB.tsfBase || {}, (BASE0 || {}).tsfBase || {}, "tsfBase"]]
       .forEach(function (x) {
         leafPaths(x[0], [x[2]], []).forEach(function (y) { now[JSON.stringify(y.p)] = y.v; });
         leafPaths(x[1], [x[2]], []).forEach(function (y) { base[JSON.stringify(y.p)] = y.v; });
@@ -1802,7 +1805,8 @@ td.nmc{white-space:nowrap;font-size:12px}
         var rep = (cloud && cloud.reports) ? cloud.reports : {};
         var jrs = (cloud && cloud.jr) ? cloud.jr : {};
         var tsf = (cloud && cloud.tsf) ? cloud.tsf : {};
-        var merged = mergeInto({ reports: rep, jr: jrs, tsf: tsf });
+        var tsfb = (cloud && cloud.tsfBase) ? cloud.tsfBase : {};
+        var merged = mergeInto({ reports: rep, jr: jrs, tsf: tsf, tsfBase: tsfb });
         var ts = Date.now();
         var o = {}; o[CLOUD.file] = { content: JSON.stringify({ ts: ts, data: merged }) };
         return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify({ files: o }) })
@@ -1819,7 +1823,7 @@ td.nmc{white-space:nowrap;font-size:12px}
               .then(function (jj) {
                 var f2 = (jj.files || {})[CLOUD.file] || {}, back = {};
                 try { back = JSON.parse(f2.content).data || {}; } catch (e4) { back = {}; }
-                var localAll = { reports: DB.reports || {}, jr: DB.jr || {}, tsf: DB.tsf || {} };
+                var localAll = { reports: DB.reports || {}, jr: DB.jr || {}, tsf: DB.tsf || {}, tsfBase: DB.tsfBase || {} };
                 var bad = paths.filter(function (p) { return !same(getAt(back, p), getAt(localAll, p)); });
                 snap();
                 if (bad.length) flag("云端核对有差异：" + bad.slice(0, 2).map(function (p) { return p.join("/"); }).join("、"), false);
@@ -1849,7 +1853,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       var o = JSON.parse(c); if (!o || !o.data || !o.data.reports) return;
       /* 线上版：云端更新时才覆盖，避免冲掉正在填的内容 */
       if ((o.ts || 0) >= (DB.ts || 0)) {
-        DB = { ts: o.ts || 0, reports: o.data.reports || {}, jr: o.data.jr || {}, tsf: o.data.tsf || DB.tsf || {} };
+        DB = { ts: o.ts || 0, reports: o.data.reports || {}, jr: o.data.jr || {}, tsf: o.data.tsf || DB.tsf || {}, tsfBase: o.data.tsfBase || DB.tsfBase || {} };
         persistLocal(); snap(); renderAll(); flag("已读取线上数据 · " + (o.ts ? new Date(o.ts).toLocaleString() : ""), true);
       }
     } catch (e) {}
@@ -1871,7 +1875,7 @@ td.nmc{white-space:nowrap;font-size:12px}
   document.addEventListener("input", autoSave, true);
   document.addEventListener("change", autoSave, true);
   $("#btn-export").addEventListener("click", function () {
-    var blob = new Blob([JSON.stringify({ ts: DB.ts, data: { reports: DB.reports, jr: DB.jr, tsf: DB.tsf } }, null, 1)], { type: "application/json" });
+    var blob = new Blob([JSON.stringify({ ts: DB.ts, data: { reports: DB.reports, jr: DB.jr, tsf: DB.tsf, tsfBase: DB.tsfBase } }, null, 1)], { type: "application/json" });
     var a = document.createElement("a");
     var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
     a.href = URL.createObjectURL(blob);
@@ -1906,6 +1910,7 @@ td.nmc{white-space:nowrap;font-size:12px}
     var t = tday(), s = (t < TG.min) ? TG.min : (t > TG.max ? TG.max : t);
     var p = s.split("-"); TS.sel = s; TS.y = +p[0]; TS.m = +p[1];
     if (!DB.tsf) DB.tsf = {};
+    if (!DB.tsfBase) DB.tsfBase = {};
     if (TG.seed && !DB.tsf[TG.seed]) {
       var o = {};
       TG.rows.forEach(function (r) { o[r.k] = { a: r.a, b: r.b, lk: 1 }; });
@@ -1914,12 +1919,27 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
   function tsfDayObj(d, mk) { if (!DB.tsf) DB.tsf = {}; var x = DB.tsf[d]; if (!x && mk) x = DB.tsf[d] = {}; return x || null; }
   function tsfRec(d, k, mk) { var x = tsfDayObj(d, mk); if (!x) return null; var r = x[k]; if (!r && mk) r = x[k] = {}; return r || null; }
+  function tsfDa(r) {
+    var b = (DB.tsfBase || {})[r.k];
+    return (b && b.da !== undefined && b.da !== "") ? tsfNum(b.da) : tsfNum(r.da);
+  }
+  function tsfDb(r) {
+    var b = (DB.tsfBase || {})[r.k];
+    return (b && b.db !== undefined && b.db !== "") ? tsfNum(b.db) : tsfNum(r.db);
+  }
+  /* 累计完成：种子日给基线；之后逐日累加“今日完成”；某日人工改过累计（顶部锁），从该日起按人工值续算 */
   function tsfCums(d) {
     var acc = {};
-    TG.rows.forEach(function (r) { acc[r.k] = { a: r.ca, b: r.cb }; });
-    Object.keys(DB.tsf || {}).filter(function (k) { return k > TG.seed && k <= d; }).sort().forEach(function (k) {
+    TG.rows.forEach(function (r) { acc[r.k] = { a: tsfNum(r.ca), b: tsfNum(r.cb) }; });
+    Object.keys(DB.tsf || {}).filter(function (k) { return k >= TG.seed && k <= d; }).sort().forEach(function (k) {
       var day = DB.tsf[k];
-      TG.rows.forEach(function (r) { var rec = day[r.k]; if (rec) { acc[r.k].a += tsfNum(rec.a); acc[r.k].b += tsfNum(rec.b); } });
+      TG.rows.forEach(function (r) {
+        var rec = day[r.k]; if (!rec) return;
+        if (rec.ca !== undefined && rec.ca !== null && rec.ca !== "") acc[r.k].a = tsfNum(rec.ca);
+        else if (k > TG.seed) acc[r.k].a += tsfNum(rec.a);
+        if (rec.cb !== undefined && rec.cb !== null && rec.cb !== "") acc[r.k].b = tsfNum(rec.cb);
+        else if (k > TG.seed) acc[r.k].b += tsfNum(rec.b);
+      });
     });
     return acc;
   }
@@ -1927,7 +1947,7 @@ td.nmc{white-space:nowrap;font-size:12px}
     var t = { da: 0, a: 0, ca: 0, db: 0, b: 0, cb: 0 };
     TG.rows.forEach(function (r) {
       var rec = (DB.tsf[d] || {})[r.k] || {};
-      t.da += r.da; t.db += r.db;
+      t.da += tsfDa(r); t.db += tsfDb(r);
       t.a += tsfNum(rec.a); t.b += tsfNum(rec.b);
       t.ca += cums[r.k].a; t.cb += cums[r.k].b;
     });
@@ -2008,6 +2028,19 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
 
   function tsfNm(s) { var i = s.indexOf("标"); return i >= 0 ? s.slice(0, i + 1) + "<br>" + s.slice(i + 1) : s; }
+  /* 顶部锁控制的列（设计量 / 累计完成）：锁定时与「总数量」一致为纯文本，解锁后为可编辑录入框 */
+  function tsfFixCell(id, k, attr, val, dp, lk) {
+    if (FIXOPEN && !lk) {
+      return '<td id="' + id + '"><input class="pgi pgc" ' + attr + '="' + k + '" value="' + tsfF(val, dp) + '"></td>';
+    }
+    return '<td id="' + id + '">' + tsfF(val, dp) + "</td>";
+  }
+  function tsfSetCell(id, text) {
+    var e = $("#" + id); if (!e) return;
+    var inp = e.querySelector ? e.querySelector("input") : null;
+    if (inp) { if (document.activeElement !== inp) inp.value = text; }
+    else e.textContent = text;
+  }
   function tsfRenderTable() {
     var host = $("#tsf-tbl"); if (!host) return;
     var d = TS.sel, cums = tsfCums(d), day = DB.tsf[d] || {}, body = "";
@@ -2018,14 +2051,14 @@ td.nmc{white-space:nowrap;font-size:12px}
       body += "<tr>"
         + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
         + '<td class="en">' + r.en + "</td>"
-        + "<td>" + tsfF(r.da, 1) + "</td>"
+        + tsfFixCell("tsf-da-" + r.k, r.k, "data-tsf-da", tsfDa(r), 1, lk)
         + '<td><input class="pgi" data-tsf-a="' + r.k + '" value="' + (rec.a === undefined ? "" : tsfF(rec.a, 2)) + '"' + ro + "></td>"
-        + '<td id="tsf-ca-' + r.k + '">' + tsfF(cums[r.k].a, 1) + "</td>"
-        + '<td id="tsf-ra-' + r.k + '">' + tsfP(cums[r.k].a, r.da) + "</td>"
-        + "<td>" + tsfF(r.db, 1) + "</td>"
+        + tsfFixCell("tsf-ca-" + r.k, r.k, "data-tsf-ca", cums[r.k].a, 1, lk)
+        + '<td id="tsf-ra-' + r.k + '">' + tsfP(cums[r.k].a, tsfDa(r)) + "</td>"
+        + tsfFixCell("tsf-db-" + r.k, r.k, "data-tsf-db", tsfDb(r), 1, lk)
         + '<td><input class="pgi" data-tsf-b="' + r.k + '" value="' + (rec.b === undefined ? "" : tsfF(rec.b, 2)) + '"' + ro + "></td>"
-        + '<td id="tsf-cb-' + r.k + '">' + tsfF(cums[r.k].b, 1) + "</td>"
-        + '<td id="tsf-rb-' + r.k + '">' + tsfP(cums[r.k].b, r.db) + "</td>"
+        + tsfFixCell("tsf-cb-" + r.k, r.k, "data-tsf-cb", cums[r.k].b, 1, lk)
+        + '<td id="tsf-rb-' + r.k + '">' + tsfP(cums[r.k].b, tsfDb(r)) + "</td>"
         + (r.nm ? '<td class="lkc"' + (two ? ' rowspan="2"' : "") + ">" + tsfLkBtn(r.k, lk) + "</td>" : "")
         + "</tr>";
     });
@@ -2035,7 +2068,7 @@ td.nmc{white-space:nowrap;font-size:12px}
       + "<td>" + tsfF(t.db, 1) + "</td><td>" + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td>"
       + '<td class="lkc"></td></tr>';
     var dl = d.slice(0, 4) + "年" + (+d.slice(5, 7)) + "月" + (+d.slice(8, 10)) + "日";
-    host.innerHTML = '<div class="card-head"><h2>施工日报填报</h2>'
+    host.innerHTML = '<div class="card-head"><h2>数据信息填报</h2>'
       + '<span class="tsf-exp"><span class="tsf-exp-d">填报日期 <b>' + dl + '</b></span>'
       + '<button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></span></div>'
       + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
@@ -2043,14 +2076,16 @@ td.nmc{white-space:nowrap;font-size:12px}
       + '<col style="width:8%"><col style="width:8.6%"><col style="width:9.4%"><col style="width:7.3%"><col style="width:8%"></colgroup><thead>'
       + '<tr><th rowspan="2">标段</th><th rowspan="2">工程<br>内容</th>'
       + '<th colspan="4">整体情况</th><th colspan="4">仅保通侧</th><th rowspan="2">提交</th></tr>'
-      + '<tr><th>设计量</th><th>当日完成<br>数量</th><th>累计完成量</th><th>比例</th>'
-      + '<th>设计量</th><th>当日完成<br>数量</th><th>累计完成量</th><th>比例</th></tr>'
+      + '<tr><th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th>'
+      + '<th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th></tr>'
       + "</thead><tbody>" + body + "</tbody></table></div>";
   }
   function tsfRenderSum() {
     var host = $("#tsf-sum"); if (!host) return;
     var d = TS.sel, cums = tsfCums(d), t = tsfTotals(d, cums);
-    TS.sumText = "1、整体情况：当日完成土石方工程" + tsfF(t.a, 2) + "万方，累计完成" + tsfF(t.ca, 1) + "万方，完成比例" + tsfP(t.ca, t.da) + "；\n"
+    var md = (+d.slice(5, 7)) + "月" + (+d.slice(8, 10)) + "日";
+    TS.sumText = "【土石方施工日报】（" + md + "），请各位领导同事查阅：\n"
+      + "1、整体情况：当日完成土石方工程" + tsfF(t.a, 2) + "万方，累计完成" + tsfF(t.ca, 1) + "万方，完成比例" + tsfP(t.ca, t.da) + "；\n"
       + "2、保通侧情况（单独统计）：当日完成土石方工程" + tsfF(t.b, 2) + "万方，累计完成" + tsfF(t.cb, 1) + "万方，完成比例" + tsfP(t.cb, t.db);
     host.innerHTML = '<div class="card-head"><h2>日报归纳</h2><span class="hint">点击文字即可复制</span></div>'
       + '<div class="tsf-sum-txt" id="tsf-sum-txt" title="点击复制">' + TS.sumText.replace(/\n/g, "<br>") + "</div>"
@@ -2068,11 +2103,13 @@ td.nmc{white-space:nowrap;font-size:12px}
     var d = TS.sel, cums = tsfCums(d), row = null;
     TG.rows.forEach(function (x) { if (x.k === k) row = x; });
     if (!row) return;
-    var e1 = $("#tsf-ca-" + k), e2 = $("#tsf-ra-" + k), e3 = $("#tsf-cb-" + k), e4 = $("#tsf-rb-" + k);
-    if (e1) e1.textContent = tsfF(cums[k].a, 1);
-    if (e2) e2.textContent = tsfP(cums[k].a, row.da);
-    if (e3) e3.textContent = tsfF(cums[k].b, 1);
-    if (e4) e4.textContent = tsfP(cums[k].b, row.db);
+    tsfSetCell("tsf-ca-" + k, tsfF(cums[k].a, 1));
+    tsfSetCell("tsf-cb-" + k, tsfF(cums[k].b, 1));
+    tsfSetCell("tsf-da-" + k, tsfF(tsfDa(row), 1));
+    tsfSetCell("tsf-db-" + k, tsfF(tsfDb(row), 1));
+    var e2 = $("#tsf-ra-" + k), e4 = $("#tsf-rb-" + k);
+    if (e2) e2.textContent = tsfP(cums[k].a, tsfDa(row));
+    if (e4) e4.textContent = tsfP(cums[k].b, tsfDb(row));
   }
   function tsfPaintTotals() {
     var d = TS.sel, cums = tsfCums(d), t = tsfTotals(d, cums);
@@ -2104,10 +2141,10 @@ td.nmc{white-space:nowrap;font-size:12px}
       var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
       rows += "<tr>" + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
         + '<td class="en">' + r.en + "</td>"
-        + "<td>" + tsfF(r.da, 1) + '</td><td class="z">' + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
-        + "<td>" + tsfF(cums[r.k].a, 1) + "</td><td>" + tsfP(cums[r.k].a, r.da) + "</td>"
-        + "<td>" + tsfF(r.db, 1) + '</td><td class="z">' + tsfF(rec.b === undefined ? 0 : rec.b, 2) + "</td>"
-        + "<td>" + tsfF(cums[r.k].b, 1) + "</td><td>" + tsfP(cums[r.k].b, r.db) + "</td>"
+        + "<td>" + tsfF(tsfDa(r), 1) + '</td><td class="z">' + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
+        + "<td>" + tsfF(cums[r.k].a, 1) + "</td><td>" + tsfP(cums[r.k].a, tsfDa(r)) + "</td>"
+        + "<td>" + tsfF(tsfDb(r), 1) + '</td><td class="z">' + tsfF(rec.b === undefined ? 0 : rec.b, 2) + "</td>"
+        + "<td>" + tsfF(cums[r.k].b, 1) + "</td><td>" + tsfP(cums[r.k].b, tsfDb(r)) + "</td>"
         + '<td class="tag">' + r.tag + "</td></tr>";
     });
     rows += '<tr class="tot"><td class="nm" colspan="2">合计</td>'
@@ -2141,8 +2178,8 @@ td.nmc{white-space:nowrap;font-size:12px}
       + "<table><thead>"
       + '<tr><th rowspan="2" style="width:12%">标段</th><th rowspan="2" style="width:10.2%">工程<br>内容</th>'
       + '<th class="grp" colspan="4">整体情况</th><th class="grp" colspan="4">仅保通侧</th><th rowspan="2" style="width:9%">备注</th></tr>'
-      + '<tr><th>设计量</th><th class="z">当日完成<br>数量</th><th>累计完成量</th><th>比例</th>'
-      + '<th>设计量</th><th class="z">当日完成<br>数量</th><th>累计完成量</th><th>比例</th></tr>'
+      + '<tr><th>设计量</th><th class="z">今日完成</th><th>累计完成</th><th>比例</th>'
+      + '<th>设计量</th><th class="z">今日完成</th><th>累计完成</th><th>比例</th></tr>'
       + "</thead><tbody>" + rows + "</tbody></table>"
       + '<p class="note"><b>说明：</b>' + TG.note1 + "</p>"
       + '<p class="note n2"><b>备注：</b>' + TG.note2 + "</p>"
@@ -2155,8 +2192,28 @@ td.nmc{white-space:nowrap;font-size:12px}
     setTimeout(function () { try { w.focus(); w.print(); } catch (e2) {} }, 600);
   }
 
+  /* 顶部锁解锁后才能改的“设计量 / 累计完成”：各存各的字段（设计量存标段级、累计存当日标段级） */
   document.addEventListener("input", function (e) {
     var t = e.target; if (!t || !t.dataset) return;
+    var du = t.dataset.tsfDa, dd = t.dataset.tsfDb, cu = t.dataset.tsfCa, cd = t.dataset.tsfCb;
+    if (du !== undefined || dd !== undefined || cu !== undefined || cd !== undefined) {
+      var kk = du !== undefined ? du : (dd !== undefined ? dd : (cu !== undefined ? cu : cd));
+      var val = t.value;
+      if (val !== "" && !/^\d*\.?\d*$/.test(val)) { t.classList.add("bad"); return; }
+      t.classList.remove("bad");
+      var n = (val === "") ? "" : Number(val);
+      if (du !== undefined || dd !== undefined) {
+        var bs = DB.tsfBase || (DB.tsfBase = {});
+        var bb = bs[kk] || (bs[kk] = {});
+        if (du !== undefined) bb.da = n; else bb.db = n;
+      } else {
+        var rc = tsfRec(TS.sel, kk, true);
+        if (cu !== undefined) rc.ca = n; else rc.cb = n;
+      }
+      DIRTY = true;
+      tsfPaint(kk); tsfPaintTotals(); tsfRenderSum();
+      return;
+    }
     var k = (t.dataset.tsfA !== undefined) ? t.dataset.tsfA : t.dataset.tsfB;
     if (k === undefined) return;
     var side = (t.dataset.tsfA !== undefined) ? "a" : "b", val = t.value;
@@ -2179,6 +2236,13 @@ td.nmc{white-space:nowrap;font-size:12px}
 
   document.addEventListener("blur", function (e) {
     var t = e.target; if (!t || !t.dataset) return;
+    if (t.dataset.tsfDa !== undefined || t.dataset.tsfDb !== undefined
+        || t.dataset.tsfCa !== undefined || t.dataset.tsfCb !== undefined) {
+      t.classList.remove("bad");
+      var v = toNum(t.value);
+      t.value = (v === null) ? "" : tsfF(v, 1);
+      return;
+    }
     var k = (t.dataset.tsfA !== undefined) ? t.dataset.tsfA : t.dataset.tsfB;
     if (k === undefined) return;
     var side = (t.dataset.tsfA !== undefined) ? "a" : "b";
