@@ -270,7 +270,25 @@
       + " " + two(d.getHours()) + ":" + two(d.getMinutes()) + ":" + two(d.getSeconds());
   }
 
+  /* B 页数据快照：直接取云端 data/ 下全部分文件（原样保存，导入时整份写回） */
+  function bSnapshot() {
+    if (!window.__cloudRead) return Promise.reject(new Error("no-cloud"));
+    return window.__cloudRead().then(function (all) {
+      var files = {}, n = 0;
+      Object.keys(all).forEach(function (k) {
+        if (k === "cts") return;
+        files[k] = all[k];
+        n++;
+      });
+      return { ts: all.cts || 0, count: n, files: files };
+    });
+  }
+  function chipSt(st, txt) { try { if (window.__syncChip) window.__syncChip(st, txt); } catch (e) {} }
+
+  var EXPORTING = false;
   function exportData() {
+    if (EXPORTING) return;
+    EXPORTING = true;
     save();
     var d = new Date();
     /* 把「当月完成」的月份选择与录入偏好一并导出，保证换机导入后完全一致 */
@@ -278,25 +296,52 @@
     S.execMonth27 = String(EXEC_MONTH27);
     S.execPref = EXEC_PREF;
     var payload = {
-      app: "沪渝高速项目信息页",
+      app: "沪渝高速全站数据（A 页台账 + B 页各报表）",
       key: KEY,
-      ver: 2,
+      ver: 3,
       exported_at: stampFull(d),
-      data: S
+      data: S,
+      b: null
     };
-    try {
-      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.href = url;
-      a.download = "沪渝高速项目信息_数据备份_" + stampFile(d) + ".json";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
-      alert("备份文件已导出：\n" + a.download + "\n请把它存到网盘或共享盘，换电脑时用「导入数据」恢复。");
-    } catch (e) {
-      alert("导出失败：" + (e && e.message ? e.message : e));
+    chipSt("busy", "正在汇总全站数据…");
+    Promise.resolve().then(function () { return bSnapshot(); }).then(function (b) {
+      payload.b = b;
+    }, function () {
+      payload.b = null;
+    }).then(function () {
+      try {
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "沪渝高速全站数据_" + stampFile(d) + ".json";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
+        var nb = payload.b ? payload.b.count : 0;
+        alert("全站数据已导出：" + a.download + "\n"
+          + "· A 页台账字段 " + Object.keys(S).length + " 项\n"
+          + "· B 页数据文件 " + nb + (nb ? " 个（含日报/周报/旬报/月报/地市州月报）" : " 个（云端未取到，仅含 A 页）") + "\n"
+          + "换电脑时在 A 页用「导入数据」整份恢复。");
+      } catch (e) {
+        alert("导出失败：" + (e && e.message ? e.message : e));
+      }
+      chipSt("ok");
+      EXPORTING = false;
+    });
+  }
+
+  /* 把备份里的 B 页数据文件逐个写回云端（写前读、写后校验，单个失败不影响其余） */
+  function writeBFiles(files, onProg) {
+    var names = Object.keys(files || {}), i = 0, ok = 0, fail = [];
+    function step() {
+      if (i >= names.length) return Promise.resolve({ ok: ok, fail: fail });
+      var n = names[i++];
+      if (onProg) onProg(i, names.length, n);
+      return window.__cloudWrite(n, files[n]).then(function () { ok++; return step(); },
+        function () { fail.push(n); return step(); });
     }
+    return step();
   }
 
   function importData(file) {
@@ -306,8 +351,16 @@
       try { obj = JSON.parse(String(fr.result)); } catch (e) { alert("文件不是有效的 JSON，导入失败。"); return; }
       var data = (obj && obj.data && typeof obj.data === "object" && !(obj.data instanceof Array)) ? obj.data : obj;
       if (!data || typeof data !== "object" || data instanceof Array) { alert("备份文件内容格式不对，导入失败。"); return; }
+      var b = (obj && obj.b && obj.b.files && typeof obj.b.files === "object") ? obj.b : null;
+      var nb = b ? Object.keys(b.files).length : 0;
+      var onl = (typeof ONLINE !== "undefined") ? ONLINE
+        : (!(location.hostname === "127.0.0.1" || location.hostname === "localhost")
+          && (location.protocol === "http:" || location.protocol === "https:"));
       var cnt = Object.keys(data).length;
-      if (!confirm("将用备份文件里的数据覆盖当前页面数据（共 " + cnt + " 项），导入后自动保存。\n确定继续？")) return;
+      var msg = "将用备份文件里的数据覆盖当前数据：\n· A 页台账 " + cnt + " 项（本机立即恢复）";
+      if (nb) msg += "\n· B 页数据 " + nb + " 个文件（" + (onl ? "写回云端，以备份为准覆盖" : "本机只读模式，暂不写云端") + "）";
+      msg += "\n\n确定继续？";
+      if (!confirm(msg)) return;
       S = {};
       Object.keys(DEFAULTS).forEach(function (k) { S[k] = DEFAULTS[k]; });
       Object.keys(data).forEach(function (k) { S[k] = data[k]; });
@@ -334,7 +387,22 @@
       markEditable();
       applyInvestLock();
       save();
-      alert("导入完成：已恢复 " + cnt + " 项数据，并保存到本机。");
+      if (!nb) { alert("导入完成：已恢复 A 页 " + cnt + " 项数据，并保存到本机。"); return; }
+      if (!onl) {
+        alert("A 页已恢复 " + cnt + " 项。\nB 页 " + nb + " 个数据文件未写回：本机 file:// 打开为只读模式，请在线上打开 A 页后再导入一次。");
+        return;
+      }
+      chipSt("busy", "正在写回 B 页数据 1/" + nb + "…");
+      writeBFiles(b.files, function (i, total) {
+        chipSt("busy", "正在写回 B 页数据 " + i + "/" + total + "…");
+      }).then(function (r) {
+        chipSt(r.fail.length ? "warn" : "ok");
+        alert("导入完成：A 页 " + cnt + " 项已恢复，B 页 " + r.ok + " 个文件已写回云端。"
+          + (r.fail.length ? "\n以下 " + r.fail.length + " 个文件写入失败，可稍后重试导入：" + r.fail.join("、") : ""));
+      }, function () {
+        chipSt("warn");
+        alert("A 页已恢复，但 B 页数据写回时中断，请稍后重新导入一次。");
+      });
     };
     fr.onerror = function () { alert("读取文件失败，请重试。"); };
     fr.readAsText(file, "utf-8");
@@ -3602,15 +3670,18 @@
       /* 成功态不显示任何文案：只在失败/进行中留状态，避免"已自动保存"这类提示反复出现 */
       /* 圆点旁始终写明状态（不含时间）：已同步云端 / 正在保存… / 未同步 */
       t.textContent = st === "warn" ? "未同步 · 已存本机"
-        : st === "busy" ? "正在保存…" : "已同步云端";
+        : st === "busy" ? (txt || "正在保存…") : "已同步云端";
       b.style.display = "";
       var tipTxt = st === "warn" ? "改动已存在本机，稍后自动重试写回云端"
-        : st === "busy" ? "正在写回云端" : "本页改动已自动保存并写回云端";
+        : st === "busy" ? (txt || "正在写回云端") : "本页改动已自动保存并写回云端";
       b.setAttribute("title", tipTxt);
       if (SC_T) { clearTimeout(SC_T); SC_T = null; }
-      if (st === "busy") SC_T = setTimeout(function () { syncChip(ONLINE ? "ok" : "warn"); }, 12000);
+      if (st === "busy" && !txt) SC_T = setTimeout(function () { syncChip(ONLINE ? "ok" : "warn"); }, 12000);
     }
     window.__syncChip = syncChip;
+    /* 供全站导出/导入使用：读取 data/ 全部文件、写回单个文件 */
+    window.__cloudRead = readCloud;
+    window.__cloudWrite = ghPut;
 
     function render() {
       if (!q("#pg-shape")) return;

@@ -1831,14 +1831,6 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   }
   document.addEventListener("input", autoSave, true);
   document.addEventListener("change", autoSave, true);
-  $("#btn-export").addEventListener("click", function () {
-    var blob = new Blob([JSON.stringify({ ts: DB.ts, data: { reports: DB.reports, jr: DB.jr, tsf: DB.tsf, tsfBase: DB.tsfBase } }, null, 1)], { type: "application/json" });
-    var a = document.createElement("a");
-    var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
-    a.href = URL.createObjectURL(blob);
-    a.download = "工程月报填报_" + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + ".json";
-    a.click();
-  });
   window.addEventListener("beforeunload", function (e) { if (!DIRTY) return; e.preventDefault(); e.returnValue = "有未保存的修改，是否离开？"; });
   window.addEventListener("pagehide", function () { if (DIRTY) persistLocal(); });
   document.addEventListener("click", function (e) {
@@ -2559,11 +2551,11 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     var t = b.querySelector(".sc-t"), n = (typeof PEND !== "undefined" ? PEND.length : 0);
     b.className = "sync-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
     b.style.display = "";
-    if (t) t.textContent = st === "warn" ? (txt || "未同步云端 · 已存本机") : st === "busy" ? "正在保存…" : "已同步云端";
+    if (t) t.textContent = st === "warn" ? (txt || "未同步云端 · 已存本机") : st === "busy" ? (txt || "正在保存…") : "已同步云端";
     b.setAttribute("title", st === "warn" ? (txt || "未同步云端 · 已存本机")
-      : st === "busy" ? "正在写入云端…" : ("已同步云端" + (n ? (" · 待推 " + n + " 项") : "")));
+      : st === "busy" ? (txt || "正在写入云端…") : ("已同步云端" + (n ? (" · 待推 " + n + " 项") : "")));
     if (BX_T) { clearTimeout(BX_T); BX_T = null; }
-    if (st === "busy") BX_T = setTimeout(function () { bxSync("ok"); }, 12000);
+    if (st === "busy" && !txt) BX_T = setTimeout(function () { bxSync("ok"); }, 12000);
   }
   window.__bxSync = bxSync;
 
@@ -2753,5 +2745,6 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (onPage("regions")) renderJr();
   if (onPage("status")) renderStatus();
   /* 本机 file:// 打开不再自动拉取线上数据；只有线上访问才同步 */
-  if (ONLINE) pullCloud();
+  if (ONLINE) { bxSync("busy", "正在读取云端…"); pullCloud(); }
+  else { bxSync("warn", "本机只读模式 · 未连云端"); }
 })();
