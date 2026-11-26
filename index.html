@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/a.cfg.js?v=261126162553"></script>
+<script src="assets/a.cfg.js?v=261126164927"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126162553";
+  var BUILD = "261126164927";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126162553") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126164927") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,7 +25,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速公路武汉至宜昌段改扩建工程 · 项目信息</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/a.css?v=261126162553">
+<link rel="stylesheet" href="assets/a.css?v=261126164927">
 
 
 
@@ -43,9 +43,10 @@
 
 
 
-<link rel="stylesheet" href="assets/xb.css?v=261126162553">
+
+<link rel="stylesheet" href="assets/xb.css?v=261126164927">
 </head>
-<body class="is-masked">
+<body>
 
 <header class="top">
   <div class="top-in">
@@ -57,10 +58,6 @@
     </div>
     <div class="top-meta">
             <div class="sync-chip" id="sync-chip" style="display:none" title="本页改动会自动保存并写回云端"><span class="sc-dot"></span><span class="sc-t"></span></div>
-      <button id="top-lock" type="button" title="已锁定，点击解锁编辑" aria-label="锁定 / 解锁"
-        style="flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;margin:0;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.10);border-radius:6px;cursor:pointer;color:#FFFFFF;box-sizing:border-box">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
-      </button>
       <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
       <button id="btn-import" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导入数据</button>
       <input type="file" id="import-file" accept=".json,application/json" style="display:none">
@@ -269,16 +266,28 @@
       </div>
 
       <div class="card">
-        <div class="card-head"><h2>年度投资计划与执行</h2></div>
+        <div class="card-head"><h2>年度投资计划与执行</h2>
+          <div class="clk-bar"><span class="clk-st" data-lkst="plan">已提交 · 锁定</span>
+            <button type="button" class="clk-ico" data-lkico="plan" aria-label="小锁"></button>
+            <button type="button" class="clk-sub" data-lksub="plan">提交</button></div>
+        </div>
         <div class="card-body">
           <div class="tw"><table class="tbl">
             <colgroup><col style="width:12%"><col style="width:20%"><col style="width:20%"><col style="width:16%"><col style="width:20%"><col style="width:12%"></colgroup>
             <thead><tr><th style="text-align:center">年度</th><th style="text-align:center">执行投资（万元）</th><th style="text-align:center">计划投资（万元）</th><th style="text-align:center">计划完成率</th><th style="text-align:center;border-left:1px solid #DCE5F1">年末要求投资（万元）</th><th style="text-align:center">完成率</th></tr></thead>
             <tbody>
               <tr>
+                <td class="c">2027 年</td>
+                <td class="c"><span class="num" id="a2027">0</span></td>
+                <td class="c"><span class="num" id="p2027">0</span></td>
+                <td class="c num" id="r2027">—</td>
+                <td class="c" style="border-left:1px solid #E4EAF3"><input data-k="n2027" data-int="1" value="0" inputmode="decimal"></td>
+                <td class="c num" id="nrate2027">—</td>
+              </tr>
+              <tr>
                 <td class="c">2026 年</td>
                 <td class="c"><span class="num" id="a2026">1,133,213</span></td>
-                <td class="c"><input data-k="p2026" data-int="1" value="1,250,000" inputmode="decimal"></td>
+                <td class="c"><span class="num" id="p2026">1,250,000</span></td>
                 <td class="c num" id="r2026">90.66%</td>
                 <td class="c" style="border-left:1px solid #E4EAF3"><input data-k="n2026" data-int="1" value="1,350,000" inputmode="decimal"></td>
                 <td class="c num" id="nrate2026">—</td>
@@ -286,26 +295,27 @@
               <tr>
                 <td class="c">2025 年</td>
                 <td class="c"><span class="num" id="a2025">1,153,750</span></td>
-                <td class="c"><input data-k="p2025" data-int="1" value="963,000" inputmode="decimal"></td>
+                <td class="c"><span class="num" id="p2025">963,000</span></td>
                 <td class="c num" id="r2025">119.81%</td>
                 <td class="c" style="border-left:1px solid #E4EAF3"><input data-k="n2025" data-int="1" value="1,150,000" inputmode="decimal"></td>
                 <td class="c num" id="nrate2025">—</td>
-              </tr>
+                </tr>
               <tr>
                 <td class="c">2024 年</td>
                 <td class="c"><span class="num" id="a2024">31,120</span></td>
-                <td class="c"><input data-k="p2024" data-int="1" value="31,120" inputmode="decimal"></td>
+                <td class="c"><span class="num" id="p2024">31,120</span></td>
                 <td class="c num" id="r2024">100.00%</td>
                 <td class="c" style="border-left:1px solid #E4EAF3"><input data-k="n2024" data-int="1" value="31,120" inputmode="decimal"></td>
                 <td class="c num" id="nrate2024">—</td>
               </tr>
             </tbody>
           </table></div>
+          <div class="hint" style="padding:9px 16px 2px;font-size:12px;color:#8A96A8">计划投资取自「概算执行管理 · 明细」中各年「本年计划」概算总金额，只读；仅「年末要求投资」可填。</div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-head"><h2>月度投资完成情况</h2></div>
+        <div class="card-head"><h2>月度投资完成情况</h2><span class="hint" style="margin-left:auto;white-space:nowrap">1—10 月已固化，11、12 月自动取自「概算执行 · 明细」当月完成</span></div>
         <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;background:#EDF3FB;border-top:1px solid #DCE6F2;font-size:13px;font-weight:700;color:#16407F">2026 年<button type="button" class="foldbtn" data-fold="fold26" style="margin-left:auto;border:1px solid #C9D7EA;background:#fff;color:#16407F;font-size:12px;line-height:1;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit">收起</button></div>
         <div class="card-body" id="fold26">
         <div class="tw"><table class="tbl">
@@ -560,6 +570,9 @@
       <div class="card" id="exec-card" style="flex:1 1 auto;min-width:0;max-width:1042px;padding:0;overflow:hidden">
         <div id="exec-toolbar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid #E4EAF3">
           <div id="exec-tabs" style="display:flex;flex-wrap:wrap;gap:8px;flex:1 1 auto"></div>
+          <div class="clk-bar"><span class="clk-st" data-lkst="exec">已提交 · 锁定</span>
+            <button type="button" class="clk-ico" data-lkico="exec" aria-label="小锁"></button>
+            <button type="button" class="clk-sub" data-lksub="exec">提交</button></div>
         </div>
         <div id="exec-wrap"></div>
       </div>
@@ -974,29 +987,32 @@
     }
   }
 
-  /* 2026 月度投资完成情况：有当月数据的月份直接提取概算执行的当月合计 */
+  /* 2026 月度投资完成情况：1—10 月为已固化上报值；11、12 月自动提取
+     概算执行 · 明细中「当月完成」12 行合计的概算总金额（2026 年第四季度第 2 月起） */
   function syncMonthFromExec() {
-    for (var m = 1; m <= 12; m++) {
-      var t = execMonthAmt(2026, "7", m);
-      if (t > 0) {
-        S["m" + m] = fmt(Math.round(t), 0);
-        document.querySelectorAll('[data-k="m' + m + '"]').forEach(function (n) {
-          if (n.tagName !== "INPUT") n.textContent = S["m" + m];
-        });
-      }
+    [11, 12].forEach(function (m) {
+      var t = execMonthAmt(2026, "7", m) || 0;
+      S["m" + m] = fmt(Math.round(t), 0);
+    });
+    /* 1—10 月为固化值，只回显不改写；11、12 月为上面自动提取的值 */
+    for (var mm = 1; mm <= 12; mm++) {
+      var val = S["m" + mm];
+      document.querySelectorAll('[data-k="m' + mm + '"]').forEach(function (n) {
+        if (n.tagName !== "INPUT") n.textContent = (val == null || val === "") ? "0" : val;
+      });
     }
   }
 
   function recalc() {
     execRecalc();
     syncMonthFromExec();
-    /* 年度计划投资 ＝ 概算执行情况对应年度「本年计划」概算总金额产值 */
-    ["2024", "2025", "2026"].forEach(function (yy) {
+    /* 年度计划投资 ＝ 概算执行情况对应年度「本年计划」概算总金额（只读展示） */
+    ["2024", "2025", "2026", "2027"].forEach(function (yy) {
       var v = Math.round(execPlan(parseInt(yy, 10), "7"));
-      if (v > 0) S["p" + yy] = String(v);
+      if (v > 0 || yy === "2027") S["p" + yy] = String(v);
       else if (S["p" + yy] === undefined || String(S["p" + yy]).trim() === "") S["p" + yy] = "0";
-      var ip = document.querySelector('[data-k="p' + yy + '"]');
-      if (ip) ip.value = fmt(num(S["p" + yy]));
+      var pv = el("p" + yy);
+      if (pv) pv.textContent = fmt(num(S["p" + yy]), 0);
     });
     var budget = num(S.budget);
     var months = [];
@@ -1010,7 +1026,7 @@
     var ratio = budget > 0 ? cum / budget : 0;
     var remain = budget - cum;
 
-    var p2024 = num(S.p2024), p2025 = num(S.p2025), p2026 = num(S.p2026);
+    var p2024 = num(S.p2024), p2025 = num(S.p2025), p2026 = num(S.p2026), p2027 = num(S.p2027);
     var planAll = p2024 + p2025 + p2026;
     var monthIdx = Math.min(Math.max(num(S.monthIdx), 0), 12);
     var time = monthIdx / 12;
@@ -1029,15 +1045,18 @@
     }
 
     /* 年度表 */
+    var a2027 = execDone(2027, "7");
     el("a2024").textContent = fmt(a2024);
     el("a2025").textContent = fmt(a2025);
     el("a2026").textContent = fmt(y2026);
+    el("a2027").textContent = fmt(Math.round(a2027));
     rateBar("2024", a2024, p2024);
     rateBar("2025", a2025, p2025);
     rateBar("2026", y2026, p2026);
+    rateBar("2027", a2027, p2027);
 
     /* 年末要求投资完成率 */
-    [["2024", a2024], ["2025", a2025], ["2026", y2026]].forEach(function (it) {
+    [["2024", a2024], ["2025", a2025], ["2026", y2026], ["2027", a2027]].forEach(function (it) {
       var need = num(S["n" + it[0]]);
       var cell = el("nrate" + it[0]);
       if (cell) cell.textContent = need > 0 ? pctTxt(it[1] / need) : "—";
@@ -1359,7 +1378,7 @@
   }
   function monCell(y, code, suf, calc) {
     var id = "exm_" + code + "_" + suf;
-    var ro = calc || LOCKED || execRowDone(y, code);
+    var ro = calc || EXEC_LOCK || execRowDone(y, code);
     if (ro) {
       var align = (suf === "mr") ? "center" : "right";
       return '<span class="num" id="' + id + '" style="display:block;text-align:' + align + '">—</span>';
@@ -1514,7 +1533,7 @@
       if (EXEC_CH[code] || code === "7") return;
       var n = el("exm_" + code + "_ma");
       if (!n) return;
-      var ro = LOCKED || execRowDone(EXEC_TAB, code);
+      var ro = EXEC_LOCK || execRowDone(EXEC_TAB, code);
       if (ro && n.tagName === "INPUT") changed = true;
       else if (!ro && n.tagName === "SPAN") changed = true;
     });
@@ -1778,7 +1797,7 @@
           var mAmt = execMonthAmt(y, code, mon);
           var mPct = amt > 0 ? Math.round((mAmt / amt) * 100) : 0;
           var maEl = el("exm_" + code + "_ma"), mrEl = el("exm_" + code + "_mr");
-          if (isA || code === "7" || LOCKED || execRowDone(y, code)) {
+          if (isA || code === "7" || EXEC_LOCK || execRowDone(y, code)) {
             execSetTxt("exm_" + code + "_ma", mAmt > 0 ? fmt(mAmt, 0) : "—");
             execSetTxt("exm_" + code + "_mr", (mAmt > 0 && amt > 0) ? mPct + "%" : "—");
           } else if (EXEC_PREF[y + "_" + code + "_ma"] === "pct") {
@@ -1851,36 +1870,145 @@
   /* ---------- 初始化 ---------- */
   buildExec();
   capTables();
-  /* ---------- 顶部小锁：整站锁定 / 解锁 ---------- */
-  var LOCK_SVG_ON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
-  var LOCK_SVG_OFF = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 7.4-2.2"/></svg>';
-  function paintLock() {
-    var b = el("top-lock");
-    if (!b) return;
-    b.title = LOCKED ? "已锁定，点击解锁编辑" : "已解锁，点击锁定";
-    b.style.background = LOCKED ? "rgba(255,255,255,.10)" : "rgba(255,214,140,.22)";
-    b.style.borderColor = LOCKED ? "rgba(255,255,255,.45)" : "#F0C48A";
-    b.style.color = LOCKED ? "#FFFFFF" : "#FFE8BF";
-    b.innerHTML = LOCKED ? LOCK_SVG_ON : LOCK_SVG_OFF;
+  /* ---------- 卡片级「提交 / 小锁」：取消顶部整站锁后，各数据卡片独立锁定 ---------- */
+  /* 默认锁定（纯文本外观），点小锁确认后可改；点提交把本卡字段写回云端并重新锁定（与 B 页土石方日报一致） */
+  var LK_SVG_LOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+  var LK_SVG_OPEN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 7.4-2.2"/></svg>';
+  var CARD_LB = { exec: "概算执行明细", plan: "年度投资计划与执行" };
+
+  function cardLocked(k) {
+    var v = S["lkc_" + k];
+    if (v == null || String(v).trim() === "") return true;
+    return String(v) !== "0";
   }
-  function setLocked(v) {
-    LOCKED = !!v;
-    EXEC_LOCK = LOCKED;
-    INV_LOCK = { annual: LOCKED, y2026: LOCKED, y2025: LOCKED, y2024: LOCKED };
-    paintLock();
-    buildExec();
-    applyState();
-    recalc();
-    applyInvestLock();
-    markEditable();
-    if (typeof faApplyLock === "function") faApplyLock();
-    touch();
+  function cardKeys(k) {
+    var out = [];
+    if (k === "exec") {
+      Object.keys(S).forEach(function (kk) {
+        if (/^x(20\d\d|m\d\d)_/.test(kk) || kk === "execPref") out.push(kk);
+      });
+    } else if (k === "plan") {
+      out = ["n2024", "n2025", "n2026", "n2027", "p2024", "p2025", "p2026", "p2027"];
+    } else if (/^fa_/.test(k)) {
+      var c = k.slice(3);
+      Object.keys(S).forEach(function (kk) {
+        if (kk.indexOf("fa_" + c + "_") === 0 || kk.indexOf("fam_" + c) === 0 ||
+            kk.indexOf("fah_" + c) === 0 || kk.indexOf("fap_" + c) === 0 || kk.indexOf("fay_" + c) === 0) out.push(kk);
+      });
+    }
+    return out;
   }
-  paintLock();
-  (function () {
-    var lb = el("top-lock");
-    if (lb) lb.addEventListener("click", function () { setLocked(!LOCKED); });
-  })();
+  function cardName(k) {
+    if (CARD_LB[k]) return CARD_LB[k];
+    if (/^fa_/.test(k)) {
+      var c = k.slice(3), n = c;
+      if (typeof FA_CITIES !== "undefined") FA_CITIES.forEach(function (x) { if (x.k === c) n = x.city + (x.seg ? "（" + x.seg + "）" : ""); });
+      return n + " 本月投资";
+    }
+    return k;
+  }
+  function cardPaint(k) {
+    var lk = cardLocked(k);
+    document.querySelectorAll('[data-lkst="' + k + '"]').forEach(function (n) {
+      n.textContent = lk ? "已提交 · 锁定" : "编辑中 · 未提交";
+      n.classList.toggle("on", !lk);
+    });
+    document.querySelectorAll('[data-lkico="' + k + '"]').forEach(function (b) {
+      b.innerHTML = lk ? LK_SVG_LOCK : LK_SVG_OPEN;
+      b.classList.toggle("is-open", !lk);
+      b.title = lk ? "已锁定，点击解锁后可编辑" : "已解锁，点击重新锁定";
+    });
+    document.querySelectorAll('[data-lksub="' + k + '"]').forEach(function (b) {
+      b.textContent = lk ? "已提交" : "提交";
+      b.style.opacity = lk ? ".62" : "1";
+    });
+  }
+  function cardPaintAll() {
+    ["exec", "plan"].forEach(cardPaint);
+    if (typeof FA_CITIES !== "undefined") FA_CITIES.forEach(function (c) { cardPaint("fa_" + c.k); });
+  }
+  function cardApply(k) {
+    var lk = cardLocked(k);
+    if (k === "exec") {
+      EXEC_LOCK = lk;
+      try { buildExec(); applyState(); recalc(); markEditable(); } catch (e) {}
+    } else if (k === "plan") {
+      INV_LOCK.annual = lk;
+      try { applyInvestLock("annual"); markEditable(); } catch (e) {}
+    } else if (/^fa_/.test(k)) {
+      try { faApplyCityLock(k.slice(3)); } catch (e) {}
+    }
+    cardPaint(k);
+  }
+  function aToast(txt, isErr) {
+    var t = document.getElementById("a-toast");
+    if (!t) { t = document.createElement("div"); t.id = "a-toast"; t.className = "a-toast"; document.body.appendChild(t); }
+    t.textContent = txt;
+    t.className = "a-toast on" + (isErr ? " err" : "");
+    clearTimeout(t.__tm);
+    t.__tm = setTimeout(function () { t.className = "a-toast"; }, 2400);
+  }
+  window.__aToast = aToast;
+  function aPop(anchor, text, onOk) {
+    var old = document.getElementById("a-pop"); if (old) old.remove();
+    var p = document.createElement("div");
+    p.id = "a-pop"; p.className = "bx-pop";
+    p.innerHTML = '<div class="p-tx">' + text + '</div><div class="p-act"><button type="button" class="no">取消</button><button type="button" class="ok">确认</button></div>';
+    document.body.appendChild(p);
+    var r = anchor.getBoundingClientRect();
+    var top = r.bottom + window.scrollY + 8, left = r.left + window.scrollX - 8, w = p.offsetWidth || 240;
+    if (left + w > window.innerWidth - 12) left = Math.max(12, window.innerWidth - w - 12);
+    if (r.bottom + p.offsetHeight + 20 > window.innerHeight) top = r.top + window.scrollY - p.offsetHeight - 8;
+    p.style.top = top + "px"; p.style.left = left + "px";
+    function close() { p.remove(); document.removeEventListener("click", out, true); document.removeEventListener("keydown", esc); }
+    function out(ev) { if (!p.contains(ev.target)) close(); }
+    function esc(ev) { if (ev.key === "Escape") close(); }
+    p.querySelector(".no").onclick = close;
+    p.querySelector(".ok").onclick = function () { close(); onOk(); };
+    setTimeout(function () { document.addEventListener("click", out, true); document.addEventListener("keydown", esc); }, 0);
+  }
+  window.__aPop = aPop;
+
+  document.addEventListener("click", function (e) {
+    var t = e.target && e.target.closest ? e.target : null;
+    if (!t) return;
+    var sub = t.closest("[data-lksub]"), ico = t.closest("[data-lkico]");
+    if (!sub && !ico) return;
+    e.preventDefault();
+    var k = sub ? sub.getAttribute("data-lksub") : ico.getAttribute("data-lkico");
+    if (sub) {
+      if (cardLocked(k)) { aToast("请先点小锁解锁后再提交"); return; }
+      var ks = cardKeys(k);
+      S["lkc_" + k] = "1";
+      cardApply(k);
+      try { save(true); } catch (e1) {}
+      aToast("正在提交：" + cardName(k) + " …");
+      var pr = null;
+      try { pr = window.__pgPushLedger ? window.__pgPushLedger() : null; } catch (e2) {}
+      if (pr && pr.then) {
+        pr.then(function (ok) {
+          if (ok === false) aToast("已存本机，云端稍后自动重试", true);
+          else aToast("已提交并锁定：" + cardName(k) + "（" + ks.length + " 项）");
+        }, function () { aToast("已存本机，云端稍后自动重试", true); });
+      } else aToast("已提交并锁定：" + cardName(k));
+      return;
+    }
+    if (!cardLocked(k)) {
+      S["lkc_" + k] = "1";
+      cardApply(k);
+      try { save(true); } catch (e3) {}
+      try { if (window.__pgPushKey) window.__pgPushKey("lkc_" + k); } catch (e4) {}
+      aToast("已锁定：" + cardName(k));
+      return;
+    }
+    aPop(ico, '是否确定修改 <span class="p-seg">“' + cardName(k) + '”</span> 的数据？', function () {
+      S["lkc_" + k] = "0";
+      cardApply(k);
+      try { save(true); } catch (e5) {}
+      try { if (window.__pgPushKey) window.__pgPushKey("lkc_" + k); } catch (e6) {}
+      aToast("已解锁：" + cardName(k) + "，可以修改");
+    });
+  });
 
   /* 右侧「X月完成」月份切换 */
   document.addEventListener("change", function (ev) {
@@ -1940,6 +2068,7 @@
       Object.keys(S.execPref).forEach(function (k) { EXEC_PREF[k] = S.execPref[k]; });
     }
     migrateMonthKeys();
+    EXEC_LOCK = cardLocked("exec");
     buildExec();
   })();
   applyState();
@@ -1947,6 +2076,12 @@
   renderFiles();
   recalc();
   markEditable();
+  /* 卡片锁状态落位：概算明细 / 年度计划 / 各地市州本月投资 */
+  setTimeout(function () {
+    try { INV_LOCK.annual = cardLocked("plan"); applyInvestLock("annual"); markEditable(); } catch (e) {}
+    try { if (typeof faApplyLock === "function") faApplyLock(); } catch (e) {}
+    cardPaintAll();
+  }, 0);
 
   /* 投资 KPI 网格：末行不再画底边线 */
   (function () {
@@ -2007,21 +2142,15 @@
     });
   }
 
-  /* 投资与进度：默认全部固化只读，年度表 / 各年份卡片各有自己的解锁按钮 */
+  /* 投资与进度：默认全部固化只读；年度计划的「计划投资」已改为自动只读，仅「年末要求投资」随卡片小锁可填 */
   var INV_LOCK = { annual: true, y2026: true, y2025: true, y2024: true };
   var INV_BTN = { annual: "invest-unlock", y2026: "lock-2026", y2025: "lock-2025", y2024: "lock-2024" };
 
   function invKeys(g) {
     var a = [], i;
-    if (g === "annual") return ["n2024", "n2025", "n2026", "p2024", "p2025", "p2026"];
-    if (g === "y2026") {
-      for (i = 1; i <= 12; i++) a.push("m" + i);
-      for (i = 1; i <= 4; i++) a.push("q" + i);
-      return a;
-    }
-    var pre = g === "y2024" ? "24" : "25";
-    for (i = 1; i <= 12; i++) a.push("m" + pre + "_" + i);
-    for (i = 1; i <= 4; i++) a.push("q" + pre + "_" + i);
+    if (g === "annual") return ["n2024", "n2025", "n2026", "n2027"];
+    if (g === "y2026") return [];
+    if (g === "y2025" || g === "y2024") return [];
     return a;
   }
 
@@ -2818,11 +2947,11 @@
     }
     return h;
   }
-  function faFlowHead(c) {
-    return '<div class="fcr-head" id="fcp_' + c.k + '">'
-      + '<div class="wf-cap">报送流程</div>'
-      + '<div class="wf-bar" data-wfc="' + c.k + '">' + faFlowSteps(c.k) + '</div>'
-      + '</div>';
+  /* 报送流程：已报审 → 编制资料 → 已提交 → 已上报；点哪个表示当前停在哪个环节
+     位置：选择年月所在 KPI 行的正下方，占满整行（不再挤在右栏） */
+  function faFlowStrip(c) {
+    return '<div class="fa-wf"><div class="wf-cap">报送流程</div>'
+      + '<div class="wf-bar" data-wfc="' + c.k + '">' + faFlowSteps(c.k) + '</div></div>';
   }
   document.addEventListener("click", function (e) {
     var b = e.target && e.target.closest ? e.target.closest("[data-wf]") : null;
@@ -2853,9 +2982,7 @@
       var fcrCell = fixTid
         ? '<td class="fcr-fix" title="自动取自 B 页同标段同月：优先取地市州完成产值，无地市州数据时取产值累计合计，不可修改">'
           + (act == null ? "\u2014" : fmt(act)) + '</td>'
-        : '<td><input class="fcr-in" type="text" data-int="1" data-k="fak_' + c.k + '_0_' + k + '"'
-          + (act == null ? ' placeholder="—"' : ' data-def="' + fmt(act) + '" value="' + fmt(act) + '"')
-          + '></td>';
+        : '<td class="fcr-fix" title="实际投资已固化，不再手工填写">' + (act == null ? "\u2014" : fmt(act)) + '</td>';
       rows += '<tr data-farow="fr_' + k + '"><td>' + c.jian[k][0] + '</td>'
         + fcrCell
         + '<td id="fq_' + c.k + '_0_' + k + '"' + (diff != null && diff < 0 ? ' style="color:#C0392B"' : '') + '>'
@@ -2867,10 +2994,12 @@
       + '<td id="fsum_' + c.k + '">' + (sumAct == null ? "—" : fmt(sumAct)) + '</td>'
       + '<td id="fqs_' + c.k + '"' + (sDiff != null && sDiff < 0 ? ' style="color:#C0392B"' : '') + '>'
       + (sDiff == null ? "—" : fmt(sDiff)) + '</td></tr>' + rows;
-    return faFlowHead(c)
-      + '<table class="fcr-tbl"><colgroup><col><col style="width:70px"><col style="width:64px"></colgroup>'
+    return '<div class="fa-note"><div class="fn-h"><i></i>提示信息</div>'
+      + '<div class="fn-b">本卡只需填 <b>' + faTagMonth(cm) + ' 月本月投资</b>，填完点右上「提交」即锁定；<br>'
+      + '实际投资取自 B 页同标段同月，差额＝实际投资 − 累计报送投资。</div></div>'
+      + '<div style="padding:10px 10px 0"><table class="fcr-tbl"><colgroup><col><col style="width:70px"><col style="width:64px"></colgroup>'
       + '<thead><tr><th>标段</th><th>实际投资</th><th>差额</th></tr></thead>'
-      + '<tbody>' + rows + '</tbody></table>';
+      + '<tbody>' + rows + '</tbody></table></div>';
   }
 
   function faCityPanel(c) {
@@ -2906,14 +3035,12 @@
       var pre = faPreShown(c, 0, i3, cm), ytd = faYtdShown(c, 0, i3, r[2], cm);
       var cur = faCurVal(c, 0, i3, cm), cum = faCum(c, 0, i3, cm);
       var ht = faRowHt(c, i3);
-      var yKey = "fay_" + c.k + "_0_" + i3 + (y === FA_Y0 ? "" : "_y" + y);
-      var yCell = firstOfYear ? faInp(yKey, ytd, "0") : faTd(fmt(ytd), "num", "fy_" + c.k + "_0_" + i3);
       rows += '<tr data-farow="fr_' + i3 + '"><td class="fa-ctd num">' + (pos + 1) + '</td><td class="fa-ctd">' + r[0] + '</td>'
         + faTd("—", "mut")
-        + faInp("fah_" + c.k + "_0_" + i3, ht, "—")
+        + faTd(ht == null ? "—" : fmt(ht), "num")
         + faTd(fmt(cum), "num", "fr_" + c.k + "_0_" + i3)
-        + (y === FA_Y0 ? faInp("fap_" + c.k + "_0_" + i3, pre, "0") : faTd(fmt(pre), "num"))
-        + yCell
+        + faTd(fmt(pre), "num")
+        + faTd(fmt(ytd), "num", "fy_" + c.k + "_0_" + i3)
         + faInp("fa_" + c.k + "_0_" + i3 + (c.months ? "_m" + cm : ""), cur || null, "0", "hlm")
         + faTd(ht == null ? "—" : fmt(ht - cum), "num faint", "fr_" + c.k + "_0_" + i3 + "_r") + '</tr>';
     });
@@ -2922,14 +3049,12 @@
       var pre = faPreShown(c, 1, i3, cm), ytd = faYtdShown(c, 1, i3, r[2], cm);
       var cur = faCurVal(c, 1, i3, cm), cum = faCum(c, 1, i3, cm);
       var ht = faHtOther(c);
-      var yKey2 = "fay_" + c.k + "_1_" + i3 + (y === FA_Y0 ? "" : "_y" + y);
-      var yCell2 = firstOfYear ? faInp(yKey2, ytd, "0") : faTd(fmt(ytd), "num nw", "fy_" + c.k + "_1_" + i3);
       rows += '<tr class="fa-other" data-farow="fr_o' + i3 + '"><td class="fa-ctd">—</td><td class="fa-ctd">' + r[0] + '</td>'
         + faTd(fmt(oP), "num", "fgo_" + c.k)
-        + faInp("fah_" + c.k + "_1_" + i3, ht, "0")
+        + faTd(fmt(ht), "num")
         + faTd(fmt(cum), "num", "fr_" + c.k + "_1_" + i3 + "_t")
-        + (y === FA_Y0 ? faInp("fap_" + c.k + "_1_" + i3, pre, "0") : faTd(fmt(pre), "num"))
-        + yCell2
+        + faTd(fmt(pre), "num")
+        + faTd(fmt(ytd), "num nw", "fy_" + c.k + "_1_" + i3)
         + faInp("fa_" + c.k + "_1_" + i3 + (c.months ? "_m" + cm : ""), cur || null, "0", "hlm")
         + faTd(fmt(ht - cum), "num faint", "fr_" + c.k + "_1_" + i3 + "_r") + '</tr>';
     });
@@ -2982,10 +3107,17 @@
         + '</div>');
 
     var twoCard = !!c.months;
+    var hd = '<div class="fa-hd"><div class="fa-ttl">' + c.city + (c.seg ? '（' + c.seg + '）' : '') + ' 本月投资填报</div>'
+      + '<div class="fa-sub">仅「本月投资」可填，其余数据已固化</div>'
+      + '<div class="clk-bar" style="margin-left:auto"><span class="clk-st" data-lkst="fa_' + c.k + '">已提交 · 锁定</span>'
+      + '<button type="button" class="clk-ico" data-lkico="fa_' + c.k + '" aria-label="小锁"></button>'
+      + '<button type="button" class="clk-sub" data-lksub="fa_' + c.k + '">提交</button></div></div>';
     return '<div class="fa-panel' + (twoCard ? '' : ' card') + '" id="fa-p-' + c.k + '"'
       + ' style="display:none;' + (twoCard ? 'gap:14px' : 'padding:0;overflow:hidden') + '">'
       + (twoCard ? '<div class="card" style="flex:1 1 auto;min-width:0;margin:0;padding:0;overflow:hidden">' : '')
+      + hd
       + kpi
+      + faFlowStrip(c)
       + '<div class="card-body" style="padding-top:12px">'
 
       + '<div class="tw"><table class="tbl fa-tbl ctr"><colgroup>' + cols + '</colgroup>'
@@ -2993,7 +3125,7 @@
       + '<th>累计报送投资</th><th>截止上年末</th><th>本年已报送</th><th class="hlm">本月投资</th><th>剩余投资</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
       + '</div>'
-      + (twoCard ? '</div><div class="card" style="flex:0 0 240px;margin:0;padding:0;overflow:hidden">'
+      + (twoCard ? '</div><div class="card fa-rail" style="flex:0 0 240px;margin:0;padding:0;overflow:hidden">'
         + '<div style="height:100%;display:flex;flex-direction:column">' + faCheckRail(c, cm) + '</div>'
         + '</div>' : '')
       + '</div>';
@@ -3107,7 +3239,7 @@
   function showFA(k) {
     document.querySelectorAll("#fa-wrap .fa-panel").forEach(function (p) {
       var on = (p.id === "fa-p-" + k);
-      p.style.display = on ? (p.querySelector(".fcr-head") ? "flex" : "block") : "none";
+      p.style.display = on ? (p.querySelector(".fa-rail") ? "flex" : "block") : "none";
     });
     document.querySelectorAll("#fa-tabs [data-fatab]").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-fatab") === k);
@@ -3166,10 +3298,21 @@
     faPut("fa-kpi-sub", "占投资总额 " + pctTxt(tx.t / tx.inv));
   }
 
+  function faApplyCityLock(k) {
+    var p = document.getElementById("fa-p-" + k);
+    if (!p) return;
+    var lk = cardLocked("fa_" + k);
+    p.querySelectorAll("input.fa-in").forEach(function (inp) {
+      inp.readOnly = lk;
+      inp.setAttribute("aria-readonly", lk ? "true" : "false");
+      inp.style.cursor = lk ? "default" : "text";
+    });
+    cardPaint("fa_" + k);
+  }
   function faApplyLock() {
-    document.querySelectorAll("#view-fixedasset input[data-k]").forEach(function (inp) {
-      inp.readOnly = LOCKED;
-      inp.setAttribute("aria-readonly", LOCKED ? "true" : "false");
+    FA_CITIES.forEach(function (c) {
+      if (!c.months) return;
+      faApplyCityLock(c.k);
     });
   }
 
@@ -4083,17 +4226,10 @@
       else { t.removeAttribute("title"); t.classList.remove("am-locked"); }
     }
     function applyModLock() {
-      var locked = false;
-      try { locked = (typeof LOCKED !== "undefined") ? !!LOCKED : true; } catch (e) { locked = true; }
-      Array.prototype.forEach.call(document.querySelectorAll(".view input, .view textarea"), function (t) {
-        if (t.closest && t.closest("#pg-gate")) return;
-        lockOne(t, locked);
-      });
+      /* 顶部整站锁已取消：录入权限交给各数据卡片自己的「小锁 + 提交」，
+         这里只刷新卡片按钮状态，不再把全页输入框统一置为只读 */
+      try { if (typeof cardPaintAll === "function") cardPaintAll(); } catch (e) {}
     }
-    try {
-      var __setLocked = setLocked;
-      setLocked = function (v) { __setLocked(v); try { render(); } catch (e) {} };
-    } catch (e2) {}
 
     /* ---- 月份选择：年 / 月 分开 ---- */
     var YSEL = q("#pg-year"), MSEL = q("#pg-mon");
@@ -4499,6 +4635,9 @@ var TO_MS = 15000;
           } catch (e) {}
         }
         render();
+        /* 云端数据到达后整页重算一次：月度完成 / 年度计划 / 各卡片锁状态都以云端为准 */
+        try { applyState(); recalc(); markEditable(); } catch (eRS) {}
+        try { cardPaintAll(); } catch (eRK) {}
 
         try {
 
@@ -4822,6 +4961,6 @@ var TO_MS = 15000;
 </script>
 
 </body>
-<script src="assets/dz.js?v=261126162553"></script>
+<script src="assets/dz.js?v=261126164927"></script>
 </html>
 <!-- （注：内容由AI生成） -->

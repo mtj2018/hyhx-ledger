@@ -825,6 +825,40 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 #pg-shape .pg-tbl tbody tr:hover td{background:#EAF1FC}
 #pg-shape .pg-tbl tbody tr:hover td.sec{background:#DDE9FB}
 .ov-embed-sec{padding:0}
+/* ===== 卡片级「提交 / 小锁」：取消顶部整站锁后，各数据卡片独立锁定 ===== */
+.clk-bar{display:inline-flex;align-items:center;gap:8px;margin-left:auto;flex:0 0 auto}
+.clk-st{font-size:12px;color:#8A96A8;letter-spacing:.02em;white-space:nowrap}
+.clk-st.on{color:#1E7B43}
+.clk-ico{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;
+  border:1px solid #D4DFEF;background:#fff;color:#16407F;cursor:pointer;box-sizing:border-box;transition:.15s}
+.clk-ico:hover{background:#F2F6FC;border-color:#B9CEEB}
+.clk-ico.is-open{background:#16407F;border-color:#16407F;color:#fff}
+.clk-ico svg{width:14px;height:14px;display:block}
+.clk-sub{font-family:inherit;font-size:12.5px;line-height:1;padding:8px 16px;border-radius:8px;cursor:pointer;
+  border:1px solid #16407F;background:#16407F;color:#fff;font-weight:600;white-space:nowrap;
+  box-shadow:0 2px 6px rgba(22,64,127,.22);transition:.15s}
+.clk-sub:hover{background:#1F5AA8;border-color:#1F5AA8}
+.card-head .clk-bar{align-self:center}
+#exec-toolbar .clk-bar{margin-left:auto}
+/* ===== 固定投资：地市州卡片头 + 报送流程整行 + 右栏提示 ===== */
+.fa-hd{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #E4EAF3;background:#fff}
+.fa-hd .fa-ttl{font-size:14px;font-weight:700;color:#16407F;letter-spacing:.02em;white-space:nowrap}
+.fa-hd .fa-ttl:before{content:"";display:inline-block;width:3px;height:13px;background:#16407F;margin-right:9px;vertical-align:-1px}
+.fa-hd .fa-sub{font-size:12px;color:#8A96A8}
+.fa-wf{display:flex;align-items:center;gap:12px;padding:10px 16px 11px;border-bottom:1px solid #E4EAF3;background:#FBFCFE}
+.fa-wf .wf-cap{width:auto;flex:0 0 auto;white-space:nowrap}
+.fa-wf .wf-bar{flex:1 1 auto;margin-top:0;max-width:520px}
+.fa-note{padding:12px 14px 13px;border-bottom:1px solid #E4EAF3;background:#FBFCFE}
+.fa-note .fn-h{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#16407F;letter-spacing:.05em}
+.fa-note .fn-h i{width:3px;height:11px;background:#16407F;display:block}
+.fa-note .fn-b{margin-top:7px;font-size:11.5px;line-height:1.75;color:#5F7086}
+.fa-note .fn-b b{color:#B3591A;font-weight:700}
+/* ===== 轻提示 ===== */
+.a-toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%);z-index:99;background:#0F2C5C;color:#fff;
+  font-size:13px;line-height:1;padding:12px 20px;border-radius:8px;box-shadow:0 10px 28px rgba(15,44,92,.28);
+  opacity:0;pointer-events:none;transition:.2s}
+.a-toast.on{opacity:1}
+.a-toast.err{background:#8C2B2B}
 .rail nav .nav-sec{display:flex;align-items:center;justify-content:space-between;padding:15px 14px;
   color:var(--navy);font-weight:700;font-size:15px;letter-spacing:.02em;cursor:pointer;user-select:none;
   background:transparent;border-bottom:1px solid var(--hair);transition:background .16s ease}
