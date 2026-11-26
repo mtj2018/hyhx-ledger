@@ -850,9 +850,9 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .fa-wf .wf-cap{width:auto;flex:0 0 auto;white-space:nowrap}
 .fa-wf .wf-bar{flex:1 1 auto;margin-top:0;max-width:520px}
 .fa-note{padding:12px 14px 13px;border-bottom:1px solid #E4EAF3;background:#FBFCFE}
-.fa-note .fn-h{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#16407F;letter-spacing:.05em}
-.fa-note .fn-h i{width:3px;height:11px;background:#16407F;display:block}
-.fa-note .fn-b{margin-top:7px;font-size:11.5px;line-height:1.75;color:#5F7086}
+.fa-note .fn-h{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#16407F;letter-spacing:.05em}
+.fa-note .fn-h i{width:3px;height:12px;background:#16407F;display:block}
+.fa-note .fn-b{margin-top:7px;font-size:13px;line-height:1.75;color:#5F7086}
 .fa-note .fn-b b{color:#B3591A;font-weight:700}
 /* ===== 轻提示 ===== */
 .a-toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%);z-index:99;background:#0F2C5C;color:#fff;

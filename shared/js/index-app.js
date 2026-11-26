@@ -2478,8 +2478,7 @@
       + (sDiff == null ? "—" : fmt(sDiff)) + '</td></tr>' + rows;
     return '<div class="fa-note"><div class="fn-h"><i></i>提示信息</div>'
       + '<div class="fn-b">截止上月末，累计报送投资 <b>' + fmt(lastAll) + '</b> 万元，其中建安费累计报送 '
-      + '<b>' + fmt(lastB) + '</b> 万元，占已报投资的 <b>' + lastShare + '%</b>。<br>'
-      + '实际投资取自 B 页同标段同月，差额＝实际投资 − 累计报送投资。</div></div>'
+      + '<b>' + fmt(lastB) + '</b> 万元，占已报投资的 <b>' + lastShare + '%</b>。</div></div>'
       + '<div style="padding:10px 10px 0"><table class="fcr-tbl"><colgroup><col><col style="width:70px"><col style="width:64px"></colgroup>'
       + '<thead><tr><th>标段</th><th>实际投资</th><th>差额</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>';
