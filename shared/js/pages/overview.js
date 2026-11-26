@@ -1,7 +1,9 @@
 (function () {
   function showTab(k) {
     Array.prototype.forEach.call(document.querySelectorAll("[data-ov]"), function (b) {
-      b.classList.toggle("on", b.getAttribute("data-ov") === k);
+      var on = b.getAttribute("data-ov") === k;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-current", on ? "true" : "false");
     });
     var map = { info: "ov-info", ctr: "ov-ctr", files: "ov-embed-files", other: "ov-embed-other" };
     Object.keys(map).forEach(function (x) {
