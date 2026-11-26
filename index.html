@@ -3935,6 +3935,19 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     if (act) showFA(act);
   };
 
+  window.__faReloadLater = function () {
+    try {
+      var v = document.querySelector("#view-fixedasset");
+      if (!v || !v.querySelector("table.fcr-tbl")) return;
+      if (v.contains(document.activeElement)) return;
+      if (window.__faReload) window.__faReload();
+    } catch (e) {}
+  };
+
+  window.addEventListener("load", function () {
+    [1200, 5000].forEach(function (d) { setTimeout(window.__faReloadLater, d); });
+  });
+
   (function () {
     var wrap = el("fa-wrap"), tabs = el("fa-tabs");
     if (!wrap || !tabs) return;
