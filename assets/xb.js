@@ -231,6 +231,11 @@
     return new Promise(function (res) {
       tm = setTimeout(function () {
         var tid = CUR.tid, obj = DATA[tid]; obj.ts = Date.now();
+        var cur = obj.x[CUR.xun];
+        /* 空白的当期记录不写云端，避免把「未填报」的 0 当成正式数据带到地市州统计 */
+        var blank = !cur || (!cur.edited && !cur.sub && !cur.sup && !(cur.red || []).length &&
+          !(cur.q || []).some(function (v) { return +v; }));
+        if (blank) { res(true); return; }
         /* 手工改过的旬：累计 = 上旬累计 + 本旬，写回前重算，保证 A 页读到正确的累计 */
         Object.keys(obj.x || {}).forEach(function (k) {
           var d = obj.x[k]; if (!d || !d.edited) return;

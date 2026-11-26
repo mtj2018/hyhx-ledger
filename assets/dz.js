@@ -36,7 +36,13 @@
   }
   function keys() {
     var ks = {};
-    Object.keys(DATA).forEach(function (t) { Object.keys(DATA[t].x || {}).forEach(function (k) { ks[k] = 1; }); });
+    Object.keys(DATA).forEach(function (t) {
+      Object.keys(DATA[t].x || {}).forEach(function (k) {
+        var d = DATA[t].x[k];
+        if (!d) return;
+        if (d.sub || d.sup || (d.q || []).some(function (v) { return +v; })) ks[k] = 1;
+      });
+    });
     return Object.keys(ks).sort();
   }
   function cum(tid, k) {
