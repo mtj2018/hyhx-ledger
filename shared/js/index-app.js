@@ -1459,13 +1459,12 @@
       aToast("已锁定：" + cardName(k));
       return;
     }
-    aPop(ico, '是否确定修改 <span class="p-seg">“' + cardName(k) + '”</span> 的数据？', function () {
-      S["lkc_" + k] = "0";
-      cardApply(k);
-      try { save(true); } catch (e5) {}
-      try { if (window.__pgPushKey) window.__pgPushKey("lkc_" + k); } catch (e6) {}
-      aToast("已解锁：" + cardName(k) + "，可以修改");
-    });
+    /* A 页解锁不再弹「是否确定修改」确认框（该确认只保留在 B 页各报表） */
+    S["lkc_" + k] = "0";
+    cardApply(k);
+    try { save(true); } catch (e5) {}
+    try { if (window.__pgPushKey) window.__pgPushKey("lkc_" + k); } catch (e6) {}
+    aToast("已解锁：" + cardName(k) + "，可以修改");
   });
 
   /* 右侧「X月完成」月份切换 */
@@ -4172,5 +4171,18 @@ var TO_MS = 15000;
     if (ONLINE) pullAll();
   })();
 
+  /* A 页所有可编辑输入框：点击或键盘进入即全选当前内容，直接输入即可覆盖 */
+  (function () {
+    function pick(t) {
+      if (!t || t.tagName !== "INPUT") return;
+      if (t.readOnly || t.disabled) return;
+      var ty = (t.type || "").toLowerCase();
+      if (ty === "file" || ty === "checkbox" || ty === "radio" || ty === "range" ||
+          ty === "button" || ty === "submit" || ty === "hidden") return;
+      try { t.select(); } catch (e) {}
+    }
+    document.addEventListener("focusin", function (e) { pick(e.target); });
+    document.addEventListener("click", function (e) { pick(e.target); });
+  })();
 
 })();
