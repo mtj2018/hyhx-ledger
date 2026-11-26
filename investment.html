@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<script src="assets/a.cfg.js?v=261126195407"></script>
+<script>
+(function () {
+  var BUILD = "261126195407";
+  if (!BUILD || (location.protocol !== "http:" && location.protocol !== "https:")) return;
+  var verUrl = (location.pathname.indexOf("/report/") >= 0 ? "../ver.json" : "ver.json") + "?t=" + Date.now();
+  fetch(verUrl, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+    if (!j || !j.build || j.build === BUILD) return;
+    var key = "pg-ver-" + location.pathname;
+    try { if (sessionStorage.getItem(key) === j.build) return; sessionStorage.setItem(key, j.build); } catch (e) {}
+    location.replace(location.pathname + "?v=" + encodeURIComponent(j.build) + location.hash);
+  }).catch(function () {});
+})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>沪渝高速公路武汉至宜昌段改扩建工程 · 概算执行</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/a.css?v=261126195407">
+<link rel="stylesheet" href="assets/xb.css?v=261126195407">
+<link rel="stylesheet" href="shared/css/ui.css?v=261126195407">
+</head>
+<body data-page="investment" data-view="investment">
+<header class="top">
+  <div class="top-in">
+    <div class="top-main">
+      <h1 class="top-name">沪渝高速公路武汉至宜昌段改扩建工程</h1>
+      <div class="top-sub">建设单位 <span>湖北汉宜高速公路有限公司</span>　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
+    </div>
+    <div class="top-meta">
+      <div class="sync-chip" id="sync-chip" style="display:none" title="本页改动会自动保存并写回云端"><span class="sc-dot"></span><span class="sc-t"></span></div>
+      <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
+      <button id="btn-import" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导入数据</button>
+      <input type="file" id="import-file" accept=".json,application/json" style="display:none" aria-label="导入 JSON 数据文件">
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <nav aria-label="主要导航">
+      <a class="nav-item" href="index.html"><span>项目基本情况</span></a>
+      <a class="nav-item is-on" href="investment.html" aria-current="page"><span>概算执行管理</span></a>
+      <a class="nav-item" href="fixed-assets.html"><span>固定投资管理</span></a>
+      <a class="nav-item" href="progress.html"><span>形象进度管理</span></a>
+      <a class="nav-item" href="regions.html"><span>地市州管理</span></a>
+    </nav>
+    <a class="nav-jump" href="report.html" title="打开数据填报入口"><span>基础数据填报</span></a>
+  </aside>
+  <main id="main-content" tabindex="-1">
+<section class="view" id="view-investment">
+      <div class="card" style="padding:14px 18px;margin-bottom:14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
+
+      <div class="inv-top" style="display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:stretch">
+      <div class="card" style="min-width:0">
+        <div class="card-head"><h2>总体概算投资完成情况</h2></div>
+        <div style="display:grid;grid-template-columns:176px minmax(0,1fr);align-items:stretch">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+            gap:8px;border-right:1px solid var(--hair);padding:15px 10px">
+            <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label="投资完成比例环形图">
+              <circle cx="66" cy="66" r="52" fill="none" stroke="#E9EEF6" stroke-width="15"></circle>
+              <circle id="ring" cx="66" cy="66" r="52" fill="none" stroke="#2F6FEB" stroke-width="15"
+                stroke-dasharray="179.3 326.7" transform="rotate(-90 66 66)"></circle>
+              <text x="66" y="62" text-anchor="middle" font-size="11.5" fill="#8792A4">完成率</text>
+              <text id="ring-txt" x="66" y="82" text-anchor="middle" font-size="17" font-weight="700" fill="#12305F">54.88%</text>
+            </svg>
+            <div style="font-size:11.5px;color:#68727F">剩余 <span id="ring-rest" style="color:#12305F;font-weight:600">45.12%</span></div>
+          </div>
+          <div class="kpi" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+            <div><div class="k">概算总投资（万元）</div><input class="v num locked" id="budget-kpi" data-k="budget" value="4,223,565" readonly aria-readonly="true"></div>
+            <div><div class="k">累计完成（万元）</div><div class="v num" id="v-cum">2,318,083.00</div></div>
+            <div><div class="k">完成比例</div><div class="v num" id="v-ratio">54.88%</div></div>
+            <div><div class="k">剩余投资（万元）</div><div class="v num" id="v-remain" style="color:#C0392B">1,905,481.51</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="min-width:0">
+        <div class="card-head"><h2 style="white-space:nowrap;margin-right:auto">本年概算执行情况</h2><span class="hint" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;margin-left:auto">时序按<input data-k="monthIdx" data-int="1" data-plain="1" value="10" inputmode="numeric" style="width:38px;text-align:center;font-family:inherit;font-size:12.5px;font-weight:600;color:#16407F;padding:2px 1px;border:1px solid #D9E2EF;border-radius:4px;background:#FFFFFF;line-height:1.2">月末计</span></div>
+        <div class="kpi" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div><div class="k">本年计划（万元）</div><div class="v num" id="y-plan">1,250,000.00</div></div>
+          <div><div class="k">本年完成（万元）</div><div class="v num" id="y-cum">1,133,213.00</div></div>
+          <div><div class="k">完成率</div><div class="v num" id="y-rate">90.66%</div></div>
+          <div id="y-devbox"><div class="k">较时序进度</div><div class="v num" id="y-dev">+7.33%</div></div>
+        </div>
+      </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>年度投资计划与执行</h2>
+          <div class="clk-bar"><span class="clk-st" data-lkst="plan">已提交 · 锁定</span>
+            <button type="button" class="clk-ico" data-lkico="plan" aria-label="小锁"></button>
+            <button type="button" class="clk-sub" data-lksub="plan">提交</button></div>
+        </div>
+        <div class="card-body">
+          <div class="tw"><table class="tbl">
+            <colgroup><col style="width:12%"><col style="width:20%"><col style="width:20%"><col style="width:16%"><col style="width:20%"><col style="width:12%"></colgroup>
+            <thead><tr><th style="text-align:center">年度</th><th style="text-align:center">执行投资（万元）</th><th style="text-align:center">计划投资（万元）</th><th style="text-align:center">计划完成率</th><th style="text-align:center;border-left:1px solid #DCE5F1">年末要求投资（万元）</th><th style="text-align:center">完成率</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="c">2027 年</td>
+                <td class="c"><span class="num" id="a2027">0</span></td>
+                <td class="c"><span class="num" id="p2027">0</span></td>
+                <td class="c num" id="r2027">—</td>
+                <td class="c" style="border-left:1px solid #E4EAF3"><input class="numr" data-k="n2027" data-int="1" value="0" inputmode="decimal"></td>
+                <td class="c num" id="nrate2027">—</td>
+              </tr>
+              <tr>
+                <td class="c">2026 年</td>
+                <td class="c"><span class="num" id="a2026">1,133,213</span></td>
+                <td class="c"><span class="num" id="p2026">1,250,000</span></td>
+                <td class="c num" id="r2026">90.66%</td>
+                <td class="c" style="border-left:1px solid #E4EAF3"><input class="numr" data-k="n2026" data-int="1" value="1,350,000" inputmode="decimal"></td>
+                <td class="c num" id="nrate2026">—</td>
+              </tr>
+              <tr>
+                <td class="c">2025 年</td>
+                <td class="c"><span class="num" id="a2025">1,153,750</span></td>
+                <td class="c"><span class="num" id="p2025">963,000</span></td>
+                <td class="c num" id="r2025">119.81%</td>
+                <td class="c" style="border-left:1px solid #E4EAF3"><input class="numr" data-k="n2025" data-int="1" value="1,150,000" inputmode="decimal"></td>
+                <td class="c num" id="nrate2025">—</td>
+                </tr>
+              <tr>
+                <td class="c">2024 年</td>
+                <td class="c"><span class="num" id="a2024">31,120</span></td>
+                <td class="c"><span class="num" id="p2024">31,120</span></td>
+                <td class="c num" id="r2024">100.00%</td>
+                <td class="c" style="border-left:1px solid #E4EAF3"><input class="numr" data-k="n2024" data-int="1" value="31,120" inputmode="decimal"></td>
+                <td class="c num" id="nrate2024">—</td>
+              </tr>
+            </tbody>
+          </table></div>
+          <div class="hint" style="padding:9px 16px 2px;font-size:12px;color:#8A96A8">计划投资取自「概算执行管理 · 明细」中各年「本年计划」概算总金额，只读；仅「年末要求投资」可填。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>月度投资完成情况</h2><span class="hint" style="margin-left:auto;white-space:nowrap">1—10 月已固化，11、12 月自动取自「概算执行 · 明细」当月完成</span></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;background:#EDF3FB;border-top:1px solid #DCE6F2;font-size:13px;font-weight:700;color:#16407F">2026 年<button type="button" class="foldbtn" data-fold="fold26" style="margin-left:auto;border:1px solid #C9D7EA;background:#fff;color:#16407F;font-size:12px;line-height:1;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit">收起</button></div>
+        <div class="card-body" id="fold26">
+        <div class="tw"><table class="tbl">
+          <colgroup><col style="width:11%"><col style="width:14%"><col style="width:14%"><col style="width:14%"><col style="width:17%"><col style="width:17%"><col style="width:13%"></colgroup>
+          <thead><tr>
+            <th style="text-align:center">季度</th>
+            <th class="r" style="text-align:center">第 1 月</th>
+            <th class="r" style="text-align:center">第 2 月</th>
+            <th class="r" style="text-align:center">第 3 月</th>
+            <th class="r" style="text-align:center">季度计划（万元）</th>
+            <th class="r" style="text-align:center">季度完成（万元）</th>
+            <th class="r" style="text-align:center">完成比例</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="c">一季度</td>
+              <td class="c"><span class="num" data-k="m1">113,896</span></td><td class="c"><span class="num" data-k="m2">113,896</span></td><td class="c"><span class="num" data-k="m3">113,896</span></td>
+              <td class="c"><span class="num" data-k="q1">312,500</span></td>
+              <td class="c num" id="qa1">0</td><td class="c num" id="qr1">—</td>
+            </tr>
+            <tr>
+              <td class="c">二季度</td>
+              <td class="c"><span class="num" data-k="m4">113,896</span></td><td class="c"><span class="num" data-k="m5">113,896</span></td><td class="c"><span class="num" data-k="m6">113,896</span></td>
+              <td class="c"><span class="num" data-k="q2">312,500</span></td>
+              <td class="c num" id="qa2">0</td><td class="c num" id="qr2">—</td>
+            </tr>
+            <tr>
+              <td class="c">三季度</td>
+              <td class="c"><span class="num" data-k="m7">113,896</span></td><td class="c"><span class="num" data-k="m8">113,896</span></td><td class="c"><span class="num" data-k="m9">113,892</span></td>
+              <td class="c"><span class="num" data-k="q3">312,500</span></td>
+              <td class="c num" id="qa3">0</td><td class="c num" id="qr3">—</td>
+            </tr>
+            <tr>
+              <td class="c">四季度</td>
+              <td class="c"><span class="num" data-k="m10">108,153</span></td><td class="c"><span class="num" data-k="m11">0</span></td><td class="c"><span class="num" data-k="m12">0</span></td>
+              <td class="c"><span class="num" data-k="q4">312,500</span></td>
+              <td class="c num" id="qa4">0</td><td class="c num" id="qr4">—</td>
+            </tr>
+          </tbody>
+        </table></div>
+          <div class="mrow" style="justify-content:flex-start">
+            <div class="mt" id="q-desc">本季度累计完成 —</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;background:#EDF3FB;border-top:1px solid #DCE6F2;font-size:13px;font-weight:700;color:#16407F">2025 年<button type="button" class="foldbtn" data-fold="fold25" style="margin-left:auto;border:1px solid #C9D7EA;background:#fff;color:#16407F;font-size:12px;line-height:1;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit">收起</button></div>
+        <div class="card-body" id="fold25">
+        <div class="tw"><table class="tbl">
+          <colgroup><col style="width:11%"><col style="width:14%"><col style="width:14%"><col style="width:14%"><col style="width:17%"><col style="width:17%"><col style="width:13%"></colgroup>
+          <thead><tr>
+            <th style="text-align:center">季度</th>
+            <th class="r" style="text-align:center">第 1 月</th>
+            <th class="r" style="text-align:center">第 2 月</th>
+            <th class="r" style="text-align:center">第 3 月</th>
+            <th class="r" style="text-align:center">季度计划（万元）</th>
+            <th class="r" style="text-align:center">季度完成（万元）</th>
+            <th class="r" style="text-align:center">完成比例</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="c">一季度</td>
+              <td class="c"><span class="num" data-k="m25_1">96,145</span></td><td class="c"><span class="num" data-k="m25_2">96,145</span></td><td class="c"><span class="num" data-k="m25_3">96,145</span></td>
+              <td class="c"><span class="num" data-k="q25_1">288,437</span></td>
+              <td class="c num" id="qa25_1">0</td><td class="c num" id="qr25_1">—</td>
+            </tr>
+            <tr>
+              <td class="c">二季度</td>
+              <td class="c"><span class="num" data-k="m25_4">96,145</span></td><td class="c"><span class="num" data-k="m25_5">96,145</span></td><td class="c"><span class="num" data-k="m25_6">96,145</span></td>
+              <td class="c"><span class="num" data-k="q25_2">288,437</span></td>
+              <td class="c num" id="qa25_2">0</td><td class="c num" id="qr25_2">—</td>
+            </tr>
+            <tr>
+              <td class="c">三季度</td>
+              <td class="c"><span class="num" data-k="m25_7">96,145</span></td><td class="c"><span class="num" data-k="m25_8">96,145</span></td><td class="c"><span class="num" data-k="m25_9">96,145</span></td>
+              <td class="c"><span class="num" data-k="q25_3">288,437</span></td>
+              <td class="c num" id="qa25_3">0</td><td class="c num" id="qr25_3">—</td>
+            </tr>
+            <tr>
+              <td class="c">四季度</td>
+              <td class="c"><span class="num" data-k="m25_10">96,145</span></td><td class="c"><span class="num" data-k="m25_11">96,145</span></td><td class="c"><span class="num" data-k="m25_12">96,155</span></td>
+              <td class="c"><span class="num" data-k="q25_4">288,439</span></td>
+              <td class="c num" id="qa25_4">0</td><td class="c num" id="qr25_4">—</td>
+            </tr>
+          </tbody>
+        </table></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;background:#EDF3FB;border-top:1px solid #DCE6F2;font-size:13px;font-weight:700;color:#16407F">2024 年<button type="button" class="foldbtn" data-fold="fold24" style="margin-left:auto;border:1px solid #C9D7EA;background:#fff;color:#16407F;font-size:12px;line-height:1;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit">收起</button></div>
+        <div class="card-body" id="fold24">
+        <div class="tw"><table class="tbl">
+          <colgroup><col style="width:11%"><col style="width:14%"><col style="width:14%"><col style="width:14%"><col style="width:17%"><col style="width:17%"><col style="width:13%"></colgroup>
+          <thead><tr>
+            <th style="text-align:center">季度</th>
+            <th class="r" style="text-align:center">第 1 月</th>
+            <th class="r" style="text-align:center">第 2 月</th>
+            <th class="r" style="text-align:center">第 3 月</th>
+            <th class="r" style="text-align:center">季度计划（万元）</th>
+            <th class="r" style="text-align:center">季度完成（万元）</th>
+            <th class="r" style="text-align:center">完成比例</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="c">一季度</td>
+              <td class="c"><span class="num" data-k="m24_1">2,593</span></td><td class="c"><span class="num" data-k="m24_2">2,593</span></td><td class="c"><span class="num" data-k="m24_3">2,593</span></td>
+              <td class="c"><span class="num" data-k="q24_1">7,780</span></td>
+              <td class="c num" id="qa24_1">0</td><td class="c num" id="qr24_1">—</td>
+            </tr>
+            <tr>
+              <td class="c">二季度</td>
+              <td class="c"><span class="num" data-k="m24_4">2,593</span></td><td class="c"><span class="num" data-k="m24_5">2,593</span></td><td class="c"><span class="num" data-k="m24_6">2,593</span></td>
+              <td class="c"><span class="num" data-k="q24_2">7,780</span></td>
+              <td class="c num" id="qa24_2">0</td><td class="c num" id="qr24_2">—</td>
+            </tr>
+            <tr>
+              <td class="c">三季度</td>
+              <td class="c"><span class="num" data-k="m24_7">2,593</span></td><td class="c"><span class="num" data-k="m24_8">2,593</span></td><td class="c"><span class="num" data-k="m24_9">2,593</span></td>
+              <td class="c"><span class="num" data-k="q24_3">7,780</span></td>
+              <td class="c num" id="qa24_3">0</td><td class="c num" id="qr24_3">—</td>
+            </tr>
+            <tr>
+              <td class="c">四季度</td>
+              <td class="c"><span class="num" data-k="m24_10">2,593</span></td><td class="c"><span class="num" data-k="m24_11">2,593</span></td><td class="c"><span class="num" data-k="m24_12">2,597</span></td>
+              <td class="c"><span class="num" data-k="q24_4">7,780</span></td>
+              <td class="c num" id="qa24_4">0</td><td class="c num" id="qr24_4">—</td>
+            </tr>
+          </tbody>
+        </table></div>
+        </div>
+      </div>
+
+    </section>
+<section class="view" id="view-exec">
+      <div class="card" style="padding:14px 18px;margin-bottom:14px"><div style="display:flex;gap:8px" data-execbar><button type="button" class="fa-tab" data-exec="overview">总览</button><button type="button" class="fa-tab" data-exec="detail">明细</button></div></div>
+
+      <div id="exec-cols" style="display:flex;align-items:flex-start;gap:14px">
+      <div class="card" id="exec-card" style="flex:1 1 auto;min-width:0;max-width:1042px;padding:0;overflow:hidden">
+        <div id="exec-toolbar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid #E4EAF3">
+          <div id="exec-tabs" style="display:flex;flex-wrap:wrap;gap:8px;flex:1 1 auto"></div>
+          <div class="clk-bar"><span class="clk-st" data-lkst="exec">已提交 · 锁定</span>
+            <button type="button" class="clk-ico" data-lkico="exec" aria-label="小锁"></button>
+            <button type="button" class="clk-sub" data-lksub="exec">提交</button></div>
+        </div>
+        <div id="exec-wrap"></div>
+      </div>
+      <div class="card" id="exec-rail-card" style="flex:0 0 196px;padding:0;overflow:hidden;display:none">
+        <div id="exec-rail-inner"></div>
+      </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="pg-gate" id="pg-gate" role="dialog" aria-modal="true" aria-labelledby="pg-gate-title">
+  <div class="pg-gate-box">
+    <div class="pg-gate-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="15.6" r="1.4" fill="currentColor" stroke="none"/></svg></div>
+    <h3 id="pg-gate-title">页面信息已隐藏</h3>
+    <p>本页面涉及项目数据，为保护数据隐私，需输入查看密码后方可显示。</p>
+    <div class="pg-gate-row">
+      <input id="pg-pw" type="password" autocomplete="off" placeholder="请输入查看密码">
+      <button id="pg-go" type="button">查看</button>
+    </div>
+    <div class="pg-gate-err" id="pg-err"></div>
+    <div class="pg-gate-tip" id="pg-tip">本机输入一次密码后，7 天内无需重复输入</div>
+  </div>
+</div>
+<script src="shared/js/index-app.js?v=261126195407"></script>
+<script src="shared/js/pages/investment.js?v=261126195407"></script>
+<script src="shared/js/gate.js?v=261126195407"></script>
+<script src="shared/js/ui.js?v=261126195407"></script>
+</body>
+</html>

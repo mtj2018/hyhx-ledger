@@ -10,6 +10,7 @@
   var SEED = "2026-11-19";           /* 现有「分项产值情况」数据作为 11.19 的累计 */
   var MIN = "2026-11-19", MAX = "2029-12-31";
   var DATA = {}, SHA = {}, LOADED = false, CUR = { key: "" }, TM = {}, GRID_READY = 0;
+  var LOCAL_PREVIEW = location.hostname === "127.0.0.1" || location.hostname === "localhost";
   var PH = {
     t2: "填写仙桃城区高架桥主要形象完成情况",
     t8: "填写引江济汉特大桥主要形象完成情况"
@@ -128,7 +129,7 @@
   function load(force) {
     if (LOADED && !force) return Promise.resolve(DATA);
     var ts = tenders();
-    if (location.protocol === "file:") {
+    if (location.protocol === "file:" || LOCAL_PREVIEW) {
       DATA = {};
       ts.forEach(function (t) { DATA[t.tid] = { v: 1, tid: t.tid, w: {} }; DATA[t.tid].w[SEED] = seedOf(t.tid); });
       LOADED = true;
@@ -377,7 +378,7 @@
       TM[tid] = setTimeout(function () {
         var o = DATA[tid]; if (!o) { res(false); return; }
         o.ts = Date.now();
-        if (location.protocol === "file:") { flagMsg("本机打开为只读预览，改动不上传云端"); res(false); return; }
+        if (location.protocol === "file:" || LOCAL_PREVIEW) { flagMsg("本机预览模式，改动不上传云端"); res(false); return; }
         QL = QL.then(function () {
           return gitPut([{ name: "xb-wk-" + n + ".json", txt: JSON.stringify(o) }], "产值周报 " + tid + " " + CUR.key);
         }).then(function () {
@@ -393,8 +394,12 @@
   function flagMsg(m) { var el = $("#wk-msg"); if (el) { el.textContent = m; el.classList.add("on"); setTimeout(function () { el.classList.remove("on"); }, 3000); } }
 
   function boot() {
-    if (!$("#view-wk")) return;
     CUR.key = clampKey(ymd(thursdayNear(new Date())));
+    /* 填报情况及月报页面只读取快照，不需要周报填报表格。 */
+    if (!$("#view-wk")) {
+      load();
+      return;
+    }
     options();
     load().then(function () { render(); });
     document.addEventListener("click", function (e) {

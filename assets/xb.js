@@ -47,6 +47,7 @@
     { id: "z5", nm: "五驻地办", sub: "土建9、10标", tids: [9, 10] }
   ];
   var DATA = {}, SHA = {}, LOADED = false, CUR = { zb: "z1", xun: "" }, CONFIRM = {}, TM = {};
+  var LOCAL_PREVIEW = location.hostname === "127.0.0.1" || location.hostname === "localhost";
   var ST = { 1: { t: "待施工单位填报", c: "s1" }, 2: { t: "待监理单位复核", c: "s2" }, 3: { t: "已完成（监理已提交）", c: "s3" } };
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -440,7 +441,7 @@
         var blank = !cur || (!cur.edited && !cur.sub && !cur.sup && !(cur.red || []).length &&
           !(cur.q || []).some(function (v) { return +v; }));
         if (blank) { res(true); return; }
-        if (location.protocol === "file:") { flagMsg("本机打开为只读预览，改动不上传云端"); res(false); return; }
+        if (location.protocol === "file:" || LOCAL_PREVIEW) { flagMsg("本机预览模式，改动不上传云端"); res(false); return; }
         /* 手工改过的旬：累计 = 上旬累计 + 本旬，写回前重算，保证 A 页读到正确的累计 */
         Object.keys(obj.x || {}).forEach(function (kk) {
           var d = obj.x[kk]; if (!d || !d.edited) return;

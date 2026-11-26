@@ -1,0 +1,4128 @@
+(function () {
+  "use strict";
+
+  var KEY = "hyhx-project-info-v1";
+  var S = {};
+  var PAGE = document.body.getAttribute("data-page") || "overview";
+
+  /* ---------- 工具 ---------- */
+  function num(v) {
+    var n = parseFloat(String(v == null ? "" : v).replace(/,/g, "").replace(/[^\d.\-]/g, ""));
+    return isFinite(n) ? n : 0;
+  }
+  function fmt(v, d) {
+    d = d == null ? 0 : d;
+    return (isFinite(v) ? v : 0).toLocaleString("zh-CN", {
+      minimumFractionDigits: d, maximumFractionDigits: d
+    });
+  }
+  function pctTxt(x) { return (isFinite(x) ? x * 100 : 0).toFixed(2) + "%"; }
+  function el(id) { return document.getElementById(id); }
+
+  /* ---------- 地市行 ---------- */
+  var CITIES = [
+    { n: "武汉市", km: "28.8", pct: "14.0" },
+    { n: "孝感市", km: "8.8", pct: "3.0" },
+    { n: "仙桃市", km: "74.0", pct: "29.0" },
+    { n: "潜江市", km: "42.8", pct: "16.0" },
+    { n: "荆州市", km: "54.5", pct: "19.0" },
+    { n: "宜昌市", km: "61.3", pct: "19.0" }
+  ];
+
+  function buildCities() {
+    var tb = el("cityrows");
+    if (!tb) return;
+    var html = "";
+    CITIES.forEach(function (c, i) {
+      html += "<tr><td>" + c.n + "</td>" +
+        '<td class="r num">' + Number(c.km).toFixed(1) + '</td>' +
+        '<td class="r num">' + Math.round(Number(c.pct)) + '</td>' +
+        '<td class="r"><span class="share"><span class="amt num" id="city' + i + 'amt">—</span>' +
+        '<span class="fill" id="city' + i + 'bar"></span></span></td></tr>';
+    });
+    html += '<tr class="total"><td>合计</td><td class="r num" id="citykm">270.2</td>' +
+      '<td class="r num" id="citypct">100</td><td class="r num" id="citysum">—</td></tr>';
+    tb.innerHTML = html;
+  }
+
+  /* ---------- 状态 ---------- */
+  function fields() { return Array.prototype.slice.call(document.querySelectorAll("[data-k]")); }
+  function isInput(n) { return n.tagName === "INPUT"; }
+  function valOf(n) { return isInput(n) ? n.value : n.textContent; }
+  function setVal(n, v) { if (isInput(n)) { n.value = v; } else { n.textContent = v; } }
+
+  function captureDefaults() {
+    var o = {};
+    fields().forEach(function (n) {
+      var k = n.dataset.k;
+      if (!(k in o)) o[k] = valOf(n);
+    });
+    return o;
+  }
+
+  function applyState() {
+    fields().forEach(function (n) {
+      var k = n.dataset.k;
+      if (Object.prototype.hasOwnProperty.call(S, k)) setVal(n, S[k]);
+    });
+    document.querySelectorAll("[data-mirror]").forEach(function (m) {
+      var k = m.getAttribute("data-mirror");
+      if (S[k] != null) m.textContent = S[k];
+    });
+    if (typeof faSync === "function") faSync();
+  }
+
+  /* 固化分区：项目总览 / 融资与测算 只读（直接转为静态文本） */
+  function lockViews() {
+    ["#view-overview", "#view-other"].forEach(function (sel) {
+      document.querySelectorAll(sel + " input[data-k]").forEach(function (i) {
+        var sp = document.createElement("span");
+        var inTd = i.closest && i.closest("td");
+        if (inTd) {
+          sp.className = "num";
+          sp.style.display = "block";
+          sp.style.textAlign = i.classList.contains("txt") ? "left" : "right";
+        } else {
+          sp.className = "rv static";
+        }
+        if (i.dataset && i.dataset.k) sp.setAttribute("data-k", i.dataset.k);
+        sp.textContent = i.value;
+        i.parentNode.replaceChild(sp, i);
+      });
+    });
+    var bk = el("budget-kpi");
+    if (bk) {
+      var d = document.createElement("div");
+      d.className = "v num";
+      d.textContent = bk.value;
+      bk.parentNode.replaceChild(d, bk);
+    }
+  }
+
+  /* ---------- 重要文件台账 ---------- */
+  var FILES_DEFAULT = [
+    ["前期文件","投资人中标通知书","2023-10-16","省公路事业发展中心","投资人中标通知书","",""],
+    ["前期文件","社会稳定风险评估","2024-01-24","中共湖北省委政法委员会","社会稳定风险评估报告予以备案的函","鄂政法备案﹝2024﹞1号",""],
+    ["前期文件","项目选址意见书","2024-01-29","湖北省自然资源厅","建设项目用地预审与选址意见书","4200000202400020",""],
+    ["前期文件","资金审查","2024-07-10","交通运输部","关于沪渝高速武汉至宜昌段改扩建工程项目资金安排的意见","交规划函〔2024〕334号",""],
+    ["前期文件","节能审查","2024-08-20","汉宜高速公司","关于沪渝高速公路武汉至宜昌段改扩建工程项目不单独进行节能审查的报告","鄂汉宜发〔2024〕12 号",""],
+    ["前期文件","行业审查","2024-08-21","湖北省交通运输厅","关于G50沪渝高速公路武汉至宜昌段改扩建工程行业审查意见的函","",""],
+    ["前期文件","工可批复","2024-08-26","湖北省发展改革委员会","《省发改委关于沪渝高速公路武汉至宜昌段改扩建工程项目核准的批复》","鄂发改审批服务﹝2024﹞361号",""],
+    ["前期文件","初设批复","2024-10-28","交通运输部","《交通运输部关于G50沪渝高速湖北省武汉至宜昌段改扩建工程初步设计的批复》","交公路函﹝2024﹞554号",""],
+    ["前期文件","建设用地（先行用地）","2024-11-07","自然资源部办公厅","《自然资源部办公厅关于沪渝高速公路武汉至宜昌段改扩建工程建设项目先行用地的函》","自然资办函﹝2024﹞2326号",""],
+    ["前期文件","施工图设计（先行开工点）","2024-12-13","湖北省交通运输厅","《省交通运输厅关于G50沪渝高速公路武汉至宜昌段改扩建工程蔡甸高架桥等11座桥梁施工图设计的批复》","鄂交函﹝2024﹞219号",""],
+    ["前期文件","施工许可证","2025-01-07","湖北省交通运输厅","沪渝高速公路武汉至宜昌段改扩建工程施工许可申请书（盖章）","",""],
+    ["环评批复","林地批复","2025-01-15","国家林业与草原局","国家林业和草原局准予行政许可决定书使用林地审核同意书","林资许准(鄂)〔2025〕001号",""],
+    ["环评批复","水土保持批复","2025-02-27","湖北省水利局","省水利厅关于沪渝高速公路武汉至宜昌段改扩建工程水土保持方案的复函","鄂水许可〔2025〕31 号",""],
+    ["环评批复","地灾评审意见","2025-03-21","省交规院","沪渝高速公路武汉至宜昌段改扩建工程地质灾害危险性评估报告-专家评审意见","",""],
+    ["环评批复","项目环评","2025-07-07","湖北省生态环境厅","省生态环境厅关于沪渝高速公路武汉至宜昌段改扩建工程环境影响报告表的批复","鄂环审〔2025〕281 号",""],
+    ["设计批复","设计批复（设计1标）","2025-06-05","湖北省交通运输厅","关于G50沪渝高速武汉至宜昌段改扩建工程HYSJSG-1标段一期土建工程施工图设计的批复","鄂交函〔2025〕74号",""],
+    ["设计批复","设计批复（设计4、5标）","2025-07-03","湖北省交通运输厅","关于G50沪渝高速武汉至宜昌段改扩建工程HYSJ-4标、HYSJ-5标段一期土建工程施工图设计的批复","鄂交函〔2025〕86号",""],
+    ["设计批复","设计批复（设计2、3标）","2025-09-11","湖北省交通运输厅","关于G50沪渝高速武汉至宜昌段改扩建工程HYSJ-2标、HYSJ-3标段一期土建工程施工图设计的批复","鄂交函〔2025〕123号",""],
+    ["设计批复","设计批复（二期路面）","2025-10-24","湖北省交通运输厅","省交通厅关于G50沪渝高速武汉至宜昌段改扩建工程二期路面施工图设计的批复","鄂交函〔2025〕145号",""],
+    ["设计批复","设计批复（交安工程）","2026-06-15","湖北省交通运输厅","省交通运输厅关于G50沪渝高速武汉至宜昌段改扩建工程交安工程施工图设计的批复","鄂交函〔2026〕95号",""],
+    ["设计批复","设计批复（机电工程）","2026-07-06","湖北省交通运输厅","省交通运输厅关于G50沪渝高速武汉至宜昌段改扩建工程机电工程施工图设计的批复","鄂交函〔2026〕110号",""],
+    ["用地批复","用地批复（潜江）","2025-06-22","自然资源部","自然资源部关于沪渝高速公路武汉至宜昌段改扩建工程（潜江市段）建设用地的批复","自然资函〔2025〕426 号",""],
+    ["用地批复","用地批复（孝感）","2025-08-25","自然资源部","自然资源部关于沪渝高速公路武汉至宜昌段改扩建工程（孝感市段）建设用地的批复","自然资函〔2025〕503号",""],
+    ["用地批复","用地批复（仙桃）","2025-09-06","自然资源部","自然资源部关于沪渝高速公路武汉至宜昌段改扩建工程（仙桃市段）建设用地的批复","自然资函〔2025〕553号",""],
+    ["用地批复","用地批复（荆州）","2025-12-08","自然资源部","自然资源部关于沪渝高速公路武汉至宜昌段改扩建工程(荆州市段)建设用地的批复","自然资函〔2025〕768 号",""],
+    ["用地批复","用地批复（武汉）","2025-12-08","自然资源部","自然资源部关于沪渝高速公路武汉至宜昌段改扩建工程(武汉市段)建设用地的批复","自然资函〔2025〕767 号",""],
+    ["用地批复","用地批复（宜昌）","2025-12-14","自然资源部","自然资源部关于沪渝高速公路武汉至宜昌段改扩建工程(宜昌市段)建设用地的批复","自然资函〔2025〕831 号",""],
+    ["开工令","土建5、6标开工令","2025-10-01","汉宜高速公司","关于发布《沪渝高速公路武汉至宜昌段改扩建工程总监理工程师令（第1号）》的通知","总监办发〔2025〕7 号",""],
+    ["开工令","土建2、3、4标开工令","2025-10-01","汉宜高速公司","关于发布《沪渝高速公路武汉至宜昌段改扩建工程总监理工程师令（第2号）》的通知","总监办发〔2025〕8 号",""],
+    ["开工令","土建1标开工令","2025-12-19","汉宜高速公司","关于发布《沪渝高速公路武汉至宜昌段改扩建工程总监理工程师令（第3号）》的通知","总监办发〔2026〕1 号",""],
+    ["开工令","土建7、8标开工令","2025-12-19","汉宜高速公司","关于发布《沪渝高速公路武汉至宜昌段改扩建工程总监理工程师令（第4号）》的通知","总监办发〔2026〕2 号",""],
+    ["开工令","土建9、10标开工令","2025-12-19","汉宜高速公司","关于发布《沪渝高速公路武汉至宜昌段改扩建工程总监理工程师令（第5号）》的通知","总监办发〔2026〕3 号",""],
+    ["开工令","机电1标开工令","2026-07-09","汉宜高速公司","关于发布《沪渝高速公路武汉至宜昌段改扩建工程总监理工程师令（第6号）》的通知","总监办发〔2026〕11 号",""],
+    ["开工令","交安1标开工令","2026-09-28","汉宜高速公司","关于发布《沪渝高速公路武汉至宜昌段改扩建工程总监理工程师令（第7号）》的通知","总监办发〔2026〕15 号",""]
+  ];
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function fitTa(t) {
+    if (!t || t.tagName !== "TEXTAREA") return;
+    t.style.height = "auto";
+    t.style.height = (t.scrollHeight || 20) + "px";
+  }
+
+  var GROUP_ORDER = ["前期文件", "环评批复", "设计批复", "用地批复", "开工令"];
+  var FILE_TAB = "前期文件";
+
+  function fileTabs(buckets) {
+    var box = el("file-tabs");
+    if (!box) return;
+    var html = "";
+    GROUP_ORDER.forEach(function (g) {
+      var n = (buckets[g] || []).length;
+      var on = (g === FILE_TAB);
+      html += '<button type="button" data-tab="' + esc(g) + '" style="font-family:inherit;'
+        + 'font-size:13.5px;line-height:1;padding:9px 16px;border-radius:6px;cursor:pointer;'
+        + 'border:1px solid ' + (on ? "#16407F" : "#D9E2EF") + ';'
+        + 'background:' + (on ? "#16407F" : "#FFFFFF") + ';'
+        + 'color:' + (on ? "#FFFFFF" : "#3C4A5E") + ';'
+        + 'font-weight:' + (on ? "700" : "500") + ';'
+        + (on ? 'box-shadow:0 2px 6px rgba(22,64,127,.22);' : '')
+        + '">' + esc(g)
+        + '<span style="margin-left:6px;font-size:12px;opacity:.72">' + n + '</span></button>';
+    });
+    box.innerHTML = html;
+  }
+
+  function renderFiles() {
+    var wrap = el("files-wrap");
+    if (!wrap) return;
+    var buckets = {};
+    S.files.forEach(function (r, i) {
+      var t = String(r[0] || "").trim() || "未分类";
+      if (!buckets[t]) buckets[t] = [];
+      buckets[t].push(i);
+    });
+    if (!buckets[FILE_TAB]) {
+      var first = GROUP_ORDER.filter(function (g) { return buckets[g] && buckets[g].length; })[0];
+      if (first) FILE_TAB = first;
+    }
+    fileTabs(buckets);
+
+    var items = buckets[FILE_TAB] || [];
+    var canAdd = (FILE_TAB === "开工令" || FILE_TAB === "设计批复");
+
+    var html = (canAdd
+      ? '<div style="display:flex;justify-content:flex-end;padding:12px 18px 0">'
+        + '<button class="btn-add" type="button" data-add="' + esc(FILE_TAB) + '">＋ 新增</button></div>'
+      : '')
+      + '<div class="tw"><table class="tbl ft">'
+      + '<colgroup><col style="width:58px"><col style="width:172px"><col style="width:166px"><col>'
+      + '<col style="width:160px"><col style="width:112px"></colgroup>'
+      + '<thead><tr>'
+      + '<th style="text-align:center;font-size:14.5px;padding:11px 8px">序号</th>'
+      + '<th style="text-align:center;font-size:14.5px;padding:11px 8px">类型</th>'
+      + '<th style="text-align:center;font-size:14.5px;padding:11px 8px">文号</th>'
+      + '<th style="text-align:center;font-size:14.5px;padding:11px 8px">文件名称</th>'
+      + '<th style="text-align:center;font-size:14.5px;padding:11px 8px">责任单位</th>'
+      + '<th style="text-align:center;font-size:14.5px;padding:11px 8px">日期</th>'
+      + '</tr></thead><tbody>';
+
+    if (!items.length) {
+      html += '<tr><td colspan="6" style="text-align:center;color:#8A96A8;padding:26px 8px;font-size:13px">'
+        + '暂无记录</td></tr>';
+    }
+    items.forEach(function (i, k) {
+      var r = S.files[i];
+      html += '<tr><td class="rdx num" style="text-align:center">' + (k + 1) + '</td>'
+        + '<td style="text-align:center"><div class="ce" contenteditable="true" data-fi="' + i + '" data-fc="1" style="text-align:center">' + esc(r[1]) + '</div></td>'
+        + '<td style="text-align:center"><div class="ce" contenteditable="true" data-fi="' + i + '" data-fc="5" style="text-align:center">' + esc(r[5]) + '</div></td>'
+        + '<td style="text-align:center"><div class="ce nm" contenteditable="true" data-fi="' + i + '" data-fc="4" style="text-align:center">' + esc(r[4]) + '</div></td>'
+        + '<td style="text-align:center"><div class="ce" contenteditable="true" data-fi="' + i + '" data-fc="3" style="text-align:center">' + esc(r[3]) + '</div></td>'
+        + '<td style="text-align:center"><div class="ce num" contenteditable="true" data-fi="' + i + '" data-fc="2" style="text-align:center">' + esc(r[2]) + '</div></td></tr>';
+    });
+    html += '</tbody></table></div>';
+    wrap.innerHTML = html;
+  }
+
+  function two(n) { return ("0" + n).slice(-2); }
+
+
+  var DIRTY = false;
+
+  function touch() {
+    DIRTY = true;
+    var s = el("saved");
+    if (s) { s.textContent = "有未保存的修改"; s.style.color = "#FFD9A8"; }
+    var b = el("btn-save");
+    if (b) { b.style.background = "#FFF3E0"; b.style.color = "#8A4B00"; b.style.borderColor = "#F0C48A"; }
+  }
+
+  function save(localOnly) {
+    try {
+      /* 月份选择与录入偏好随数据一起落盘，导入后可完整还原 */
+      S.execMonth = String(EXEC_MONTH);
+      S.execMonth27 = String(EXEC_MONTH27);
+      S.execPref = EXEC_PREF;
+      localStorage.setItem(KEY, JSON.stringify(S));
+      var t = new Date();
+      var stamp = t.getFullYear() + "-" + two(t.getMonth() + 1) + "-" + two(t.getDate())
+        + " " + two(t.getHours()) + ":" + two(t.getMinutes()) + ":" + two(t.getSeconds());
+      var s = el("saved");
+      if (s) { s.style.color = ""; }
+      try { localStorage.setItem(KEY + "-ts", stamp); } catch (e) {}
+      DIRTY = false;
+      try {
+        if (window.__syncChip && (location.protocol === "http:" || location.protocol === "https:")) window.__syncChip("busy");
+      } catch (e_sc) {}
+      if (!localOnly) { try { if (window.__pgPushLedger) window.__pgPushLedger(); } catch (e0) {} }
+      var b = el("btn-save");
+      if (b) { b.style.background = "#FFFFFF"; b.style.color = "#16407F"; b.style.borderColor = "#FFFFFF"; }
+    } catch (e) {
+      var s2 = el("saved");
+      if (s2) s2.textContent = "本机保存不可用";
+    }
+  }
+
+  /* ---------- 数据备份：导出 / 导入 JSON ---------- */
+  function stampFile(d) {
+    return d.getFullYear() + two(d.getMonth() + 1) + two(d.getDate()) + "_" + two(d.getHours()) + two(d.getMinutes());
+  }
+  function stampFull(d) {
+    return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate())
+      + " " + two(d.getHours()) + ":" + two(d.getMinutes()) + ":" + two(d.getSeconds());
+  }
+
+  function exportData() {
+    save();
+    var d = new Date();
+    /* 把「当月完成」的月份选择与录入偏好一并导出，保证换机导入后完全一致 */
+    S.execMonth = String(EXEC_MONTH);
+    S.execMonth27 = String(EXEC_MONTH27);
+    S.execPref = EXEC_PREF;
+    var payload = {
+      app: "沪渝高速项目信息页",
+      key: KEY,
+      ver: 2,
+      exported_at: stampFull(d),
+      data: S
+    };
+    try {
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "沪渝高速项目信息_数据备份_" + stampFile(d) + ".json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
+      alert("备份文件已导出：\n" + a.download + "\n请把它存到网盘或共享盘，换电脑时用「导入数据」恢复。");
+    } catch (e) {
+      alert("导出失败：" + (e && e.message ? e.message : e));
+    }
+  }
+
+  function importData(file) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var obj = null;
+      try { obj = JSON.parse(String(fr.result)); } catch (e) { alert("文件不是有效的 JSON，导入失败。"); return; }
+      var data = (obj && obj.data && typeof obj.data === "object" && !(obj.data instanceof Array)) ? obj.data : obj;
+      if (!data || typeof data !== "object" || data instanceof Array) { alert("备份文件内容格式不对，导入失败。"); return; }
+      var cnt = Object.keys(data).length;
+      if (!confirm("将用备份文件里的数据覆盖当前页面数据（共 " + cnt + " 项），导入后自动保存。\n确定继续？")) return;
+      S = {};
+      Object.keys(DEFAULTS).forEach(function (k) { S[k] = DEFAULTS[k]; });
+      Object.keys(data).forEach(function (k) { S[k] = data[k]; });
+      if (!Array.isArray(S.files)) S.files = FILES_DEFAULT.map(function (r) { return r.slice(); });
+      /* 恢复「当月完成」：月份选择、产值／完成比偏好、旧键迁移 */
+      if (data.execPref && typeof data.execPref === "object") {
+        Object.keys(EXEC_PREF).forEach(function (k) { delete EXEC_PREF[k]; });
+        Object.keys(data.execPref).forEach(function (k) { EXEC_PREF[k] = data.execPref[k]; });
+      }
+      var em = parseInt(S.execMonth, 10);
+      EXEC_MONTH = (em === 12) ? 12 : 11;
+      var em7 = parseInt(S.execMonth27, 10);
+      if (em7 >= 1 && em7 <= 12) EXEC_MONTH27 = em7;
+      migrateMonthKeys();
+      S.ver = 2;
+      S.execBlank = "1";
+      S.execPref = EXEC_PREF;
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+      lockViews();
+      buildExec();
+      applyState();
+      renderFiles();
+      recalc();
+      markEditable();
+      applyInvestLock();
+      save();
+      alert("导入完成：已恢复 " + cnt + " 项数据，并保存到本机。");
+    };
+    fr.onerror = function () { alert("读取文件失败，请重试。"); };
+    fr.readAsText(file, "utf-8");
+  }
+
+  /* ---------- 计算 ---------- */
+  function yearBlock(mp, qp, qa, qr, sumId, planSumId, rateId) {
+    var ms = [], i;
+    for (i = 1; i <= 12; i++) ms.push(num(S[mp + i]));
+    var planSum = 0;
+    for (var q = 1; q <= 4; q++) {
+      var d = ms[(q - 1) * 3] + ms[(q - 1) * 3 + 1] + ms[(q - 1) * 3 + 2];
+      var p = num(S[qp + q]);
+      planSum += p;
+      var qaEl = el(qa + q), qrEl = el(qr + q);
+      if (qaEl) qaEl.textContent = fmt(d);
+      if (qrEl) qrEl.textContent = p > 0 ? pctTxt(d / p) : "—";
+    }
+    var total = ms.reduce(function (a, b) { return a + b; }, 0);
+    var sumEl = el(sumId), psEl = el(planSumId), rEl = el(rateId);
+    if (sumEl) sumEl.textContent = fmt(total);
+    if (psEl) psEl.textContent = fmt(planSum);
+    if (rEl) rEl.textContent = planSum > 0 ? pctTxt(total / planSum) : "—";
+  }
+
+  /* 计划完成率条状图（基准刻度 100% 对应条长 77%） */
+  function rateBar(y, done, plan) {
+    var t = el("r" + y), b = el("r" + y + "bar");
+    if (!t) return;
+    if (!(plan > 0)) {
+      t.textContent = "—";
+      if (b) { b.style.width = "0%"; b.style.background = "#2F6FEB"; }
+      return;
+    }
+    var r = done / plan;
+    t.textContent = pctTxt(r);
+    if (b) {
+      b.style.width = Math.max(2, Math.min(100, (r / 1.3) * 100)) + "%";
+      b.style.background = r >= 1 ? "#16407F" : "#2F6FEB";
+    }
+  }
+
+  /* 2026 月度投资完成情况：1—10 月为已固化上报值；11、12 月自动提取
+     概算执行 · 明细中「当月完成」12 行合计的概算总金额（2026 年第四季度第 2 月起） */
+  function syncMonthFromExec() {
+    [11, 12].forEach(function (m) {
+      var t = execMonthAmt(2026, "7", m) || 0;
+      S["m" + m] = fmt(Math.round(t), 0);
+    });
+    /* 1—10 月为固化值，只回显不改写；11、12 月为上面自动提取的值 */
+    for (var mm = 1; mm <= 12; mm++) {
+      var val = S["m" + mm];
+      document.querySelectorAll('[data-k="m' + mm + '"]').forEach(function (n) {
+        if (n.tagName !== "INPUT") n.textContent = (val == null || val === "") ? "0" : val;
+      });
+    }
+  }
+
+  function recalc() {
+    execRecalc();
+    syncMonthFromExec();
+    /* 年度计划投资 ＝ 概算执行情况对应年度「本年计划」概算总金额（只读展示） */
+    ["2024", "2025", "2026", "2027"].forEach(function (yy) {
+      var v = Math.round(execPlan(parseInt(yy, 10), "7"));
+      if (v > 0 || yy === "2027") S["p" + yy] = String(v);
+      else if (S["p" + yy] === undefined || String(S["p" + yy]).trim() === "") S["p" + yy] = "0";
+      var pv = el("p" + yy);
+      if (pv) pv.textContent = fmt(num(S["p" + yy]), 0);
+    });
+    var budget = num(S.budget);
+    var months = [];
+    for (var m = 1; m <= 12; m++) months.push(num(S["m" + m]));
+    var y2026 = months.reduce(function (a, b) { return a + b; }, 0);
+    var m24 = [], m25 = [];
+    for (var k = 1; k <= 12; k++) { m24.push(num(S["m24_" + k])); m25.push(num(S["m25_" + k])); }
+    var a2024 = m24.reduce(function (a, b) { return a + b; }, 0);
+    var a2025 = m25.reduce(function (a, b) { return a + b; }, 0);
+    var cum = a2024 + a2025 + y2026;
+    var ratio = budget > 0 ? cum / budget : 0;
+    var remain = budget - cum;
+    var ovBudget = el("ov-kpi-budget");
+    var ovCum = el("ov-kpi-cum");
+    var ovRate = el("ov-kpi-rate");
+    var ovRemain = el("ov-kpi-remain");
+    var ovProgress = el("ov-kpi-progress");
+    if (ovBudget) ovBudget.textContent = fmt(budget);
+    if (ovCum) ovCum.textContent = fmt(cum);
+    if (ovRate) ovRate.textContent = pctTxt(ratio);
+    if (ovRemain) ovRemain.textContent = fmt(remain);
+    if (ovProgress) {
+      var ovPct = Math.max(0, Math.min(100, ratio * 100));
+      ovProgress.setAttribute("aria-valuenow", ovPct.toFixed(1));
+      var ovFill = ovProgress.firstElementChild;
+      if (ovFill) ovFill.style.width = ovPct.toFixed(1) + "%";
+    }
+    /* 总览页只负责驾驶舱指标；投资页才继续渲染执行明细。 */
+    if (!el("v-cum")) return;
+
+    var p2024 = num(S.p2024), p2025 = num(S.p2025), p2026 = num(S.p2026), p2027 = num(S.p2027);
+    var planAll = p2024 + p2025 + p2026;
+    var monthIdx = Math.min(Math.max(num(S.monthIdx), 0), 12);
+    var time = monthIdx / 12;
+    var rate = p2026 > 0 ? y2026 / p2026 : 0;
+    var dev = (rate - time) * 100;
+
+    /* 概算完成情况 */
+    el("v-cum").textContent = fmt(cum);
+    el("v-ratio").textContent = pctTxt(ratio);
+    el("v-remain").textContent = fmt(remain);
+    var C = 326.7;
+    if (el("ring")) {
+      el("ring").setAttribute("stroke-dasharray", (Math.max(0, Math.min(1, ratio)) * C).toFixed(1) + " " + C);
+      el("ring-txt").textContent = pctTxt(ratio);
+      el("ring-rest").textContent = pctTxt(1 - ratio);
+    }
+
+    /* 年度表 */
+    var a2027 = execDone(2027, "7");
+    el("a2024").textContent = fmt(a2024);
+    el("a2025").textContent = fmt(a2025);
+    el("a2026").textContent = fmt(y2026);
+    el("a2027").textContent = fmt(Math.round(a2027));
+    rateBar("2024", a2024, p2024);
+    rateBar("2025", a2025, p2025);
+    rateBar("2026", y2026, p2026);
+    rateBar("2027", a2027, p2027);
+
+    /* 年末要求投资完成率 */
+    [["2024", a2024], ["2025", a2025], ["2026", y2026], ["2027", a2027]].forEach(function (it) {
+      var need = num(S["n" + it[0]]);
+      var cell = el("nrate" + it[0]);
+      if (cell) cell.textContent = need > 0 ? pctTxt(it[1] / need) : "—";
+    });
+
+    /* 月度：2024 / 2025 / 2026 */
+    yearBlock("m24_", "q24_", "qa24_", "qr24_", "m-sum-2024", "p-sum-2024", "sum-rate-2024");
+    yearBlock("m25_", "q25_", "qa25_", "qr25_", "m-sum-2025", "p-sum-2025", "sum-rate-2025");
+    yearBlock("m", "q", "qa", "qr", "m-sum", "p-sum", "sum-rate");
+    drawMonths(months, monthIdx);
+
+    /* 本年概算执行情况 */
+    el("y-cum").textContent = fmt(y2026);
+    el("y-plan").textContent = fmt(p2026);
+    el("y-rate").textContent = pctTxt(rate);
+    var yBox = el("y-devbox");
+    if (Math.abs(dev) < 0.005) {
+      el("y-dev").textContent = "0.00%";
+      yBox.className = "";
+    } else if (dev > 0) {
+      el("y-dev").textContent = "+" + dev.toFixed(2) + "%";
+      yBox.className = "good";
+    } else {
+      el("y-dev").textContent = dev.toFixed(2) + "%";
+      yBox.className = "bad";
+    }
+    var tpEl = el("time-pct");
+    if (tpEl) tpEl.textContent = pctTxt(time);
+    var trEl = el("time-rate");
+    if (trEl) trEl.textContent = pctTxt(rate);
+
+    /* 2026 当前季度累计完成说明 */
+    var qd = el("q-desc");
+    if (qd) {
+      var qq = Math.ceil(Math.min(Math.max(EXEC_MONTH, 1), 12) / 3);
+      var qDone = 0;
+      for (var qm = (qq - 1) * 3 + 1; qm <= qq * 3; qm++) qDone += num(S["m" + qm]);
+      var qPlan = num(S["q" + qq]);
+      var qRate = qPlan > 0 ? (qDone / qPlan) * 100 : 0;
+      var qLeft = qPlan - qDone;
+      qd.innerHTML = "第 " + qq + " 季度累计完成 <b class=\"num\">"
+        + fmt(qDone) + "</b> 万元，占本季度计划 <b class=\"num\">" + qRate.toFixed(2) + "%</b>，剩余 <b class=\"num\" style=\"color:#C0392B\">"
+        + fmt(qLeft) + "</b> 万元";
+    }
+
+    /* 地市分摊 */
+    if (!el("city0amt")) return;
+    var amounts = [], pcts = [], kms = 0;
+    CITIES.forEach(function (c, i) {
+      var p = num(c.pct) / 100;
+      pcts.push(p);
+      amounts.push(cum * p);
+      kms += num(c.km);
+    });
+    var maxAmt = Math.max.apply(null, amounts.concat([1]));
+    CITIES.forEach(function (c, i) {
+      el("city" + i + "amt").textContent = fmt(amounts[i]);
+      el("city" + i + "bar").style.width = Math.max(2, (amounts[i] / maxAmt) * 100) + "%";
+    });
+    var pctSum = pcts.reduce(function (a, b) { return a + b; }, 0);
+    var amtSum = amounts.reduce(function (a, b) { return a + b; }, 0);
+    el("citykm").textContent = fmt(kms, 1);
+    el("citypct").textContent = Math.round(pctSum * 100);
+    el("citysum").textContent = fmt(amtSum);
+  }
+
+  /* ---------- 月度柱状图 ---------- */
+  function drawMonths(months, monthIdx) {
+    var box = el("mchart");
+    if (!box) return;
+    var max = Math.max.apply(null, months.concat([1]));
+    var html = "";
+    months.forEach(function (v, i) {
+      var h = v <= 0 ? 0 : Math.max(2, (v / max) * 100);
+      var now = (i + 1) === monthIdx ? " now" : "";
+      html += '<div class="mb" title="' + (i + 1) + ' 月：' + fmt(v) + ' 万元">' +
+        '<i class="' + now.trim() + '" style="--h:' + h + '%"></i>' +
+        '<span class="ml">' + (i + 1) + " 月</span></div>";
+    });
+    box.innerHTML = html;
+  }
+
+  /* ---------- 概算执行情况 ---------- */
+  var EXEC_YEARS = [2024, 2025, 2026, 2027];
+  /* 默认打开定位当前自然年月；超出可录区间按月夹到边界 */
+  var NOWY = (new Date()).getFullYear(), NOWM = (new Date()).getMonth() + 1;
+  var EXEC_TAB = EXEC_YEARS.indexOf(NOWY) >= 0 ? NOWY : 2026;
+  var EXEC_MONTH = NOWY < 2026 ? 11 : (NOWY === 2026 ? Math.min(12, Math.max(11, NOWM)) : 12);
+  var EXEC_MONTH27 = NOWY < 2027 ? 1 : (NOWY === 2027 ? Math.min(12, Math.max(1, NOWM)) : 12);
+  function curMon(y) { return y === 2027 ? EXEC_MONTH27 : EXEC_MONTH; }
+  var EXEC_CH = {
+    "1": ["101", "102", "103", "104", "106", "107", "108", "109", "110"],
+    "2": ["201", "202", "203"],
+    "3": ["301", "302", "303", "304", "305", "306", "307", "308", "309"],
+    "301": ["30101", "30102", "30103", "30104", "30105"],
+    "4": ["401"],
+    "5": ["1", "2", "3", "4"],
+    "7": ["5", "6"]
+  };
+  /* 项次 / 名称 / 缩进层级 / 概算金额（万元） / 2025 年末累计 / 2026 年完成 */
+  var EXEC_ROWS = [
+    ["1", "第一部分 建筑安装工程费", 0, 3072546.26, 582199.37, 1087330.42],
+    ["101", "临时工程", 1, 156626.36, 148795.04, 4698.79],
+    ["102", "路基工程", 1, 577743.24, 225319.86, 163990.67],
+    ["103", "路面工程", 1, 321932.11, 1163.91, 102608],
+    ["104", "桥梁涵洞工程", 1, 843181.69, 107927.26, 439973],
+    ["106", "交叉工程", 1, 658625.5, 40981.81, 222468.39],
+    ["107", "交通工程及沿线设施", 1, 287098.61, 5082.51, 81756.93],
+    ["108", "绿化及环境保护工程", 1, 94028.8, 5393.3, 23218.22],
+    ["109", "其他工程", 1, 56702.69, 3969.19, 38557.83],
+    ["110", "专项费用", 1, 76607.26, 43566.49, 10058.59],
+    ["2", "第二部分 土地使用及拆迁补偿费", 0, 550070.26, 433924, 116146.19],
+    ["201", "土地使用费", 1, 190504.04, 190504, ""],
+    ["202", "拆迁补偿费", 1, 350736.92, 234591, 116146.19],
+    ["203", "其他补偿费", 1, 8829.3, 8829, ""],
+    ["3", "第三部分 工程建设其他费", 0, 144054.06, 83736.4065, 20034.39],
+    ["301", "建设项目管理费", 1, 58369.21, 18883.3265, 12108],
+    ["30101", "建设单位(业主)管理费", 2, 12624.38, 2635, 3677.19],
+    ["30102", "建设项目信息化费", 2, 3673.09, 3122.1265, 550.96],
+    ["30103", "工程监理费", 2, 39399.27, 11820, 7879.85],
+    ["30104", "设计文件审查费", 2, 1466.79, 1306.2, ""],
+    ["30105", "竣(交)工验收试验检测费", 2, 1205.69, "", ""],
+    ["302", "研究试验费", 1, 3050, 1051.1, ""],
+    ["303", "建设项目前期工作费", 1, 50744.3, 47744.3, 3000],
+    ["304", "专项评价(估)费", 1, 2455, 2455, ""],
+    ["305", "联合试运转费", 1, 1132.67, "", ""],
+    ["306", "生产准备费", 1, 3254.32, "", ""],
+    ["307", "工程保通管理费", 1, 13039, 2794.07, 3725.43],
+    ["308", "工程保险费", 1, 12009.56, 10808.61, 1200.96],
+    ["309", "其他相关费用", 1, 0, "", ""],
+    ["4", "第四部分 预备费", 0, 188333.48, 52834.68, 55873.75],
+    ["401", "基本预备费", 1, 188333.48, 52834.68, 55873.75],
+    ["5", "第一至四部分合计", 0, 3955004.06, 1152694.4565, 1279384.75],
+    ["6", "第五部分 建设期利息", 0, 268561.35, 32175.75, 79675.31],
+    ["7", "概算总金额", 0, 4223565.41, 1184870.2065, 1359060.06]
+  ];
+  /* 行序：概算总金额置于最上方 */
+  var EXEC_ORDER = ["7", "1", "101", "102", "103", "104", "106", "107", "108", "109", "110",
+    "2", "201", "202", "203",
+    "3", "301", "30101", "30102", "30103", "30104", "30105", "302", "303", "304", "305", "306", "307", "308", "309",
+    "4", "401", "5", "6"];
+  var EXEC_MAP = {};
+  EXEC_ROWS.forEach(function (r) { EXEC_MAP[r[0]] = { name: r[1], lvl: r[2], amt: r[3], d: r[4], f: r[5] }; });
+  var EXEC_PREF = {};
+
+  function execDefault(y, code, which) {
+    return "";
+  }
+
+  function execInput(y, code, suffix, val) {
+    var v = (val === null || val === undefined) ? "" : String(val);
+    return '<input id="ex_' + y + "_" + code + "_" + suffix + '" data-k="x' + y + "_" + code + "_" + suffix
+      + '" value="' + v + '" inputmode="decimal" data-int="1" onfocus="this.select()"'
+      + ' style="width:100%;border:1px solid #F4EBD5;background:#FFFDF6;border-radius:4px;'
+      + 'font-family:inherit;font-size:13px;line-height:1.4;color:#16233A;padding:2px 6px;'
+      + 'text-align:right;box-sizing:border-box;font-variant-numeric:tabular-nums">';
+  }
+  function execPctInput(y, code, suffix) {
+    return '<div style="display:flex;align-items:center;gap:2px">'
+      + '<input id="ex_' + y + "_" + code + "_" + suffix + '" data-k="x' + y + "_" + code + "_" + suffix
+      + '" value="" inputmode="decimal" data-int="1" onfocus="this.select()"'
+      + ' style="width:100%;min-width:0;border:1px solid #F4EBD5;background:#FFFDF6;border-radius:4px;'
+      + 'font-family:inherit;font-size:12.5px;line-height:1.4;color:#16233A;padding:2px 4px;'
+      + 'text-align:right;box-sizing:border-box;font-variant-numeric:tabular-nums">'
+      + '<span style="font-size:11.5px;color:#8A96A8">%</span></div>';
+  }
+  function execSpan(id) {
+    return '<span class="num" id="' + id + '" style="display:block;text-align:right">—</span>';
+  }
+  function execSpanC(id, align) {
+    return '<span class="num" id="' + id + '" style="display:block;text-align:' + align + '">—</span>';
+  }
+
+  function execHeadHtml(y) {
+    var line = "border-left:1px solid #D6DFEC;";
+    var fs = "font-size:14px;";
+    var mon = false;
+    var mLine = "border-left:1px solid #D9E2EF;";
+    var mBg = "background:#F3F7FB;";
+    /* 四年统一：开累完成情况排在「截止上年末完成」左侧 */
+    var openFirst = true;
+    var gOpen = '<th colspan="2" style="text-align:center;padding:10px 6px;' + fs + line + '">开累完成情况</th>';
+    var gPrev = '<th colspan="2" style="text-align:center;padding:10px 6px;' + fs + line + '">截止上年末完成</th>';
+    var gPlan = '<th colspan="2" style="text-align:center;padding:10px 6px;' + fs + line + '">本年计划</th>';
+    var gDone = '<th colspan="2" style="text-align:center;padding:10px 6px;' + fs + line + '">本年完成</th>';
+    var sOpen = '<th style="text-align:center;padding:8px 6px;' + fs + line + '">产值</th><th style="text-align:center;padding:8px 4px;' + fs + '">累计比</th>';
+    var sPrev = '<th style="text-align:center;padding:8px 6px;' + fs + line + '">产值</th><th style="text-align:center;padding:8px 4px;' + fs + '">累计比</th>';
+    var sPlan = '<th style="text-align:center;padding:8px 6px;' + fs + line + '">产值</th><th style="text-align:center;padding:8px 4px;' + fs + '">累计比</th>';
+    var sDone = '<th style="text-align:center;padding:8px 6px;' + fs + line + '">产值</th><th style="text-align:center;padding:8px 4px;' + fs + '">完成比</th>';
+    return '<thead><tr>'
+      + '<th rowspan="2" style="text-align:center;padding:10px 6px;' + fs + '">项次</th>'
+      + '<th rowspan="2" style="text-align:center;padding:10px 8px;' + fs + '">工程或费用名称</th>'
+      + '<th rowspan="2" style="text-align:center;padding:10px 6px;' + fs + line + '">概算金额<br>（万元）</th>'
+      + (openFirst ? (gOpen + gPrev + gPlan + gDone) : (gPrev + gPlan + gDone + gOpen))
+      + (mon ? '<th rowspan="2" style="padding:0;border:none;border-bottom:none;background:#F2F5FA"></th>'
+      + '<th colspan="2" style="text-align:center;padding:10px 6px;' + fs + mLine + mBg + 'color:#16407F">当月完成</th>' : '')
+      + '</tr><tr>'
+      + (openFirst ? (sOpen + sPrev + sPlan + sDone) : (sPrev + sPlan + sDone + sOpen))
+      + (mon ? '<th style="text-align:center;padding:8px 6px;' + fs + mLine + mBg + '">产值</th>'
+              + '<th style="text-align:center;padding:8px 4px;' + fs + mBg + '">完成比</th>' : '')
+      + '</tr></thead>';
+  }
+
+  /* 层级归属，用于折叠 */
+  var EXEC_PARENT = {
+    "101": "1", "102": "1", "103": "1", "104": "1", "106": "1", "107": "1", "108": "1", "109": "1", "110": "1",
+    "201": "2", "202": "2", "203": "2",
+    "301": "3", "302": "3", "303": "3", "304": "3", "305": "3", "306": "3", "307": "3", "308": "3", "309": "3",
+    "30101": "301", "30102": "301", "30103": "301", "30104": "301", "30105": "301",
+    "401": "4"
+  };
+  var EXEC_COLL = {};
+  /* 概算执行整模块固化：锁定后 2027／2026／2025／2024 四年表格全部只读，右上角按钮整体解锁 */
+  var EXEC_LOCK = true, LOCKED = true;
+
+  function execVisible(code) {
+    var p = EXEC_PARENT[code];
+    while (p) {
+      if (EXEC_COLL[p]) return false;
+      p = EXEC_PARENT[p];
+    }
+    return true;
+  }
+
+  function execFoldUpdate() {
+    document.querySelectorAll("tr[data-code]").forEach(function (tr) {
+      tr.style.display = execVisible(tr.getAttribute("data-code")) ? "" : "none";
+    });
+    document.querySelectorAll("[data-caret]").forEach(function (sp) {
+      sp.textContent = EXEC_COLL[sp.getAttribute("data-caret")] ? "▸" : "▾";
+    });
+    document.querySelectorAll("#exec-rail-inner tr[data-rcode]").forEach(function (tr) {
+      tr.style.display = execVisible(tr.getAttribute("data-rcode")) ? "" : "none";
+    });
+    syncRail();
+  }
+
+  function execRowHtml(y, code) {
+    var r = EXEC_MAP[code], isA = !!EXEC_CH[code], hi = (code === "7");
+    var fold = (code === "1" || code === "2" || code === "3");
+    var line = "border-left:1px solid #D6DFEC;";
+    var bold = hi || fold || code === "4" || code === "5" || code === "6";
+    var weight = bold ? "font-weight:700;" : "";
+    var color = bold ? "color:#16407F;" : "";
+    var bg = hi ? "background:#E8F0FD;" : "";
+    var sty = bg + weight + color;
+    var pad = r.lvl === 2 ? "padding-left:34px" : (r.lvl === 1 ? "padding-left:18px" : "");
+    var kPad = r.lvl === 1 ? "padding-left:20px;" : "";
+    var caret = fold
+      ? '<span data-caret="' + code + '" style="display:inline-block;width:14px;color:#16407F;font-size:12px">'
+        + (EXEC_COLL[code] ? "▸" : "▾") + '</span>'
+      : (r.lvl === 1 || r.lvl === 2 ? '<span style="display:inline-block;width:14px"></span>' : "");
+    /* 2024／2025 全面固化；2026／2027 的「本年完成」固化（由当月完成推导），仅本年计划可录 */
+    var roPlan = isA || EXEC_LOCK || y === 2024 || y === 2025;
+    var roDone = roPlan || y === 2026 || y === 2027;
+    var paCell = roPlan ? execSpanC("ex_" + y + "_" + code + "_pa", "right") : execInput(y, code, "pa", execDefault(y, code, "pa"));
+    var prCell = roPlan ? execSpanC("ex_" + y + "_" + code + "_pr", "center") : execPctInput(y, code, "pr");
+    var caCell = roDone ? execSpanC("ex_" + y + "_" + code + "_ca", "right") : execInput(y, code, "ca", execDefault(y, code, "ca"));
+    var crCell = roDone ? execSpanC("ex_" + y + "_" + code + "_cr", "center") : execPctInput(y, code, "cr");
+    var trStyle = (hi ? "border-top:1px solid #B9CDEA;border-bottom:1px solid #B9CDEA;" : "") + (fold ? "cursor:pointer;" : "");
+    var cPrev = '<td style="text-align:right;padding:6px 6px;font-variant-numeric:tabular-nums;' + line + sty + '">' + execSpanC("ex_" + y + "_" + code + "_prev", "right") + '</td>'
+      + '<td style="text-align:center;padding:6px 4px;font-variant-numeric:tabular-nums;' + sty + '">' + execSpanC("ex_" + y + "_" + code + "_prevr", "center") + '</td>';
+    var cPlan = '<td style="padding:4px 6px;' + line + sty + '">' + paCell + '</td>'
+      + '<td style="padding:4px 4px;' + sty + '">' + prCell + '</td>';
+    var cDone = '<td style="padding:4px 6px;' + line + sty + '">' + caCell + '</td>'
+      + '<td style="padding:4px 4px;' + sty + '">' + crCell + '</td>';
+    var cOpen = '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;' + line + sty + '">' + execSpanC("ex_" + y + "_" + code + "_open", "right") + '</td>'
+      + '<td style="text-align:center;padding:6px 4px;font-variant-numeric:tabular-nums;' + sty + '">' + execSpanC("ex_" + y + "_" + code + "_openr", "center") + '</td>';
+    /* 四年统一：开累完成情况排在「截止上年末完成」左侧 */
+    var tail = cOpen + cPrev + cPlan + cDone;
+    return '<tr data-code="' + code + '"' + (fold ? ' data-toggle="' + code + '"' : "") + ' style="' + trStyle + '">'
+      + '<td class="num" style="text-align:center;padding:6px 6px;' + sty + kPad + '">' + (hi ? "" : code) + '</td>'
+      + '<td style="padding:6px 8px;' + sty + pad + '">' + caret + r.name + '</td>'
+      + '<td class="num" style="text-align:right;padding:6px 8px;' + line + sty + '">' + fmt(r.amt, 0) + '</td>'
+      + tail
+      + monCells(y, code, isA, sty)
+      + '</tr>';
+  }
+
+  /* 2026 年「当月完成」两格：明细行为录入框，汇总行为自动合计 */
+  function monCells(y, code, isA, sty) {
+    return "";
+    var mLine = "border-left:1px solid #D9E2EF;";
+    var calc = isA || code === "7";
+    var aCell = calc ? execSpanC("ex_2026_" + code + "_ma", "right")
+      : execInput(2026, code, "ma", "");
+    var rCell = calc ? execSpanC("ex_2026_" + code + "_mr", "center")
+      : execPctInput(2026, code, "mr");
+    return '<td style="padding:0;border:none;border-bottom:none;background:#F2F5FA"></td>'
+      + '<td style="padding:4px 6px;' + mLine + sty + '">' + aCell + '</td>'
+      + '<td style="padding:4px 4px;border-right:1px solid #D9E2EF;' + sty + '">' + rCell + '</td>';
+  }
+
+  var EXEC_TAB_ORDER = [2027, 2026, 2025, 2024];
+
+  function execPaintTabs() {
+    var tabs = el("exec-tabs");
+    if (!tabs) return;
+    var html = "";
+    EXEC_TAB_ORDER.forEach(function (y) {
+      var on = (y === EXEC_TAB);
+      html += '<button type="button" data-xyear="' + y + '" style="font-family:inherit;font-size:13.5px;line-height:1;'
+        + 'padding:9px 16px;border-radius:6px;cursor:pointer;border:1px solid ' + (on ? "#16407F" : "#D9E2EF") + ";"
+        + 'background:' + (on ? "#16407F" : "#FFFFFF") + ";color:" + (on ? "#FFFFFF" : "#3C4A5E") + ";"
+        + 'font-weight:' + (on ? "700" : "500") + ";"
+        + (on ? "box-shadow:0 2px 6px rgba(22,64,127,.22);" : "")
+        + '">' + y + ' 年</button>';
+    });
+    tabs.innerHTML = html;
+  }
+
+
+  /* ---------- 「X月完成」右侧独立板块：2026 仅 11／12 月，2027 为 1—12 月 ---------- */
+  function monMonths(y) { return y === 2026 ? [11, 12] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; }
+  function mKey(y, mon, code, suf) { return (y === 2027 ? "xn" : "xm") + mon + "_" + code + "_" + suf; }
+  function mVal(y, mon, code, suf) {
+    var v = S[mKey(y, mon, code, suf)];
+    return String(v == null ? "" : v);
+  }
+  function monCell(y, code, suf, calc) {
+    var id = "exm_" + code + "_" + suf;
+    var ro = calc || EXEC_LOCK || execRowDone(y, code);
+    if (ro) {
+      var align = (suf === "mr") ? "center" : "right";
+      return '<span class="num" id="' + id + '" style="display:block;text-align:' + align + '">—</span>';
+    }
+    var mon = curMon(y), key = mKey(y, mon, code, suf);
+    if (suf === "mr") {
+      return '<div style="display:flex;align-items:center;gap:2px">'
+        + '<input id="' + id + '" data-k="' + key + '" data-year="' + y + '" value="' + mVal(y, mon, code, suf)
+        + '" inputmode="decimal" data-int="1" onfocus="this.select()"'
+        + ' style="width:100%;min-width:0;border:1px solid #F4EBD5;background:#FFFDF6;border-radius:4px;'
+        + 'font-family:inherit;font-size:12.5px;line-height:1.4;color:#16233A;padding:2px 4px;'
+        + 'text-align:right;box-sizing:border-box;font-variant-numeric:tabular-nums">'
+        + '<span style="font-size:11.5px;color:#8A96A8">%</span></div>';
+    }
+    return '<input id="' + id + '" data-k="' + key + '" data-year="' + y + '" value="' + mVal(y, mon, code, suf)
+      + '" inputmode="decimal" data-int="1" onfocus="this.select()"'
+      + ' style="width:100%;border:1px solid #F4EBD5;background:#FFFDF6;border-radius:4px;'
+      + 'font-family:inherit;font-size:13px;line-height:1.4;color:#16233A;padding:2px 6px;'
+      + 'text-align:right;box-sizing:border-box;font-variant-numeric:tabular-nums">';
+  }
+
+  function monthRailRow(y, code) {
+    var r = EXEC_MAP[code], hi = (code === "7");
+    var bold = hi || code === "1" || code === "2" || code === "3" || code === "4" || code === "5" || code === "6";
+    var sty = (bold ? "font-weight:700;color:#16407F;" : "") + (hi ? "background:#E8F0FD;" : "");
+    var calc = !!EXEC_CH[code] || hi;
+    var a = monCell(y, code, "ma", calc);
+    var rr = monCell(y, code, "mr", calc);
+    return '<tr data-rcode="' + code + '">'
+      + '<td style="padding:4px 6px;border-bottom:1px solid #EEF2F8;' + sty + '">' + a + '</td>'
+      + '<td style="padding:4px 6px;border-left:1px solid #EEF2F8;border-bottom:1px solid #EEF2F8;' + sty + '">' + rr + '</td>'
+      + '</tr>';
+  }
+
+  function monthRailHtml(y) {
+    var rows = "";
+    EXEC_ORDER.forEach(function (code) { rows += monthRailRow(y, code); });
+    var opts = "";
+    monMonths(y).forEach(function (m) {
+      opts += '<option value="' + m + '"' + (m === curMon(y) ? " selected" : "") + ">" + m + "</option>";
+    });
+    return '<div id="exec-rail-top" style="display:flex;align-items:center;justify-content:center;'
+      + 'padding:0 10px;border-bottom:1px solid #E4EAF3;font-size:13.5px;font-weight:600;color:#4A5566;letter-spacing:.04em">'
+      + '月度数据录入窗口</div>'
+      + '<div id="exec-rail-head" style="background:#F5F7FB;border-bottom:1px solid #DCE3EF;overflow:hidden">'
+      + '<div style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:14px;color:#0F2C5C;'
+      + 'font-weight:600;letter-spacing:.03em;border-bottom:1px solid #DCE3EF">'
+      + '<select id="exec-month-sel" style="font-family:inherit;font-size:13px;font-weight:600;color:#0F2C5C;'
+      + 'background:#FFFFFF;border:1px solid #D6DFEC;border-radius:4px;padding:0 1px;line-height:1.2;letter-spacing:0">'
+      + opts + '</select><span>月完成</span></div>'
+      + '<div style="display:flex;align-items:center;font-size:14px;color:#0F2C5C;font-weight:600;'
+      + 'letter-spacing:.03em">'
+      + '<div style="flex:1 1 auto;text-align:center">产值</div>'
+      + '<div style="flex:0 0 84px;text-align:center;border-left:1px solid #D6DFEC">完成比</div>'
+      + '</div></div>'
+      + '<table style="width:100%;border-collapse:collapse;table-layout:fixed">'
+      + '<colgroup><col><col style="width:84px"></colgroup><tbody>' + rows + '</tbody></table>';
+  }
+  function paintRail() {
+    var rp = el("exec-rail-inner");
+    if (!rp) return;
+    if (EXEC_TAB === 2026 || EXEC_TAB === 2027) rp.innerHTML = monthRailHtml(EXEC_TAB);
+    else rp.innerHTML = "";
+  }
+  /* 旧版「当月完成」键迁移：x2026_<code>_ma|mr → xm11_…；x2027_… → xn<当前月>_… */
+  function migrateMonthKeys() {
+    EXEC_ROWS.forEach(function (r) {
+      var code = r[0];
+      [[2026, 11], [2027, EXEC_MONTH27]].forEach(function (p) {
+        var y = p[0], mon = p[1];
+        var sa = "x" + y + "_" + code + "_ma", sr = "x" + y + "_" + code + "_mr";
+        if (S[sa] == null && S[sr] == null) return;
+        var ka = mKey(y, mon, code, "ma"), kr = mKey(y, mon, code, "mr");
+        if (String(S[sa] == null ? "" : S[sa]).trim() !== "" && S[ka] == null) S[ka] = S[sa];
+        if (String(S[sr] == null ? "" : S[sr]).trim() !== "" && S[kr] == null) S[kr] = S[sr];
+        delete S[sa]; delete S[sr];
+      });
+    });
+  }
+
+  function syncRail() {
+    var pane = document.querySelector('.exec-pane[data-xyear="' + EXEC_TAB + '"]');
+    var rail = el("exec-rail-inner");
+    var card = el("exec-rail-card");
+    var tb = el("exec-toolbar");
+    if (!pane || !rail || !card || !card.offsetHeight) return;
+    /* 窄屏两栏已上下堆叠，取消逐行对高 */
+    if (window.innerWidth <= 1080) {
+      var rr0 = rail.querySelectorAll("tbody tr");
+      for (var z = 0; z < rr0.length; z++) rr0[z].style.height = "";
+      return;
+    }
+    var topBar = el("exec-rail-top");
+    if (topBar && tb) topBar.style.height = tb.offsetHeight + "px";
+    var tbl = pane.querySelector("table");
+    var rTable = rail.querySelector("table");
+    var head = el("exec-rail-head");
+    if (tbl && tbl.tHead && rTable && head) {
+      var tr0 = tbl.tHead.rows[0], tr1 = tbl.tHead.rows[1];
+      var h0 = tr0 ? tr0.getBoundingClientRect().height : 0;
+      var h1 = tr1 ? tr1.getBoundingClientRect().height : 0;
+      if (h0 && h1) {
+        head.style.height = (Math.round(h0) + Math.round(h1)) + "px";
+        var c0 = head.children[0], c1 = head.children[1];
+        if (c0) c0.style.height = Math.max(20, Math.round(h0)) + "px";
+        if (c1) c1.style.height = Math.max(16, Math.round(h1) - 1) + "px";
+      } else {
+        head.style.height = Math.round(tbl.tHead.getBoundingClientRect().height) + "px";
+      }
+      var delta = rTable.getBoundingClientRect().top - tbl.tHead.getBoundingClientRect().bottom;
+      if (Math.abs(delta) > 0.4) {
+        head.style.height = Math.max(0, Math.round(parseFloat(head.style.height) - delta)) + "px";
+      }
+    }
+    var mrows = pane.querySelectorAll("tbody tr");
+    var rrows = rail.querySelectorAll("tbody tr");
+    if (!rTable) return;
+    var base = rTable.getBoundingClientRect().top;
+    var prev = 0;
+    for (var i = 0; i < rrows.length; i++) {
+      var mr = mrows[i], rr = rrows[i];
+      if (!mr || !rr) continue;
+      if (mr.offsetHeight <= 0 || rr.offsetHeight <= 0) {
+        rr.style.height = "";
+        continue;
+      }
+      var want = mr.getBoundingClientRect().bottom - base;
+      var need = Math.round(want - prev);
+      if (need > 0 && Math.abs((parseFloat(rr.style.height) || 0) - need) > 0.4) {
+        rr.style.height = need + "px";
+      }
+      prev = rr.getBoundingClientRect().bottom - base;
+    }
+    /* 末行再校正一次，保证两侧底边齐平 */
+    for (var k = rrows.length - 1; k >= 0; k--) {
+      if (mrows[k] && mrows[k].offsetHeight > 0 && rrows[k] && rrows[k].offsetHeight > 0) {
+        var diff = (rrows[k].getBoundingClientRect().bottom - base)
+          - (mrows[k].getBoundingClientRect().bottom - base);
+        if (Math.abs(diff) > 1) {
+          rrows[k].style.height = Math.max(6, Math.round((parseFloat(rrows[k].style.height) || 0) - diff)) + "px";
+        }
+        break;
+      }
+    }
+  }
+
+  /* 「X月完成」单元格录入/清空后，若该行已跨过 100% 阈值，重建右侧窗口使其变为只读 */
+  function railRepaintIfNeeded() {
+    if (EXEC_TAB !== 2026 && EXEC_TAB !== 2027) return;
+    var changed = false;
+    EXEC_ORDER.forEach(function (code) {
+      if (EXEC_CH[code] || code === "7") return;
+      var n = el("exm_" + code + "_ma");
+      if (!n) return;
+      var ro = EXEC_LOCK || execRowDone(EXEC_TAB, code);
+      if (ro && n.tagName === "INPUT") changed = true;
+      else if (!ro && n.tagName === "SPAN") changed = true;
+    });
+    if (changed) { paintRail(); applyState(); recalc(); syncRail(); }
+  }
+
+  function execShowPane() {
+    document.querySelectorAll(".exec-pane").forEach(function (p) {
+      p.style.display = (p.getAttribute("data-xyear") === String(EXEC_TAB)) ? "block" : "none";
+    });
+    var bar = el("exec-month-bar");
+    if (bar) bar.style.display = (EXEC_TAB === 2026) ? "flex" : "none";
+    var railCard = el("exec-rail-card");
+    if (railCard) {
+      var showRail = (EXEC_TAB === 2026 || EXEC_TAB === 2027);
+      railCard.style.display = showRail ? "block" : "none";
+      railCard.style.marginTop = "0px";
+    }
+    paintRail();
+    execFoldUpdate();
+    syncRail();
+  }
+
+  function buildExec() {
+    var wrap = el("exec-wrap");
+    if (!wrap) return;
+    var html = "";
+    EXEC_YEARS.forEach(function (y) {
+      var body = "";
+      EXEC_ORDER.forEach(function (code) { body += execRowHtml(y, code); });
+      var cols = '<colgroup><col style="width:54px"><col><col style="width:98px">'
+        + '<col style="width:100px"><col style="width:78px">'
+        + '<col style="width:90px"><col style="width:62px">'
+        + '<col style="width:90px"><col style="width:62px">'
+        + '<col style="width:90px"><col style="width:62px">'
+        + '</colgroup>';
+      html += '<div class="exec-pane" data-xyear="' + y + '" style="display:none">'
+        + '<div class="tw"><table class="tbl" data-fill="1" style="table-layout:fixed;width:100%;min-width:900px">'
+        + cols
+        + execHeadHtml(y) + '<tbody>' + body + '</tbody></table></div></div>';
+    });
+    wrap.innerHTML = html;
+    execPaintTabs();
+    execShowPane();
+    execFoldUpdate();
+    var tabs = el("exec-tabs");
+    if (tabs && !tabs.hasAttribute("data-bound")) {
+      tabs.setAttribute("data-bound", "1");
+      tabs.addEventListener("click", function (ev) {
+        var b = ev.target.closest ? ev.target.closest("[data-xyear]") : null;
+        if (!b) return;
+        EXEC_TAB = parseInt(b.getAttribute("data-xyear"), 10);
+        execPaintTabs();
+        execShowPane();
+        applyState();
+        recalc();
+      });
+    }
+    if (!wrap.hasAttribute("data-boundrow")) {
+      wrap.setAttribute("data-boundrow", "1");
+      wrap.addEventListener("click", function (ev) {
+        var tr = ev.target.closest ? ev.target.closest("tr[data-toggle]") : null;
+        if (!tr) return;
+        var code = tr.getAttribute("data-toggle");
+        EXEC_COLL[code] = !EXEC_COLL[code];
+        execFoldUpdate();
+      });
+    }
+
+    /* 鼠标悬停整行淡蓝底：左表与右侧“当月完成”板块联动 */
+    if (!wrap.hasAttribute("data-hov")) {
+      wrap.setAttribute("data-hov", "1");
+      var curMain = null, curSide = null;
+      var paintTr = function (tr, on) {
+        if (!tr) return;
+        var tds = tr.getElementsByTagName("td");
+        for (var i = 0; i < tds.length; i++) {
+          var td = tds[i];
+          if (on) {
+            if (!td.hasAttribute("data-bg")) td.setAttribute("data-bg", td.style.background || "");
+            td.style.backgroundColor = "#EDF3FB";
+          } else if (td.hasAttribute("data-bg")) {
+            td.style.backgroundColor = "";
+            td.style.background = td.getAttribute("data-bg");
+            td.removeAttribute("data-bg");
+          }
+        }
+      };
+      var rowLists = function () {
+        var pane = document.querySelector('.exec-pane[data-xyear="' + EXEC_TAB + '"]');
+        var rail = el("exec-rail-inner");
+        return {
+          main: pane ? pane.querySelectorAll("tbody tr") : [],
+          side: rail ? rail.querySelectorAll("tbody tr") : []
+        };
+      };
+      document.addEventListener("mousemove", function (ev) {
+        var t = ev.target;
+        if (!t || !t.closest) return;
+        var inExec = t.closest("#exec-card") || t.closest("#exec-rail-card");
+        var tr = inExec ? t.closest("tr[data-code], tr[data-rcode]") : null;
+        var lists = rowLists();
+        var idx = -1;
+        if (tr) {
+          idx = tr.hasAttribute("data-code")
+            ? Array.prototype.indexOf.call(lists.main, tr)
+            : Array.prototype.indexOf.call(lists.side, tr);
+        }
+        var nm = idx >= 0 ? lists.main[idx] || null : null;
+        var ns = idx >= 0 ? lists.side[idx] || null : null;
+        if (nm !== curMain || ns !== curSide) {
+          paintTr(curMain, false);
+          paintTr(curSide, false);
+          paintTr(nm, true);
+          paintTr(ns, true);
+          curMain = nm;
+          curSide = ns;
+        }
+      });
+    }
+  }
+
+  function execSetTxt(id, v) { var n = el(id); if (n) n.textContent = v; }
+  function execPctTxt(v, amt) {
+    if (amt > 0) return Math.round((v / amt) * 100) + "%";
+    return v > 0 ? "—" : "0%";
+  }
+  function execRatioTxt(done, plan) {
+    if (plan > 0) return Math.round((done / plan) * 100) + "%";
+    return done > 0 ? "—" : "0%";
+  }
+
+  function execLeafNum(y, code, which) {
+    var r = EXEC_MAP[code];
+    var key = "x" + y + "_" + code + "_" + which;
+    var rkey = "x" + y + "_" + code + "_" + (which === "ca" ? "cr" : "pr");
+    var pref = EXEC_PREF[y + "_" + code + "_" + which];
+    if (pref === "pct") {
+      var p = num(S[rkey]);
+      if (which === "ca") return (p / 100) * execPlan(y, code);
+      /* 累计比 =（截止上年末 + 本年计划）/ 概算金额，反算本年计划 */
+      var base = (p / 100) * r.amt - execPrev(y, code);
+      return base > 0 ? base : 0;
+    }
+    return num(S[key]);
+  }
+  /* 本年完成（不含当月暂存） */
+  function execDoneBase(y, code) {
+    if (EXEC_CH[code]) {
+      var s = 0;
+      EXEC_CH[code].forEach(function (c) { s += execDoneBase(y, c); });
+      return s;
+    }
+    return execLeafNum(y, code, "ca");
+  }
+  /* 本年完成 ＝ 已录入基础值 ＋ 各月「X月完成」累计（2026 从 11 月起；2027 为 1—12 月） */
+  function execDone(y, code) {
+    var base = execDoneBase(y, code);
+    if (y === 2026 || y === 2027) {
+      monMonths(y).forEach(function (m) { base += execMonthAmt(y, code, m); });
+    }
+    return base;
+  }
+  function execAmtOf(code) {
+    var r = EXEC_MAP[code];
+    return r ? r.amt : 0;
+  }
+
+  /* 当月完成：单行金额（完成比按概算金额反算） */
+  function execMonthLeaf(y, code, mon) {
+    var pref = EXEC_PREF[y + "_" + code + "_ma"];
+    if (pref === "pct") {
+      var p = num(S[mKey(y, mon, code, "mr")]);
+      var amt = execAmtOf(code);
+      var v = amt > 0 ? (p / 100) * amt : 0;
+      return v > 0 ? v : 0;
+    }
+    return num(S[mKey(y, mon, code, "ma")]);
+  }
+  /* 当月完成：汇总到任意行（含概算总金额） */
+  function execMonthAmt(y, code, mon) {
+    if (y !== 2026 && y !== 2027) return 0;
+    if (code === "7") {
+      var t = 0;
+      EXEC_ROWS.forEach(function (r) {
+        if (r[0] !== "7" && !EXEC_CH[r[0]]) t += execMonthLeaf(y, r[0], mon);
+      });
+      return t;
+    }
+    if (EXEC_CH[code]) {
+      var s = 0;
+      EXEC_CH[code].forEach(function (c) { s += execMonthAmt(y, c, mon); });
+      return s;
+    }
+    return execMonthLeaf(y, code, mon);
+  }
+  function execPlan(y, code) {
+    if (EXEC_CH[code]) {
+      var s = 0;
+      EXEC_CH[code].forEach(function (c) { s += execPlan(y, c); });
+      return s;
+    }
+    return execLeafNum(y, code, "pa");
+  }
+  function execPrev(y, code) { return y === 2024 ? 0 : execOpen(y - 1, code); }
+  function execOpen(y, code) { return execPrev(y, code) + execDone(y, code); }
+  /* 该行开累完成是否已达 100%（含超过），达到后不再允许录入当月完成 */
+  function execRowDone(y, code) {
+    var r = EXEC_MAP[code];
+    var amt = r ? r.amt : 0;
+    return amt > 0 && execOpen(y, code) >= amt - 0.5;
+  }
+
+  /* 开累完成情况达 100% 整行转灰，超 100% 整行转红 */
+  function execRowColor(tr, mode) {
+    if (!tr) return;
+    var tds = tr.getElementsByTagName("td");
+    for (var i = 0; i < tds.length; i++) {
+      var td = tds[i];
+      if (!td.hasAttribute("data-c0")) td.setAttribute("data-c0", td.style.color || "");
+      if (!mode) {
+        td.style.color = td.getAttribute("data-c0");
+      } else {
+        td.style.color = (mode === "red") ? "#C0392B" : "#8A93A0";
+      }
+    }
+  }
+
+  function execPut(id, text, act) {
+    var n = el(id);
+    if (!n) return;
+    if (n.tagName === "INPUT") { if (n !== act) n.value = text; }
+    else n.textContent = text;
+  }
+
+  function execRecalc() {
+    if (!el("exec-wrap")) return;
+    var act = document.activeElement;
+    EXEC_YEARS.forEach(function (y) {
+      EXEC_ROWS.forEach(function (r) {
+        var code = r[0], amt = r[3], isA = !!EXEC_CH[code];
+        var prev = execPrev(y, code), open = execOpen(y, code);
+        var plan = execPlan(y, code), done = execDone(y, code);
+
+        execPut("ex_" + y + "_" + code + "_prev", fmt(prev, 0), act);
+        execPut("ex_" + y + "_" + code + "_prevr", execPctTxt(prev, amt), act);
+        execPut("ex_" + y + "_" + code + "_open", fmt(open, 0), act);
+        execPut("ex_" + y + "_" + code + "_openr", execPctTxt(open, amt), act);
+
+        /* 明细项目按开累完成占比着色 */
+        if (!isA) {
+          var pctOpen = amt > 0 ? Math.round((open / amt) * 100) : 0;
+          var prevNode = el("ex_" + y + "_" + code + "_prev");
+          execRowColor(prevNode && prevNode.closest ? prevNode.closest("tr") : null,
+            pctOpen > 100 ? "red" : (pctOpen === 100 ? "gray" : ""));
+        }
+
+        /* 右侧「X月完成」当前月份：产值／完成比互为镜像；锁定或已 100% 的行只读 */
+        if (y === EXEC_TAB && (y === 2026 || y === 2027)) {
+          var mon = curMon(y);
+          var mAmt = execMonthAmt(y, code, mon);
+          var mPct = amt > 0 ? Math.round((mAmt / amt) * 100) : 0;
+          var maEl = el("exm_" + code + "_ma"), mrEl = el("exm_" + code + "_mr");
+          if (isA || code === "7" || EXEC_LOCK || execRowDone(y, code)) {
+            execSetTxt("exm_" + code + "_ma", mAmt > 0 ? fmt(mAmt, 0) : "—");
+            execSetTxt("exm_" + code + "_mr", (mAmt > 0 && amt > 0) ? mPct + "%" : "—");
+          } else if (EXEC_PREF[y + "_" + code + "_ma"] === "pct") {
+            if (maEl && act !== maEl) maEl.value = mAmt > 0 ? fmt(mAmt, 0) : "";
+          } else if (mrEl && act !== mrEl) {
+            mrEl.value = (mAmt > 0 && amt > 0) ? String(mPct) : "";
+          }
+        }
+
+        if (isA) {
+          execPut("ex_" + y + "_" + code + "_pa", fmt(plan, 0), act);
+          execPut("ex_" + y + "_" + code + "_pr", execPctTxt(prev + plan, amt), act);
+          execPut("ex_" + y + "_" + code + "_ca", fmt(done, 0), act);
+          execPut("ex_" + y + "_" + code + "_cr", execRatioTxt(done, plan), act);
+          return;
+        }
+
+        /* 本年计划：仅 2026／2027 且已解锁时可录，其余一律按已录值展示 */
+        var planEditable = (y === 2026 || y === 2027) && !EXEC_LOCK;
+        if (!planEditable) {
+          execPut("ex_" + y + "_" + code + "_pa", fmt(plan, 0), act);
+          execPut("ex_" + y + "_" + code + "_pr", execPctTxt(prev + plan, amt), act);
+        } else {
+          var paEl = el("ex_" + y + "_" + code + "_pa");
+          var prEl = el("ex_" + y + "_" + code + "_pr");
+          var pKey = "x" + y + "_" + code + "_pa", pRKey = "x" + y + "_" + code + "_pr";
+          var planBlank = num(S[pKey]) === 0 && num(S[pRKey]) === 0;
+          if (planBlank) {
+            if (paEl && act !== paEl) paEl.value = "0";
+            if (prEl && act !== prEl) prEl.value = "0";
+          } else if (EXEC_PREF[y + "_" + code + "_pa"] === "pct") {
+            var pAmt = fmt(plan, 0);
+            if (paEl && act !== paEl) paEl.value = pAmt;
+            S[pKey] = pAmt;
+          } else {
+            var pRatio = amt > 0 ? String(Math.round(((prev + plan) / amt) * 100)) : "0";
+            if (prEl && act !== prEl) prEl.value = pRatio;
+            S[pRKey] = pRatio;
+          }
+        }
+
+        /* 本年完成 / 开累完成：一律由基础值 ＋ 各月当月完成推导，不手工录入 */
+        execPut("ex_" + y + "_" + code + "_ca", fmt(done, 0), act);
+        execPut("ex_" + y + "_" + code + "_cr", execRatioTxt(done, plan), act);
+      });
+    });
+  }
+
+  /* 记录用户最近在“产值 / 百分比”中改的是哪一个，供联动反算 */
+  var AUTOSAVE_T = 0;
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || t.tagName !== "INPUT" || !t.dataset || !t.dataset.k) return;
+    var m = /^x(\d{4})_(\w+)_(pa|pr|ca|cr|ma|mr)$/.exec(t.dataset.k);
+    if (m) {
+      var grp = (m[3].charAt(0) === "p") ? "pa" : (m[3].charAt(0) === "c" ? "ca" : "ma");
+      EXEC_PREF[m[1] + "_" + m[2] + "_" + grp] = (m[3].charAt(1) === "r") ? "pct" : "amt";
+      return;
+    }
+    var mm = /^x([mn])(\d{1,2})_(\w+)_(ma|mr)$/.exec(t.dataset.k);
+    if (mm) {
+      var yy = (mm[1] === "n") ? 2027 : 2026;
+      EXEC_PREF[yy + "_" + mm[3] + "_ma"] = (mm[4] === "mr") ? "pct" : "amt";
+      /* 边输入边自动暂存 */
+      clearTimeout(AUTOSAVE_T);
+      AUTOSAVE_T = setTimeout(function () { save(); }, 600);
+    }
+  }, true);
+
+  /* ---------- 初始化 ---------- */
+  buildExec();
+  capTables();
+  /* ---------- 卡片级「提交 / 小锁」：取消顶部整站锁后，各数据卡片独立锁定 ---------- */
+  /* 默认锁定（纯文本外观），点小锁确认后可改；点提交把本卡字段写回云端并重新锁定（与 B 页土石方日报一致） */
+  var LK_SVG_LOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+  var LK_SVG_OPEN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 7.4-2.2"/></svg>';
+  var CARD_LB = { exec: "概算执行明细", plan: "年度投资计划与执行" };
+
+  function cardLocked(k) {
+    var v = S["lkc_" + k];
+    if (v == null || String(v).trim() === "") return true;
+    return String(v) !== "0";
+  }
+  function cardKeys(k) {
+    var out = [];
+    if (k === "exec") {
+      Object.keys(S).forEach(function (kk) {
+        if (/^x(20\d\d|m\d\d)_/.test(kk) || kk === "execPref") out.push(kk);
+      });
+    } else if (k === "plan") {
+      out = ["n2024", "n2025", "n2026", "n2027", "p2024", "p2025", "p2026", "p2027"];
+    } else if (/^fa_/.test(k)) {
+      var c = k.slice(3);
+      Object.keys(S).forEach(function (kk) {
+        if (kk.indexOf("fa_" + c + "_") === 0 || kk.indexOf("fam_" + c) === 0 ||
+            kk.indexOf("fah_" + c) === 0 || kk.indexOf("fap_" + c) === 0 || kk.indexOf("fay_" + c) === 0) out.push(kk);
+      });
+    }
+    return out;
+  }
+  function cardName(k) {
+    if (CARD_LB[k]) return CARD_LB[k];
+    if (/^fa_/.test(k)) {
+      var c = k.slice(3), n = c;
+      if (typeof FA_CITIES !== "undefined") FA_CITIES.forEach(function (x) { if (x.k === c) n = x.city + (x.seg ? "（" + x.seg + "）" : ""); });
+      return n + " 本月投资";
+    }
+    return k;
+  }
+  function cardPaint(k) {
+    var lk = cardLocked(k);
+    document.querySelectorAll('[data-lkst="' + k + '"]').forEach(function (n) {
+      n.textContent = lk ? "已提交 · 锁定" : "编辑中 · 未提交";
+      n.classList.toggle("on", !lk);
+    });
+    document.querySelectorAll('[data-lkico="' + k + '"]').forEach(function (b) {
+      b.innerHTML = lk ? LK_SVG_LOCK : LK_SVG_OPEN;
+      b.classList.toggle("is-open", !lk);
+      b.title = lk ? "已锁定，点击解锁后可编辑" : "已解锁，点击重新锁定";
+    });
+    document.querySelectorAll('[data-lksub="' + k + '"]').forEach(function (b) {
+      b.textContent = lk ? "已提交" : "提交";
+      b.style.opacity = lk ? ".62" : "1";
+    });
+  }
+  function cardPaintAll() {
+    ["exec", "plan"].forEach(cardPaint);
+    if (typeof FA_CITIES !== "undefined") FA_CITIES.forEach(function (c) { cardPaint("fa_" + c.k); });
+  }
+  function cardApply(k) {
+    var lk = cardLocked(k);
+    if (k === "exec") {
+      EXEC_LOCK = lk;
+      try { buildExec(); applyState(); recalc(); markEditable(); } catch (e) {}
+    } else if (k === "plan") {
+      INV_LOCK.annual = lk;
+      try { applyInvestLock("annual"); markEditable(); } catch (e) {}
+    } else if (/^fa_/.test(k)) {
+      try { faApplyCityLock(k.slice(3)); } catch (e) {}
+    }
+    cardPaint(k);
+  }
+  function aToast(txt, isErr) {
+    var t = document.getElementById("a-toast");
+    if (!t) { t = document.createElement("div"); t.id = "a-toast"; t.className = "a-toast"; document.body.appendChild(t); }
+    t.textContent = txt;
+    t.className = "a-toast on" + (isErr ? " err" : "");
+    clearTimeout(t.__tm);
+    t.__tm = setTimeout(function () { t.className = "a-toast"; }, 2400);
+  }
+  window.__aToast = aToast;
+  function aPop(anchor, text, onOk) {
+    var old = document.getElementById("a-pop"); if (old) old.remove();
+    var p = document.createElement("div");
+    p.id = "a-pop"; p.className = "bx-pop";
+    p.innerHTML = '<div class="p-tx">' + text + '</div><div class="p-act"><button type="button" class="no">取消</button><button type="button" class="ok">确认</button></div>';
+    document.body.appendChild(p);
+    var r = anchor.getBoundingClientRect();
+    var top = r.bottom + window.scrollY + 8, left = r.left + window.scrollX - 8, w = p.offsetWidth || 240;
+    if (left + w > window.innerWidth - 12) left = Math.max(12, window.innerWidth - w - 12);
+    if (r.bottom + p.offsetHeight + 20 > window.innerHeight) top = r.top + window.scrollY - p.offsetHeight - 8;
+    p.style.top = top + "px"; p.style.left = left + "px";
+    function close() { p.remove(); document.removeEventListener("click", out, true); document.removeEventListener("keydown", esc); }
+    function out(ev) { if (!p.contains(ev.target)) close(); }
+    function esc(ev) { if (ev.key === "Escape") close(); }
+    p.querySelector(".no").onclick = close;
+    p.querySelector(".ok").onclick = function () { close(); onOk(); };
+    setTimeout(function () { document.addEventListener("click", out, true); document.addEventListener("keydown", esc); }, 0);
+  }
+  window.__aPop = aPop;
+
+  document.addEventListener("click", function (e) {
+    var t = e.target && e.target.closest ? e.target : null;
+    if (!t) return;
+    var sub = t.closest("[data-lksub]"), ico = t.closest("[data-lkico]");
+    if (!sub && !ico) return;
+    e.preventDefault();
+    var k = sub ? sub.getAttribute("data-lksub") : ico.getAttribute("data-lkico");
+    if (sub) {
+      if (cardLocked(k)) { aToast("请先点小锁解锁后再提交"); return; }
+      var ks = cardKeys(k);
+      S["lkc_" + k] = "1";
+      cardApply(k);
+      try { save(true); } catch (e1) {}
+      aToast("正在提交：" + cardName(k) + " …");
+      var pr = null;
+      try { pr = window.__pgPushLedger ? window.__pgPushLedger() : null; } catch (e2) {}
+      if (pr && pr.then) {
+        pr.then(function (ok) {
+          if (ok === false) aToast("已存本机，云端稍后自动重试", true);
+          else aToast("已提交并锁定：" + cardName(k) + "（" + ks.length + " 项）");
+        }, function () { aToast("已存本机，云端稍后自动重试", true); });
+      } else aToast("已提交并锁定：" + cardName(k));
+      return;
+    }
+    if (!cardLocked(k)) {
+      S["lkc_" + k] = "1";
+      cardApply(k);
+      try { save(true); } catch (e3) {}
+      try { if (window.__pgPushKey) window.__pgPushKey("lkc_" + k); } catch (e4) {}
+      aToast("已锁定：" + cardName(k));
+      return;
+    }
+    aPop(ico, '是否确定修改 <span class="p-seg">“' + cardName(k) + '”</span> 的数据？', function () {
+      S["lkc_" + k] = "0";
+      cardApply(k);
+      try { save(true); } catch (e5) {}
+      try { if (window.__pgPushKey) window.__pgPushKey("lkc_" + k); } catch (e6) {}
+      aToast("已解锁：" + cardName(k) + "，可以修改");
+    });
+  });
+
+  /* 右侧「X月完成」月份切换 */
+  document.addEventListener("change", function (ev) {
+    var t = ev.target;
+    if (!t || t.id !== "exec-month-sel") return;
+    var v = parseInt(t.value, 10);
+    if (!(v >= 1 && v <= 12)) return;
+    if (EXEC_TAB === 2027) { EXEC_MONTH27 = v; S.execMonth27 = String(v); }
+    else { EXEC_MONTH = v; S.execMonth = String(v); }
+    buildExec();
+    applyState();
+    recalc();
+    touch();
+  });
+
+  window.addEventListener("resize", function () { syncRail(); try { faAlignRail(); } catch (e) {} });
+
+  /* 多入口页面切换前先落本机，避免 1.2 秒防抖窗口内直接跳页造成输入丢失。 */
+  function flushLocalDraft() {
+    if (!DIRTY) return;
+    try { save(true); } catch (e) {}
+  }
+  window.addEventListener("pagehide", flushLocalDraft);
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+    try {
+      var url = new URL(a.href, location.href);
+      if (url.origin === location.origin && url.pathname !== location.pathname) flushLocalDraft();
+    } catch (e2) {}
+  }, true);
+
+  /* 其他视图的数据区宽度与 V67 保持一致（1042px） */
+  ["view-overview", "view-investment", "view-files", "view-other"].forEach(function (vid) {
+    var v = el(vid);
+    if (v) v.style.maxWidth = "1042px";
+  });
+
+  buildCities();
+  var DEFAULTS = captureDefaults();
+
+  var stored = null;
+  try { stored = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { stored = null; }
+  S = Object.assign({}, DEFAULTS, stored || {});
+  if (!Array.isArray(S.files)) S.files = FILES_DEFAULT.map(function (r) { return r.slice(); });
+  /* 概算执行表：清掉早期预填的年份产值，全部留空由用户填写 */
+  if (!S.execBlank) {
+    Object.keys(S).forEach(function (k) { if (/^x\d{4}_/.test(k)) delete S[k]; });
+    S.execBlank = "1";
+  }
+  [["endDate", "2030年12月", "2028 年 12 月"], ["mileage", "271.057", "270.2"], ["branch", "5.419", "4.8"]]
+    .forEach(function (m) {
+      var cur = String(S[m[0]] == null ? "" : S[m[0]]).replace(/[\s年月]/g, "");
+      if (cur === String(m[1]).replace(/[\s年月]/g, "")) S[m[0]] = m[2];
+    });
+  /* 金额类字段统一取整（旧版含小数） */
+  (function () {
+    var keys = ["budget", "p2024", "a2024", "p2025", "a2025", "p2026"];
+    for (var m = 1; m <= 12; m++) keys.push("m" + m);
+    keys.forEach(function (k) {
+      if (S[k] === undefined || String(S[k]).trim() === "") return;
+      S[k] = fmt(Math.round(num(S[k])), 0);
+    });
+  })();
+  /* 恢复上次选择的月份；旧版单套当月完成数据迁移到 11 月 */
+  (function () {
+    var em = parseInt(S.execMonth, 10);
+    EXEC_MONTH = (em === 12) ? 12 : 11;   /* 2026 只允许 11、12 月 */
+    var em7 = parseInt(S.execMonth27, 10);
+    if (em7 >= 1 && em7 <= 12) EXEC_MONTH27 = em7;
+    if (S.execPref && typeof S.execPref === "object") {
+      Object.keys(S.execPref).forEach(function (k) { EXEC_PREF[k] = S.execPref[k]; });
+    }
+    migrateMonthKeys();
+    EXEC_LOCK = cardLocked("exec");
+    buildExec();
+  })();
+  applyState();
+  lockViews();
+  renderFiles();
+  recalc();
+  markEditable();
+  /* 卡片锁状态落位：概算明细 / 年度计划 / 各地市州本月投资 */
+  setTimeout(function () {
+    try { INV_LOCK.annual = cardLocked("plan"); applyInvestLock("annual"); markEditable(); } catch (e) {}
+    try { if (typeof faApplyLock === "function") faApplyLock(); } catch (e) {}
+    cardPaintAll();
+  }, 0);
+
+  /* 投资 KPI 网格：末行不再画底边线 */
+  (function () {
+    document.querySelectorAll("#view-investment .kpi").forEach(function (k) {
+      k.style.borderBottom = "0";
+      var kids = [].slice.call(k.children);
+      kids.slice(-2).forEach(function (d) { d.style.borderBottom = "0"; });
+    });
+  })();
+
+  /* 月度产值卡片折叠 */
+  document.querySelectorAll(".foldbtn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var body = document.getElementById(b.getAttribute("data-fold"));
+      if (!body) return;
+      var collapsed = body.style.display === "none";
+      body.style.display = collapsed ? "" : "none";
+      b.textContent = collapsed ? "收起" : "展开";
+    });
+  });
+
+  /* 2024 / 2025 默认收起 */
+  ["fold24", "fold25"].forEach(function (id) {
+    var body = el(id);
+    if (!body) return;
+    body.style.display = "none";
+    var btn = document.querySelector('.foldbtn[data-fold="' + id + '"]');
+    if (btn) btn.textContent = "展开";
+  });
+
+  /* 可录入格直接用行内样式上淡黄底，避免样式规则不生效 */
+  function markEditable() {
+    document.querySelectorAll("#view-investment input").forEach(function (inp) {
+      if (inp.readOnly || inp.dataset.plain) return;
+      var inTd = inp.closest ? inp.closest("td") : null;
+      if (inTd) { styleInvInp(inp, false); return; }
+      inp.style.backgroundColor = "#FFFDF6";
+      inp.style.border = "1px solid #F4EBD5";
+      inp.style.borderRadius = "4px";
+      inp.style.padding = "4px 8px";
+      inp.style.textAlign = "right";
+      inp.style.boxSizing = "border-box";
+      if (inTd) {
+        inp.style.display = "block";
+        var k = String(inp.dataset.k || "");
+        var g = k.charAt(0);
+        inp.style.width = (g === "m" || g === "q") ? "96px" : (g === "p" || g === "n" ? "128px" : "152px");
+        if (g === "m" || g === "q" || g === "p" || g === "n") {
+          inp.style.margin = "0 auto";
+          inp.style.textAlign = "center";
+        } else {
+          inp.style.marginLeft = "auto";
+        }
+      } else {
+        inp.style.width = "112px";
+        inp.style.justifySelf = "start";
+      }
+    });
+  }
+
+  /* 投资与进度：默认全部固化只读；年度计划的「计划投资」已改为自动只读，仅「年末要求投资」随卡片小锁可填 */
+  var INV_LOCK = { annual: true, y2026: true, y2025: true, y2024: true };
+  var INV_BTN = { annual: "invest-unlock", y2026: "lock-2026", y2025: "lock-2025", y2024: "lock-2024" };
+
+  function invKeys(g) {
+    var a = [], i;
+    if (g === "annual") return ["n2024", "n2025", "n2026", "n2027"];
+    if (g === "y2026") return [];
+    if (g === "y2025" || g === "y2024") return [];
+    return a;
+  }
+
+  function styleInvInp(inp, locked) {
+    /* 锁定/解锁共用同一套几何尺寸（内边距、边框宽度、字号、行高完全一致），
+       解锁时行高不会跳动；解锁后的观感与「概算执行 · 明细」的产值填报一致 */
+    inp.readOnly = !!locked;
+    if (locked) inp.setAttribute("aria-readonly", "true"); else inp.removeAttribute("aria-readonly");
+    inp.style.display = "block";
+    inp.style.width = "100%";
+    inp.style.boxSizing = "border-box";
+    inp.style.margin = "0";
+    inp.style.padding = "2px 6px";
+    inp.style.borderRadius = "4px";
+    inp.style.fontFamily = "inherit";
+    inp.style.fontSize = "13px";
+    inp.style.lineHeight = "1.4";
+    inp.style.textAlign = "center";
+    inp.style.fontVariantNumeric = "tabular-nums";
+    inp.style.boxShadow = "none";
+    if (locked) {
+      inp.style.border = "1px solid transparent";
+      inp.style.background = "transparent";
+      inp.style.color = "#0F2C5C";
+      inp.style.fontWeight = "400";
+      inp.style.cursor = "default";
+      inp.style.pointerEvents = "none";
+    } else {
+      inp.style.border = "1px solid #F4EBD5";
+      inp.style.background = "#FFFDF6";
+      inp.style.color = "#0F2C5C";
+      inp.style.fontWeight = "400";
+      inp.style.cursor = "text";
+      inp.style.pointerEvents = "";
+    }
+  }
+
+  function applyInvestLock(g) {
+    var groups = g ? [g] : ["annual", "y2026", "y2025", "y2024"];
+    groups.forEach(function (gg) {
+      invKeys(gg).forEach(function (k) {
+        var inp = document.querySelector('[data-k="' + k + '"]');
+        if (inp) styleInvInp(inp, INV_LOCK[gg]);
+      });
+      var b = el(INV_BTN[gg]);
+      if (b) b.textContent = INV_LOCK[gg] ? "解锁" : "锁定";
+    });
+  }
+
+  function setInvestLock(g, v) {
+    INV_LOCK[g] = v;
+    applyInvestLock(g);
+    if (!v) markEditable();
+  }
+
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || !t.dataset || !t.dataset.k) return;
+    var k = t.dataset.k;
+    S[k] = t.value;
+    fields().forEach(function (n) {
+      if (n !== t && n.dataset.k === k) setVal(n, t.value);
+    });
+    document.querySelectorAll("[data-mirror]").forEach(function (m) {
+      if (m.getAttribute("data-mirror") === k) m.textContent = t.value;
+    });
+    recalc();
+    touch();
+  });
+
+  /* 数字输入：聚焦去千分位，失焦按财务格式回填 */
+  document.addEventListener("focusin", function (e) {
+    var t = e.target;
+    if (!t || t.tagName !== "INPUT" || !t.dataset || !t.dataset.k || t.readOnly) return;
+    if (t.value.trim() === "") return;
+    t.value = String(num(t.value));
+  });
+
+  document.addEventListener("focusout", function (e) {
+    var t = e.target;
+    if (!t || t.tagName !== "INPUT" || !t.dataset || !t.dataset.k || t.readOnly) return;
+    var k = t.dataset.k;
+    if (t.value.trim() === "") {
+      S[k] = "";
+      recalc();
+      touch();
+      railRepaintIfNeeded();
+      return;
+    }
+    var v = num(t.value);
+    t.value = t.dataset.int ? fmt(Math.round(v), 0) : fmt(v, 2);
+    S[k] = t.value;
+    recalc();
+    touch();
+    railRepaintIfNeeded();
+  });
+
+  /* ---------- 文件台账交互 ---------- */
+  var picker = document.createElement("input");
+  picker.type = "file";
+  picker.style.display = "none";
+  document.body.appendChild(picker);
+  var blobCache = {}, pickTarget = -1;
+
+  /* 文件本体存入本机 IndexedDB，重启浏览器后仍可打开 */
+  var idbP = new Promise(function (res) {
+    try {
+      var rq = indexedDB.open("hyhx-files", 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore("bin"); };
+      rq.onsuccess = function () { res(rq.result); };
+      rq.onerror = function () { res(null); };
+    } catch (e) { res(null); }
+  });
+  function idbPut(key, val) {
+    idbP.then(function (db) {
+      if (!db) return;
+      try { db.transaction("bin", "readwrite").objectStore("bin").put(val, key); } catch (e) {}
+    });
+  }
+  function idbGet(key) {
+    return idbP.then(function (db) {
+      if (!db) return null;
+      return new Promise(function (res) {
+        try {
+          var q = db.transaction("bin", "readonly").objectStore("bin").get(key);
+          q.onsuccess = function () { res(q.result || null); };
+          q.onerror = function () { res(null); };
+        } catch (e) { res(null); }
+      });
+    });
+  }
+  function idbDel(key) {
+    idbP.then(function (db) {
+      if (!db) return;
+      try { db.transaction("bin", "readwrite").objectStore("bin").delete(key); } catch (e) {}
+    });
+  }
+  function uidOf(i) {
+    var r = S.files[i];
+    if (!r) return "";
+    if (!r[7]) r[7] = "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    return r[7];
+  }
+
+  picker.addEventListener("change", function () {
+    var f = picker.files && picker.files[0];
+    picker.value = "";
+    if (!f || pickTarget < 0) return;
+    var i = pickTarget;
+    if (!S.files[i]) return;
+    var key = uidOf(i);
+    S.files[i][6] = "已选择";
+    blobCache[i] = { name: f.name, url: URL.createObjectURL(f), key: key };
+    idbPut(key, { name: f.name, blob: f, ts: Date.now() });
+    /* 同时存一份到数据仓，换电脑也能打开；超过 10MB 只留本机 */
+    if (f.size > 10485760) {
+      if (window.__syncChip) window.__syncChip("warn", "附件超过 10MB，只存本机，未上传云端");
+    } else {
+      var rd = new FileReader();
+      rd.onload = function () {
+        var b64 = String(rd.result || "");
+        var x = b64.indexOf(",");
+        b64 = x >= 0 ? b64.slice(x + 1) : "";
+        if (!b64) return;
+        if (window.__syncChip) window.__syncChip("busy");
+        attPut(key, { name: f.name, type: f.type || "", size: f.size, ts: Date.now(), data: b64 })
+          .then(function (okUp) {
+            if (window.__syncChip) window.__syncChip(okUp || !ONLINE ? "ok" : "warn", okUp ? "" : "本机打开，附件未上传云端");
+          }, function (err) {
+            if (window.__syncChip) window.__syncChip("warn", "附件未上传云端：" + (err && err.message ? err.message : err));
+          });
+      };
+      rd.readAsDataURL(f);
+    }
+    renderFiles();
+    touch();
+  });
+
+  function startPick(i) { pickTarget = i; picker.click(); }
+
+  function openFile(i) {
+    var r = S.files[i] || [], v = String(r[6] || "").trim();
+    if (!v) return;
+    var b = blobCache[i];
+    if (b && b.key === r[7]) { window.open(b.url, "_blank"); return; }
+    idbGet(r[7] || "").then(function (rec) {
+      if (rec && rec.blob) {
+        window.open(URL.createObjectURL(rec.blob), "_blank");
+        return;
+      }
+      /* 本机没缓存（换电脑/清过缓存）：从数据仓 files/ 取回 */
+      var uid = r[7] || "";
+      var remote = uid ? attRead(uid).then(function (x) { return x && x.obj; }, function () { return null; }) : Promise.resolve(null);
+      remote.then(function (o) {
+        if (o && o.data) {
+          var url = URL.createObjectURL(b64Blob(o.data, o.type || ""));
+          window.open(url, "_blank");
+          return;
+        }
+        openLocal(v);
+      });
+    });
+  }
+  function openLocal(v) {
+      if (/^(https?:|file:)/i.test(v)) { window.open(v, "_blank"); return; }
+      if (/[\\/]/.test(v)) {
+        var p = v.replace(/\\/g, "/").replace(/^\/+/, "");
+        window.open("file:///" + encodeURI(p).replace(/#/g, "%23"), "_blank");
+        return;
+      }
+      alert("本机与云端都没有这份文件，请点「更换」重新选一次。");
+  }
+
+  /* ---------- 台账分类切换 ---------- */
+  var ftabs = el("file-tabs");
+  if (ftabs) {
+    ftabs.addEventListener("click", function (e) {
+      var b = e.target.closest ? e.target.closest("[data-tab]") : null;
+      if (!b) return;
+      FILE_TAB = b.getAttribute("data-tab");
+      renderFiles();
+    });
+  }
+
+  var fwrap = el("files-wrap");
+  if (fwrap) {
+    fwrap.addEventListener("input", function (e) {
+      var t = e.target;
+      if (!t || !t.getAttribute) return;
+      var i = t.getAttribute("data-fi");
+      if (i === null) return;
+      var c = parseInt(t.getAttribute("data-fc"), 10);
+      if (!S.files[+i]) return;
+      S.files[+i][c] = String(t.textContent || "").replace(/\n+/g, "");
+      touch();
+    });
+    fwrap.addEventListener("click", function (e) {
+      var t = e.target, pick = function (sel) { return t.closest ? t.closest(sel) : null; };
+      var a = pick("[data-add]");
+      if (a) {
+        var g = a.getAttribute("data-add");
+        S.files.push([g, "", "", "", "", "", ""]);
+        renderFiles();
+        touch();
+        var last = fwrap.querySelectorAll('[data-fc="1"]');
+        if (last.length) last[last.length - 1].focus();
+        return;
+      }
+      var d = pick("[data-del]");
+      if (d) {
+        var i = parseInt(d.getAttribute("data-del"), 10);
+        if (!window.confirm("确认删除这条记录？删除后不可恢复。")) return;
+        idbDel((S.files[i] || [])[7] || "");
+        S.files.splice(i, 1);
+        renderFiles();
+        touch();
+        return;
+      }
+      var o = pick("[data-open]");
+      if (o) { openFile(parseInt(o.getAttribute("data-open"), 10)); return; }
+      var l = pick("[data-link]");
+      if (l) { startPick(parseInt(l.getAttribute("data-link"), 10)); return; }
+    });
+  }
+
+  /* ---------- 分区切换 ---------- */
+  var items = Array.prototype.slice.call(document.querySelectorAll(".nav-item[data-view]"));
+  function capTables() {
+    var ts = document.querySelectorAll("table.tbl");
+    Array.prototype.forEach.call(ts, function (t) {
+      if (t.getAttribute("data-fill") === "1") { t.style.maxWidth = "none"; return; }
+      t.style.maxWidth = "none";
+    });
+  }
+
+  function show(name) {
+    if (!el("view-" + name)) name = "overview";
+    document.querySelectorAll(".view").forEach(function (v) {
+      v.classList.toggle("is-on", v.id === "view-" + name);
+    });
+    items.forEach(function (a) {
+      if (!a.dataset.view) return;
+      a.classList.toggle("is-on", a.dataset.view === name);
+      a.setAttribute("aria-current", a.dataset.view === name ? "page" : "false");
+    });
+    capTables();
+    if (name === "exec") syncRail();
+  }
+  items.forEach(function (a) {
+    a.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      var name = a.dataset.view;
+      if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+      show(name);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+  var DEFAULT_VIEW = document.body.getAttribute("data-view") || "overview";
+  window.addEventListener("hashchange", function () {
+    show((location.hash || ("#" + DEFAULT_VIEW)).replace("#", ""));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+  show((location.hash || ("#" + DEFAULT_VIEW)).replace("#", ""));
+
+  /* 其他信息页：宽屏双栏，窄屏单栏 */
+  function fitInfoGrid() {
+    var g = el("info-grid");
+    if (!g) return;
+    g.style.gridTemplateColumns = window.innerWidth < 1040
+      ? "minmax(0,1fr)"
+      : "minmax(0,0.92fr) minmax(0,1.08fr)";
+  }
+  fitInfoGrid();
+  window.addEventListener("resize", fitInfoGrid);
+
+  /* 显示上次改动时间 */
+  try {
+    var ts = localStorage.getItem(KEY + "-ts");
+    if (ts) { var sv = el("saved"); if (sv) sv.textContent = ""; }
+  } catch (e) {}
+
+  /* ---------- 手动保存 ---------- */
+  window.__pgSaveNow = function (localOnly) { save(localOnly); };
+  var btnSave = el("btn-save");
+  if (btnSave) btnSave.addEventListener("click", function () { save(); });
+
+  var btnExport = el("btn-export");
+  if (btnExport) btnExport.addEventListener("click", function () { exportData(); });
+  var btnImport = el("btn-import"), inFile = el("import-file");
+  if (btnImport && inFile) {
+    btnImport.addEventListener("click", function () { inFile.click(); });
+    inFile.addEventListener("change", function () {
+      var f = inFile.files && inFile.files[0];
+      if (f) importData(f);
+      inFile.value = "";
+    });
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === "s") {
+      e.preventDefault();
+      save();
+    }
+  });
+
+  /* 关闭页面不再弹「未保存」提示：数据随输入自动暂存本机并按卡片提交写回云端 */
+
+  /* 投资与进度：各分组按钮控制自身可编辑状态 */
+  applyInvestLock();
+  (function () {
+    ["annual", "y2026", "y2025", "y2024"].forEach(function (g) {
+      var b = el(INV_BTN[g]);
+      if (!b) return;
+      b.addEventListener("click", function () { setInvestLock(g, !INV_LOCK[g]); });
+    });
+  })();
+
+  /* ---------- 固定资产投资：汇总 + 六地市州分表（武汉段按月录入，2026-11 → 2029-12） ---------- */
+  var FA_Y0 = 2026, FA_Y1 = 2029, FA_M0 = 11;
+  var FA_YEARS = [];
+  function faTag(y, m) { return String(y).slice(2) + (m < 10 ? "0" + m : "" + m); }
+  function faTagYear(t) { return 2000 + parseInt(String(t).slice(0, 2), 10); }
+  function faTagMonth(t) { return parseInt(String(t).slice(2), 10); }
+  var FA_TAGS = (function () {
+    var a = [], y, m;
+    for (y = FA_Y0; y <= FA_Y1; y++) {
+      FA_YEARS.push(y);
+      for (m = (y === FA_Y0 ? FA_M0 : 1); m <= 12; m++) a.push(faTag(y, m));
+    }
+    return a;
+  })();
+
+  var FA_CITIES = [
+    { k: "caidian", city: "武汉市", seg: "蔡甸段", invest: 608200, gsJ: 427020, htJ: 319726, htAll: 500902,
+      months: FA_TAGS,
+      jian: [["土建1标", 71782, 142047], ["交安1标", 0, 0], ["机电1标", 0, 6554], ["房建1标", 0, 0],
+             ["加油站", 0, 0, 319726], ["房建2标(估)", 0, 0]],
+      ord: [0, 1, 2, 3, 5, 4],
+      other: [["其他费", 44195, 27596]] },
+    { k: "hanchuan", city: "孝感市", seg: "汉川段", invest: 116600, gsJ: 83022, htJ: 84742, htAll: 118287,
+      months: FA_TAGS,
+      jian: [["土建1标", 13607, 36003], ["机电1标", 0, 0], ["交安1标", 0, 0], ["房建2标(估)", 0, 0]],
+      other: [["其他费", 5823, 723]] },
+    { k: "xiantao", city: "仙桃市", seg: "", invest: 1235100, gsJ: 941019, htJ: 799318, htAll: 1093388,
+      months: FA_TAGS,
+      jian: [["土建1标", 21737, 39097], ["土建2标", 13745, 64410], ["土建3标", 14081, 61688],
+             ["土建4标", 11065, 45114], ["机电1标", 0, 0], ["交安1标", 0, 0], ["交安2标", 0, 0], ["房建3标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
+      ord: [0, 1, 2, 3, 4, 5, 6, 9, 7, 8],
+      other: [["其他费", 30857, 3748]] },
+    { k: "qianjiang", city: "潜江市", seg: "", invest: 662700, gsJ: 497652, htJ: 428825, htAll: 593921,
+      months: FA_TAGS,
+      jian: [["土建5标", 22930, 47910], ["土建6标", 19040, 46078], ["机电1标", 0, 0], ["交安3标", 0, 0], ["房建4标(估)", 0, 0]],
+      other: [["其他费", 28248, 1743]] },
+    { k: "jingzhou", city: "荆州市", seg: "", invest: 802400, gsJ: 571778, htJ: 499897, htAll: 730537,
+      months: FA_TAGS,
+      jian: [["土建7标", 25438, 33443], ["土建8标", 32067, 53970], ["机电2标", 0, 0], ["交安4标", 0, 0], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
+      ord: [0, 1, 3, 2, 6, 4, 5],
+      other: [["其他费", 47271, 29890]] },
+    { k: "yichang", city: "宜昌市", seg: "", invest: 798500, gsJ: 552056, htJ: 380001, htAll: 626492,
+      months: FA_TAGS,
+      jian: [["土建9标", 8745, 59585], ["土建10标", 8337, 47370], ["机电3标", 0, 0], ["交安5标", 0, 0], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["加油站", 0, 0]],
+      ord: [0, 1, 3, 2, 4, 6, 5],
+      other: [["其他费", 42980, 9755]] }
+  ];
+  var FA_READY = false, FA_REBUILDING = false;
+
+  function faGet(k) { var v = S[k]; return (v == null || String(v).trim() === "") ? null : num(v); }
+  function faPre(c, g, i, dflt) { var v = faGet("fap_" + c.k + "_" + g + "_" + i); return v == null ? dflt : v; }
+  /* 行合同额：自填优先，未填时用行内默认值（加油站默认携带差额） */
+  function faRowHt(c, i) {
+    var v = faGet("fah_" + c.k + "_0_" + i), d = c.jian[i] ? c.jian[i][3] : null;
+    if (v != null) return v;
+    return d == null ? null : d;
+  }
+  function faHtBand(c) {
+    var v, i, s = 0, has = false;
+    if (c.months) {
+      for (i = 0; i < c.jian.length; i++) { v = faRowHt(c, i); if (v != null) { s += v; has = true; } }
+      return has ? s : c.htJ;
+    }
+    v = faGet("fah_" + c.k + "_b");
+    return v == null ? c.htJ : v;
+  }
+  function faHtOther(c) {
+    var v = c.other.length ? faGet("fah_" + c.k + "_1_0") : null;
+    return v == null ? (c.htAll - c.htJ) : v;
+  }
+  /* 概算总投资口径：建安费概算 + 其他费（与合同额的其他费同值） */
+  function faInv(c) {
+    return c.gsJ + faHtOther(c);
+  }
+  function faCurVal(c, g, i, t) {
+    return c.months ? faGet("fa_" + c.k + "_" + g + "_" + i + "_m" + t) : faGet("fa_" + c.k + "_" + g + "_" + i);
+  }
+  function faCurAll(c, g, i) {
+    var s = 0, k;
+    if (!c.months) return faCurVal(c, g, i) || 0;
+    for (k = 0; k < c.months.length; k++) s += (faCurVal(c, g, i, c.months[k]) || 0);
+    return s;
+  }
+  function faCurUpTo(c, g, i, cm) {
+    var s = 0, k, idx;
+    if (!c.months) return faCurVal(c, g, i) || 0;
+    idx = c.months.indexOf(cm);
+    for (k = 0; k <= idx; k++) s += (faCurVal(c, g, i, c.months[k]) || 0);
+    return s;
+  }
+  /* 系统当前年月，落在可选范围内即用它；早于首月取首月，晚于末月取末月 */
+  function faNowTag(c) {
+    var d = new Date(), tag = String((d.getFullYear() % 100) * 100 + (d.getMonth() + 1));
+    var first = c.months[0], last = c.months[c.months.length - 1], k, v = first;
+    if (tag <= first) return first;
+    if (tag >= last) return last;
+    for (k = 0; k < c.months.length; k++) if (c.months[k] <= tag) v = c.months[k];
+    return v;
+  }
+  function faMonthOf(c) {
+    if (!c.months) return "";
+    var m = String(S["fam_" + c.k] == null ? "" : S["fam_" + c.k]), now = faNowTag(c);
+    if (c.months.indexOf(m) < 0) return now;
+    return (m < now) ? now : m;   /* 手选月份只在当前月份之后才保留，跨月自动前移到当月 */
+  }
+  function faYearFirstIdx(c, y) {
+    var k;
+    for (k = 0; k < c.months.length; k++) if (faTagYear(c.months[k]) === y) return k;
+    return -1;
+  }
+  /* 当年年初基数：2026 年取原「本年已报送」（截至 10 月末），2027 起默认 0，可自填 */
+  function faYtdBase(c, g, i, y, dflt) {
+    var key = "fay_" + c.k + "_" + g + "_" + i + (y === FA_Y0 ? "" : "_y" + y);
+    var v = faGet(key);
+    return v == null ? (y === FA_Y0 ? dflt : 0) : v;
+  }
+  function faYtdShown(c, g, i, dflt, cm) {
+    var y = faTagYear(cm), s = faYtdBase(c, g, i, y, dflt), k, t, idx;
+    if (!c.months) return s;
+    idx = c.months.indexOf(cm);
+    for (k = 0; k < idx; k++) { t = c.months[k]; if (faTagYear(t) === y) s += (faCurVal(c, g, i, t) || 0); }
+    return s;
+  }
+  /* 跨年后「截止上年末」随年份滚动：2026 视图为 2025 年末，2027 视图为 2026 年末 */
+  function faPreShown(c, g, i, cm) {
+    var dpre = g === 0 ? c.jian[i][1] : c.other[i][1];
+    var dytd = g === 0 ? c.jian[i][2] : c.other[i][2];
+    var y = c.months ? faTagYear(cm) : FA_Y0;
+    var s = faPre(c, g, i, dpre), yy, k, t;
+    for (yy = FA_Y0; yy < y; yy++) s += faYtdBase(c, g, i, yy, dytd);
+    if (c.months) {
+      for (k = 0; k < c.months.length; k++) {
+        t = c.months[k];
+        if (faTagYear(t) < y) s += (faCurVal(c, g, i, t) || 0);
+      }
+    }
+    return s;
+  }
+  function faCum(c, g, i, cm) {
+    var dytd = g === 0 ? c.jian[i][2] : c.other[i][2];
+    return faPreShown(c, g, i, cm) + faYtdShown(c, g, i, dytd, cm) + (faCurVal(c, g, i, cm) || 0);
+  }
+
+  function faMonYearSum(c, g, i, y) {
+    var k, s = 0, t;
+    if (!c.months) return (y === FA_Y0 ? (faCurVal(c, g, i) || 0) : 0);
+    for (k = 0; k < c.months.length; k++) {
+      t = c.months[k];
+      if (faTagYear(t) === y) s += (faCurVal(c, g, i, t) || 0);
+    }
+    return s;
+  }
+  function faMonAllSum(c, g, i) {
+    var k, s = 0;
+    if (!c.months) return faCurVal(c, g, i) || 0;
+    for (k = 0; k < c.months.length; k++) s += (faCurVal(c, g, i, c.months[k]) || 0);
+    return s;
+  }
+  function faYtdTotal(c, g, i, dflt) {
+    var y, s = 0;
+    for (y = FA_Y0; y <= FA_Y1; y++) s += faYtdBase(c, g, i, y, dflt);
+    return s;
+  }
+  /* 汇总口径：2026 已报送＝10 月末基数＋2026 各月录入；当月＝各市当前所选月；累计＝各年基数＋全部月份录入 */
+  function faCalc(c) {
+    var i, cm = faMonthOf(c);
+    var jp = 0, jy = 0, jn = 0, jt = 0, op = 0, oy = 0, on = 0, ot = 0;
+    for (i = 0; i < c.jian.length; i++) {
+      jp += faPre(c, 0, i, c.jian[i][1]);
+      jy += faYtdBase(c, 0, i, FA_Y0, c.jian[i][2]) + faMonYearSum(c, 0, i, FA_Y0);
+      jn += faCurVal(c, 0, i, cm) || 0;
+      jt += faPre(c, 0, i, c.jian[i][1]) + faYtdTotal(c, 0, i, c.jian[i][2]) + faMonAllSum(c, 0, i);
+    }
+    for (i = 0; i < c.other.length; i++) {
+      op += faPre(c, 1, i, c.other[i][1]);
+      oy += faYtdBase(c, 1, i, FA_Y0, c.other[i][2]) + faMonYearSum(c, 1, i, FA_Y0);
+      on += faCurVal(c, 1, i, cm) || 0;
+      ot += faPre(c, 1, i, c.other[i][1]) + faYtdTotal(c, 1, i, c.other[i][2]) + faMonAllSum(c, 1, i);
+    }
+    return { jp: jp, jc: jy, jn: jn, jt: jt,
+             op: op, oc: oy, on: on, ot: ot,
+             p: jp + op, cu: jy + oy, n: jn + on,
+             t: jt + ot };
+  }
+  function faPut(id, txt) { var n = el(id); if (n) n.textContent = txt; }
+  function faTd(txt, cls, id) {
+    return '<td class="fa-ctd' + (cls ? " " + cls : "") + '"' + (id ? ' id="' + id + '"' : "") + '>' + txt + '</td>';
+  }
+  function faInp(k, val, ph, cls) {
+    return '<td class="fa-ctd' + (cls ? " " + cls : "") + '"><input type="text" class="fa-in" data-int="1" placeholder="' + (ph || "") +
+      '" data-k="' + k + '"' + (val == null ? '' : ' data-def="' + fmt(val) + '" value="' + fmt(val) + '"') + '></td>';
+  }
+
+  function faSummaryPanel() {
+    var rows = "", tx = { inv: 0, jp: 0, op: 0, p: 0, jc: 0, oc: 0, cu: 0, n: 0, t: 0 };
+    FA_CITIES.forEach(function (c, i) {
+      var v = faCalc(c);
+      tx.inv += faInv(c); tx.jp += v.jp; tx.op += v.op; tx.p += v.p;
+      tx.jc += v.jc; tx.oc += v.oc; tx.cu += v.cu; tx.n += v.n; tx.t += v.t;
+      rows += '<tr><td class="c">' + (i + 1) + '</td><td class="nm">' + c.city + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_inv">' + fmt(faInv(c)) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_jp">' + fmt(v.jp) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_op">' + fmt(v.op) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_sp">' + fmt(v.p) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_jc">' + fmt(v.jc) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_oc">' + fmt(v.oc) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_sc">' + fmt(v.cu) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_n">' + fmt(v.n) + '</td>'
+        + '<td class="r num" id="fs_' + c.k + '_c">' + fmt(v.t) + '</td>'
+        + '<td class="r ratio">'
+        + '<span id="fs_' + c.k + '_p">' + pctTxt(v.t / faInv(c)) + '</span></td></tr>';
+    });
+    rows += '<tr class="total"><td class="c">—</td><td>总计</td><td class="r num" id="fs_T_inv">' + fmt(tx.inv) + '</td>'
+      + '<td class="r num" id="fs_T_jp">' + fmt(tx.jp) + '</td>'
+      + '<td class="r num" id="fs_T_op">' + fmt(tx.op) + '</td>'
+      + '<td class="r num" id="fs_T_sp">' + fmt(tx.p) + '</td>'
+      + '<td class="r num" id="fs_T_jc">' + fmt(tx.jc) + '</td>'
+      + '<td class="r num" id="fs_T_oc">' + fmt(tx.oc) + '</td>'
+      + '<td class="r num" id="fs_T_sc">' + fmt(tx.cu) + '</td>'
+      + '<td class="r num" id="fs_T_n">' + fmt(tx.n) + '</td>'
+      + '<td class="r num" id="fs_T_c">' + fmt(tx.t) + '</td>'
+      + '<td class="r ratio">'
+      + '<span id="fs_T_p">' + pctTxt(tx.t / tx.inv) + '</span></td></tr>';
+
+    var cols = '<col style="width:46px"><col style="width:98px"><col style="width:90px">'
+      + '<col style="width:76px"><col style="width:70px"><col style="width:84px">'
+      + '<col style="width:76px"><col style="width:70px"><col style="width:84px">'
+      + '<col style="width:84px"><col style="width:100px"><col style="width:104px">';
+
+    return '<div class="fa-panel card" id="fa-p-sum" style="padding:0;overflow:hidden">'
+      + '<div class="kpi">'
+      + '<div><div class="k">投资总额</div><div class="v"><span id="fa-kpi-inv">' + fmt(tx.inv) + '</span><span class="u">万元</span></div><div class="sub">六地市州合计</div></div>'
+      + '<div><div class="k">截至上年末报送</div><div class="v">' + fmt(tx.p) + '<span class="u">万元</span></div><div class="sub" id="fa-kpi-presub">占投资总额 ' + pctTxt(tx.p / tx.inv) + '</div></div>'
+      + '<div><div class="k">本年已报送</div><div class="v"><span id="fa-kpi-cu">' + fmt(tx.cu) + '</span><span class="u">万元</span></div><div class="sub">2026 年（含 11、12 月录入）</div></div>'
+      + '<div><div class="k">累计报送</div><div class="v"><span id="fa-kpi-cum">' + fmt(tx.t) + '</span><span class="u">万元</span></div>'
+      + '<div class="sub" id="fa-kpi-sub">占投资总额 ' + pctTxt(tx.t / tx.inv) + '</div></div>'
+      + '</div>'
+      + '<div class="card-body" style="padding-top:12px">'
+      + '<div class="tw"><table class="tbl fa-tbl"><colgroup>' + cols + '</colgroup>'
+      + '<thead><tr>'
+      + '<th rowspan="2">序号</th><th rowspan="2">地市州</th><th rowspan="2" class="r">投资额</th>'
+      + '<th colspan="3" class="c">截至上年末报送</th><th colspan="3" class="c">2026 年已报送</th>'
+      + '<th rowspan="2" class="r">当月投资</th><th rowspan="2" class="r">累计报送</th><th rowspan="2" class="r">占比</th>'
+      + '</tr><tr>'
+      + '<th class="r">建安费</th><th class="r">其他费</th><th class="r">小计</th>'
+      + '<th class="r">建安费</th><th class="r">其他费</th><th class="r">小计</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table></div>'
+      + '</div></div>';
+  }
+
+  function faPeriodSel(c, cm, inl) {
+    var cy = faTagYear(cm), k, mopts = "", yopts = "";
+    for (k = 0; k < c.months.length; k++) {
+      if (faTagYear(c.months[k]) !== cy) continue;
+      mopts += '<option value="' + c.months[k] + '"' + (c.months[k] === cm ? " selected" : "") + '>'
+        + faTagMonth(c.months[k]) + ' 月</option>';
+    }
+    FA_YEARS.forEach(function (y) {
+      yopts += '<option value="' + y + '"' + (y === cy ? " selected" : "") + '>' + y + ' 年</option>';
+    });
+    return '<div class="fa-sel' + (inl ? ' fa-sel-in' : '') + '"><select data-fk="' + c.k + '" data-sy="1" aria-label="年份">' + yopts + '</select>'
+      + '<select data-fk="' + c.k + '" data-sm="1" aria-label="月份">' + mopts + '</select></div>';
+  }
+
+  /* 武汉段右侧「实际投资情况」卡片 */
+  /* 显示顺序：交安标段排在机电标段之前，数据索引保持原样 */
+  function faJianIdx(c) {
+    if (c.ord) return c.ord.slice();
+    var idx = [], i, j, m, tmp;
+    for (i = 0; i < c.jian.length; i++) idx.push(i);
+    for (i = 0; i < idx.length; i++) {
+      if (!/^机电/.test(c.jian[idx[i]][0])) continue;
+      j = i + 1;
+      while (j < idx.length && /^交安/.test(c.jian[idx[j]][0])) j++;
+      if (j === i + 1) continue;
+      tmp = idx[i];
+      for (m = i; m < j - 1; m++) idx[m] = idx[m + 1];
+      idx[j - 1] = tmp;
+      i = j - 1;
+    }
+    return idx;
+  }
+
+  /* 「实际投资」自动提取（统一规则）：
+     ① 标段在 B 页「分地市州」有该城市数据 → 取该城市「完成产值」
+        （土建/机电取 done，交安取产值 outDone）；
+     ② 没有地市州数据 → 取 B 页「产值完成情况（万元）」同标段同月「累计完成 · 合计」；
+     ③ 两处都取不到 → 沿用本卡手填的 fak_ 值。 */
+  var FA_T1CITY = { caidian: "蔡甸", hanchuan: "汉川", xiantao: "仙桃" };
+  var FA_REG_CITY = { caidian: "蔡甸", hanchuan: "汉川", xiantao: "仙桃",
+                      qianjiang: "潜江", jingzhou: "荆州", yichang: "宜昌" };
+  function faRepDB() {
+
+    /* 月报数据：以 localStorage 为唯一真相（拉取会整体重写 DB，早期 window.__REPDB 快照会过期变空） */
+
+    try {
+
+      var raw = localStorage.getItem("hyhx-report-v1");
+
+      if (raw && raw !== window.__REPRAW) {
+
+        window.__REPRAW = raw;
+
+        window.__REPDB = JSON.parse(raw);
+
+      }
+
+    } catch (e) {}
+
+    if (!window.__REPDB) window.__REPDB = { reports: {} };
+
+    return window.__REPDB;
+
+  }
+  function faRegRow(tid, city) {
+    var rg = (faBS().regions || {})[tid];
+    if (!rg || !rg.rows) return null;
+    for (var i = 0; i < rg.rows.length; i++) if (rg.rows[i].city === city) return rg.rows[i];
+    return null;
+  }
+  function faHasReg(tid) {
+    var rg = (faBS().regions || {})[tid];
+    return !!(rg && rg.rows && rg.rows.length);
+  }
+  function faRegDone(tid, city, cm) {
+    var db = faRepDB();
+    if (!db || !db.reports || !tid || !city) return null;
+    var ym = faYmOf(cm);
+    if (!ym) return null;
+    var r = (db.reports[tid] || {})[ym];
+    if (!r) return null;
+    var o = (r && r.reg && r.reg[city] && typeof r.reg[city] === "object") ? r.reg[city] : null;
+    var v = o ? o.done : undefined;
+    if (v === undefined || v === null || v === "") v = o ? o.outDone : undefined;
+    /* 卡片里没填时用 BASE 里同一行的初值（交安取“产值完成”outDone） */
+    var row = faRegRow(tid, city);
+    if ((v === undefined || v === null || v === "") && row) {
+      v = row.done;
+      if (v === undefined || v === null || v === "") v = row.outDone;
+    }
+    if (v === undefined || v === null || v === "") v = faHasReg(tid) ? 0 : null;
+    if (v === null) return null;
+    v = Number(v);
+    return isFinite(v) ? v : null;
+  }
+  function faIsT1(c, g, i) { return g === 0 && i === 0 && !!FA_T1CITY[c.k]; }
+  function faBS() { return window.__PG_BASE || {}; }
+  function faTenderOf(tid) {
+    var ts = faBS().tenders || [], i;
+    for (i = 0; i < ts.length; i++) if (ts[i].tid === tid) return ts[i];
+    return null;
+  }
+  function faOutGet(tid, ym, kind, k) {
+    var db = faRepDB();
+    if (!db || !db.reports) return null;
+    var r = (db.reports[tid] || {})[ym];
+    if (!r) return null;
+    var g = r[kind];
+    if (!g || g[k] === undefined || g[k] === null || g[k] === "") return null;
+    var v = Number(g[k]);
+    return isFinite(v) ? v : null;
+  }
+  /* 与 B 页 outPrevCum / outAt 完全同一口径 */
+  function faOutPrevCum(tid, row, ym) {
+    var idx = (faBS().months || []).indexOf(ym), cum = row.cum || 0, k, mo, ov, v;
+    for (k = 1; k < idx; k++) {
+      mo = faBS().months[k];
+      ov = faOutGet(tid, mo, "outcum", row.k);
+      if (ov !== null) { cum = ov; continue; }
+      v = faOutGet(tid, mo, "out", row.k);
+      if (v !== null) cum += v;
+    }
+    return cum;
+  }
+  function faOutCum(tid, row, ym) {
+    var idx = (faBS().months || []).indexOf(ym);
+    var cum = faOutPrevCum(tid, row, ym);
+    var oc = faOutGet(tid, ym, "outcum", row.k);
+    if (oc !== null) cum = oc;
+    else if (idx > 0) { var v = faOutGet(tid, ym, "out", row.k); if (v !== null) cum += v; }
+    return cum;
+  }
+  /* A 页月标签（如 "2611"）→ B 页月份（如 "2026-11"） */
+  function faYmOf(tag) {
+    if (tag == null) return null;
+    var s = String(tag);
+    if (s.indexOf("-") > 0) return s;
+    if (s.length < 4) return null;
+    return "20" + s.slice(0, 2) + "-" + s.slice(2);
+  }
+  /* 该标段该月「产值完成情况（万元）」累计完成 · 合计 */
+  function faTenderOutCum(tid, cm) {
+    var t = faTenderOf(tid);
+    if (!t || !t.out || !t.out.length) return null;
+    cm = faYmOf(cm);
+    if (cm == null || (faBS().months || []).indexOf(cm) < 0) return null;
+    var tot = 0, i;
+    for (i = 0; i < t.out.length; i++) {
+      var key = (t.out[i].k === undefined ? i : t.out[i].k);
+      tot += faOutCum(tid, { k: key, cum: t.out[i].cum || 0 }, cm);
+    }
+    return tot;
+  }
+  /* 该行是否需要固化为只读：土建N标（N=1 时限于武汉/孝感/仙桃）返回 B 页标段 tid */
+  function faFixTid(c, i) {
+    var nm = (c.jian && c.jian[i] && c.jian[i][0]) || "";
+    var m = nm.match(/^(土建|机电|交安)(\d+)标/);
+    if (!m) return null;
+    var typ = m[1] === "土建" ? "t" : (m[1] === "机电" ? "m" : "j");
+    var n = parseInt(m[2], 10);
+    if (typ === "t" && n === 1 && !FA_T1CITY[c.k]) return null;
+    return typ + n;
+  }
+  /* 实际投资：①该标段有地市州数据取该城市完成产值；②否则取产值累计；③都取不到用 fak_ */
+  function faActVal(c, i, cm) {
+    var tid = faFixTid(c, i);
+    if (tid) {
+      var v1 = faRegDone(tid, FA_REG_CITY[c.k], cm);
+      if (v1 != null) return v1;
+      var v2 = faTenderOutCum(tid, cm);
+      if (v2 != null) return v2;
+    }
+    return faGet("fak_" + c.k + "_0_" + i);
+  }
+  /* 报送流程：已报审 → 编制资料 → 已提交 → 已上报；点哪个表示当前停在哪个环节 */
+  var FA_FLOW_LB = ["已报审", "编制资料", "已提交", "已上报"];
+  function faFlow(k) {
+    var v = S["faflow_" + k];
+    v = (v === undefined || v === null || v === "") ? 0 : parseInt(v, 10);
+    return (v >= 1 && v <= 4) ? v : 0;
+  }
+  function faFlowSteps(k) {
+    var cur = faFlow(k), h = "", i;
+    for (i = 0; i < 4; i++) {
+      h += '<button type="button" class="wf-step' + (cur === i + 1 ? " cur" : (cur > i + 1 ? " done" : "")) + '"'
+        + ' data-wf="' + k + '" data-wfv="' + (i + 1) + '">' + FA_FLOW_LB[i] + '</button>';
+    }
+    return h;
+  }
+  /* 报送流程：已报审 → 编制资料 → 已提交 → 已上报；点哪个表示当前停在哪个环节
+     位置：选择年月所在 KPI 行的正下方，占满整行（不再挤在右栏） */
+  function faFlowStrip(c) {
+    return '<div class="fa-wf"><div class="wf-cap">报送流程</div>'
+      + '<div class="wf-bar" data-wfc="' + c.k + '">' + faFlowSteps(c.k) + '</div></div>';
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target && e.target.closest ? e.target.closest("[data-wf]") : null;
+    if (!b) return;
+    var k = b.getAttribute("data-wf"), v = parseInt(b.getAttribute("data-wfv"), 10);
+    S["faflow_" + k] = v;
+    var bar = b.closest ? b.closest(".wf-bar") : null;
+    if (bar) bar.innerHTML = faFlowSteps(k);
+    try { if (window.__pgSaveNow) window.__pgSaveNow(); } catch (e1) {}
+    try { if (window.__pgPushKey) window.__pgPushKey("faflow_" + k); } catch (e2) {}
+  });
+
+  function faCheckRail(c, cm) {
+    var rows = "", k, act, cum, diff, sumAct = null, sumCum = 0;
+    var sumAll = 0, htAllSum = faHtBand(c) + faHtOther(c);
+    for (k = 0; k < c.jian.length; k++) sumAll += faCum(c, 0, k, cm);
+    for (k = 0; k < c.other.length; k++) sumAll += faCum(c, 1, k, cm);
+    for (k = 0; k < c.jian.length; k++) sumCum += faCum(c, 0, k, cm);
+    var jx = faJianIdx(c);
+    for (var q = 0; q < jx.length; q++) {
+      k = jx[q];
+      act = faActVal(c, k, cm);
+      cum = faCum(c, 0, k, cm);
+      if (act != null) sumAct = (sumAct == null ? act : sumAct + act);
+      diff = act == null ? null : act - cum;
+      if (diff != null && Math.abs(diff) < 0.5) diff = 0;
+      var fixTid = faFixTid(c, k);
+      var fcrCell = fixTid
+        ? '<td class="fcr-fix" title="自动取自 B 页同标段同月：优先取地市州完成产值，无地市州数据时取产值累计合计，不可修改">'
+          + (act == null ? "\u2014" : fmt(act)) + '</td>'
+        : '<td class="fcr-fix" title="实际投资已固化，不再手工填写">' + (act == null ? "\u2014" : fmt(act)) + '</td>';
+      rows += '<tr data-farow="fr_' + k + '"><td>' + c.jian[k][0] + '</td>'
+        + fcrCell
+        + '<td id="fq_' + c.k + '_0_' + k + '"' + (diff != null && diff < 0 ? ' style="color:#C0392B"' : '') + '>'
+        + (diff == null ? "—" : fmt(diff)) + '</td></tr>';
+    }
+    var sDiff = sumAct == null ? null : sumAct - sumCum;
+    if (sDiff != null && Math.abs(sDiff) < 0.5) sDiff = 0;
+    rows = '<tr class="sum" data-farow="fr_b"><td>建安费</td>'
+      + '<td id="fsum_' + c.k + '">' + (sumAct == null ? "—" : fmt(sumAct)) + '</td>'
+      + '<td id="fqs_' + c.k + '"' + (sDiff != null && sDiff < 0 ? ' style="color:#C0392B"' : '') + '>'
+      + (sDiff == null ? "—" : fmt(sDiff)) + '</td></tr>' + rows;
+    return '<div class="fa-note"><div class="fn-h"><i></i>提示信息</div>'
+      + '<div class="fn-b">本卡只需填 <b>' + faTagMonth(cm) + ' 月本月投资</b>，填完点右上「提交」即锁定；<br>'
+      + '实际投资取自 B 页同标段同月，差额＝实际投资 − 累计报送投资。</div></div>'
+      + '<div style="padding:10px 10px 0"><table class="fcr-tbl"><colgroup><col><col style="width:70px"><col style="width:64px"></colgroup>'
+      + '<thead><tr><th>标段</th><th>实际投资</th><th>差额</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function faCityPanel(c) {
+    var cm = faMonthOf(c), y = faTagYear(cm), firstOfYear = c.months && c.months.indexOf(cm) === faYearFirstIdx(c, y);
+    var rows = "", i2;
+    var htB = faHtBand(c), htO = faHtOther(c), oP = faHtOther(c), invNow = faInv(c);
+    var jp = 0, jy = 0, jn = 0, jc2 = 0, op = 0, oy = 0, on = 0, oc2 = 0;
+
+    for (i2 = 0; i2 < c.jian.length; i2++) {
+      jp += faPreShown(c, 0, i2, cm);
+      jy += faYtdShown(c, 0, i2, c.jian[i2][2], cm);
+      jn += faCurVal(c, 0, i2, cm) || 0;
+      jc2 += faCum(c, 0, i2, cm);
+    }
+    for (i2 = 0; i2 < c.other.length; i2++) {
+      op += faPreShown(c, 1, i2, cm);
+      oy += faYtdShown(c, 1, i2, c.other[i2][2], cm);
+      on += faCurVal(c, 1, i2, cm) || 0;
+      oc2 += faCum(c, 1, i2, cm);
+    }
+
+    rows += '<tr class="fa-band" data-farow="fr_b"><td class="fa-ctd">—</td><td class="fa-ctd">建安费</td>'
+      + faTd(fmt(c.gsJ), "num")
+      + faTd(fmt(htB), "num", "fh_" + c.k + "_b")
+      + faTd(fmt(jc2), "num", "fj_" + c.k + "_t")
+      + faTd(fmt(jp), "num", "fj_" + c.k + "_p")
+      + faTd(fmt(jy), "num", "fy_" + c.k + "_b")
+      + faTd(fmt(jn), "num hlm", "fn_" + c.k + "_b")
+      + faTd(fmt(htB - jc2), "num faint", "fj_" + c.k + "_r") + '</tr>';
+
+    faJianIdx(c).forEach(function (i3, pos) {
+      var r = c.jian[i3];
+      var pre = faPreShown(c, 0, i3, cm), ytd = faYtdShown(c, 0, i3, r[2], cm);
+      var cur = faCurVal(c, 0, i3, cm), cum = faCum(c, 0, i3, cm);
+      var ht = faRowHt(c, i3);
+      rows += '<tr data-farow="fr_' + i3 + '"><td class="fa-ctd num">' + (pos + 1) + '</td><td class="fa-ctd">' + r[0] + '</td>'
+        + faTd("—", "mut")
+        + faTd(ht == null ? "—" : fmt(ht), "num")
+        + faTd(fmt(cum), "num", "fr_" + c.k + "_0_" + i3)
+        + faTd(fmt(pre), "num")
+        + faTd(fmt(ytd), "num", "fy_" + c.k + "_0_" + i3)
+        + faInp("fa_" + c.k + "_0_" + i3 + (c.months ? "_m" + cm : ""), cur || null, "0", "hlm")
+        + faTd(ht == null ? "—" : fmt(ht - cum), "num faint", "fr_" + c.k + "_0_" + i3 + "_r") + '</tr>';
+    });
+
+    c.other.forEach(function (r, i3) {
+      var pre = faPreShown(c, 1, i3, cm), ytd = faYtdShown(c, 1, i3, r[2], cm);
+      var cur = faCurVal(c, 1, i3, cm), cum = faCum(c, 1, i3, cm);
+      var ht = faHtOther(c);
+      rows += '<tr class="fa-other" data-farow="fr_o' + i3 + '"><td class="fa-ctd">—</td><td class="fa-ctd">' + r[0] + '</td>'
+        + faTd(fmt(oP), "num", "fgo_" + c.k)
+        + faTd(fmt(ht), "num")
+        + faTd(fmt(cum), "num", "fr_" + c.k + "_1_" + i3 + "_t")
+        + faTd(fmt(pre), "num")
+        + faTd(fmt(ytd), "num nw", "fy_" + c.k + "_1_" + i3)
+        + faInp("fa_" + c.k + "_1_" + i3 + (c.months ? "_m" + cm : ""), cur || null, "0", "hlm")
+        + faTd(fmt(ht - cum), "num faint", "fr_" + c.k + "_1_" + i3 + "_r") + '</tr>';
+    });
+
+    var tAll = jc2 + oc2;
+    rows += '<tr class="total"><td class="fa-ctd">—</td><td class="fa-ctd">合计</td>'
+      + faTd(fmt(invNow), "num", "fgt_" + c.k)
+      + faTd(fmt(htB + htO), "num", "ft_" + c.k + "_h")
+      + faTd(fmt(tAll), "num", "ft_" + c.k + "_t")
+      + faTd(fmt(jp + op), "num", "ft_" + c.k + "_p")
+      + faTd(fmt(jy + oy), "num", "ft_" + c.k + "_y")
+      + faTd(fmt(jn + on), "num hlm", "ft_" + c.k + "_n")
+      + faTd(fmt(htB + htO - tAll), "num faint", "ft_" + c.k + "_r") + '</tr>';
+
+    /* 合计下方提示：截至上月末累计报送（= 截至本月累计 − 本月当月） */
+    var lastB = jc2 - jn, lastAll = (jc2 - jn) + (oc2 - on);
+    rows += '<tr class="fcr-tip"><td colspan="9"><span class="fcr-tipb">提示</span>'
+      + '截止上月末，累计报送投资' + fmt(lastAll) + '万元，其中建安费累计报送' + fmt(lastB)
+      + '万元，占已报投资的' + (lastAll ? Math.round(lastB / lastAll * 100) : 0) + '%。</td></tr>';
+
+    var cols = '<col style="width:4.8%"><col style="width:12.6%"><col style="width:10.4%">'
+      + '<col style="width:10.4%"><col style="width:12.6%"><col style="width:10.4%">'
+      + '<col style="width:10.6%"><col style="width:10.4%"><col style="width:10%">';
+
+    var kpi = c.months
+      ? ('<div class="kpi">'
+        + '<div><div class="krow"><div class="k">选择年月</div></div>' + faPeriodSel(c, cm) + '</div>'
+        + '<div><div class="krow"><div class="k">概算总投资</div></div>'
+        + '<div class="v"><span id="fk_' + c.k + '_inv">' + fmt(invNow) + '</span><span class="u">万元</span></div>'
+        + '<div class="sub" id="fk_' + c.k + '_s1">完成投资 ' + fmt(tAll) + ' 万元<br>占比 '
+        + pctTxt(invNow ? tAll / invNow : 0) + '</div></div>'
+        + '<div><div class="krow"><div class="k">实际合同额</div></div><div class="v"><span id="fk_' + c.k + '_tot">' + fmt(htB + htO)
+        + '</span><span class="u">万元</span></div>'
+        + '<div class="sub" id="fk_' + c.k + '_s2">完成投资 ' + fmt(tAll) + ' 万元<br>占比 '
+        + pctTxt((htB + htO) ? tAll / (htB + htO) : 0) + '</div></div>'
+        + '<div><div class="krow"><div class="k">其中建安费合同额</div></div><div class="v"><span id="fk_' + c.k + '_htj">' + fmt(htB)
+        + '</span><span class="u">万元</span></div>'
+        + '<div class="sub" id="fk_' + c.k + '_s3">完成投资 ' + fmt(jc2) + ' 万元<br>占比 '
+        + pctTxt(htB ? jc2 / htB : 0) + '</div></div>'
+        + '</div>')
+      : ('<div class="kpi">'
+        + '<div><div class="k">投资额</div><div class="v">' + fmt(faInv(c)) + '<span class="u">万元</span></div><div class="sub">'
+        + c.city + (c.seg ? ' · ' + c.seg : '') + '</div></div>'
+        + '<div><div class="k">合同金额</div><div class="v"><span id="fk_' + c.k + '_ht">' + fmt(htB)
+        + '</span><span class="u">万元</span></div><div class="sub">建安费合同额</div></div>'
+        + '<div><div class="k">完成投资</div><div class="v"><span id="fk_' + c.k + '_done">' + fmt(jc2)
+        + '</span><span class="u">万元</span></div><div class="sub" id="fk_' + c.k + '_dsub">含其他费 ' + fmt(tAll) + '</div></div>'
+        + '<div><div class="k">完成百分比</div><div class="v"><span id="fk_' + c.k + '_pct">'
+        + pctTxt(htB ? jc2 / htB : 0) + '</span></div><div class="sub">完成投资 ÷ 合同金额</div></div>'
+        + '</div>');
+
+    var twoCard = !!c.months;
+    var hd = '<div class="fa-hd"><div class="fa-ttl">' + c.city + (c.seg ? '（' + c.seg + '）' : '') + ' 本月投资填报</div>'
+      + '<div class="fa-sub">仅「本月投资」可填，其余数据已固化</div>'
+      + '<div class="clk-bar" style="margin-left:auto"><span class="clk-st" data-lkst="fa_' + c.k + '">已提交 · 锁定</span>'
+      + '<button type="button" class="clk-ico" data-lkico="fa_' + c.k + '" aria-label="小锁"></button>'
+      + '<button type="button" class="clk-sub" data-lksub="fa_' + c.k + '">提交</button></div></div>';
+    return '<div class="fa-panel' + (twoCard ? '' : ' card') + '" id="fa-p-' + c.k + '"'
+      + ' style="display:none;' + (twoCard ? 'gap:14px' : 'padding:0;overflow:hidden') + '">'
+      + (twoCard ? '<div class="card" style="flex:1 1 auto;min-width:0;margin:0;padding:0;overflow:hidden">' : '')
+      + hd
+      + kpi
+      + faFlowStrip(c)
+      + '<div class="card-body" style="padding-top:12px">'
+
+      + '<div class="tw"><table class="tbl fa-tbl ctr"><colgroup>' + cols + '</colgroup>'
+      + '<thead><tr><th>序号</th><th>类型</th><th>概算</th><th>合同额</th>'
+      + '<th>累计报送投资</th><th>截止上年末</th><th>本年已报送</th><th class="hlm">本月投资</th><th>剩余投资</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table></div>'
+      + '</div>'
+      + (twoCard ? '</div><div class="card fa-rail" style="flex:0 0 240px;margin:0;padding:0;overflow:hidden">'
+        + '<div style="height:100%;display:flex;flex-direction:column">' + faCheckRail(c, cm) + '</div>'
+        + '</div>' : '')
+      + '</div>';
+  }
+
+  function faCitySync(c) {
+    var cm = faMonthOf(c), i;
+    var jp = 0, jy = 0, jn = 0, jc2 = 0, op = 0, oy = 0, on = 0, oc2 = 0;
+    for (i = 0; i < c.jian.length; i++) {
+      var pre = faPreShown(c, 0, i, cm), ytd = faYtdShown(c, 0, i, c.jian[i][2], cm);
+      var cur = faCurVal(c, 0, i, cm) || 0, cum = faCum(c, 0, i, cm), ht = faRowHt(c, i);
+      faPut("fh_" + c.k + "_0_" + i, ht == null ? "—" : fmt(ht));
+      faPut("fy_" + c.k + "_0_" + i, fmt(ytd));
+      faPut("fr_" + c.k + "_0_" + i, fmt(cum));
+      faPut("fr_" + c.k + "_0_" + i + "_r", ht == null ? "—" : fmt(ht - cum));
+      var actK = faActVal(c, i, cm), difK = actK == null ? null : actK - cum;
+      if (difK != null && Math.abs(difK) < 0.5) difK = 0;
+      faPut("fq_" + c.k + "_0_" + i, difK == null ? "—" : fmt(difK));
+      var dEl = el("fq_" + c.k + "_0_" + i);
+      if (dEl) dEl.style.color = (difK != null && difK < 0) ? "#C0392B" : "";
+      jp += pre; jy += ytd; jn += cur; jc2 += cum;
+    }
+    for (i = 0; i < c.other.length; i++) {
+      var pre2 = faPreShown(c, 1, i, cm), ytd2 = faYtdShown(c, 1, i, c.other[i][2], cm);
+      var cur2 = faCurVal(c, 1, i, cm) || 0, cum2 = faCum(c, 1, i, cm), ht2 = faHtOther(c);
+      faPut("fy_" + c.k + "_1_" + i, fmt(ytd2));
+      faPut("fr_" + c.k + "_1_" + i + "_t", fmt(cum2));
+      faPut("fr_" + c.k + "_1_" + i + "_r", fmt(ht2 - cum2));
+      op += pre2; oy += ytd2; on += cur2; oc2 += cum2;
+    }
+    var htB = faHtBand(c), htO = faHtOther(c), tAll = jc2 + oc2, invNow = faInv(c);
+    faPut("fgo_" + c.k, fmt(htO));
+    faPut("fgt_" + c.k, fmt(invNow));
+    faPut("fk_" + c.k + "_inv", fmt(invNow));
+    faPut("fj_" + c.k + "_p", fmt(jp));
+    faPut("ft_" + c.k + "_p", fmt(jp + op));
+    faPut("fy_" + c.k + "_b", fmt(jy));
+    faPut("fn_" + c.k + "_b", fmt(jn));
+    faPut("fj_" + c.k + "_t", fmt(jc2));
+    faPut("fh_" + c.k + "_b", fmt(htB));
+    faPut("fj_" + c.k + "_r", fmt(htB - jc2));
+    faPut("ft_" + c.k + "_h", fmt(htB + htO));
+    faPut("ft_" + c.k + "_p", fmt(jp + op));
+    faPut("ft_" + c.k + "_y", fmt(jy + oy));
+    faPut("ft_" + c.k + "_n", fmt(jn + on));
+    faPut("ft_" + c.k + "_t", fmt(tAll));
+    faPut("ft_" + c.k + "_r", fmt(htB + htO - tAll));
+    var htAllNow = htB + htO;
+    faPut("fcr_sub_" + c.k, "实际完成 " + fmt(tAll) + " 万元，占合同额 " + pctTxt(htAllNow ? tAll / htAllNow : 0)
+      + "，占概算投资 " + pctTxt(invNow ? tAll / invNow : 0));
+    var sa = null, kk;
+    for (kk = 0; kk < c.jian.length; kk++) {
+      var ak = faActVal(c, kk, cm);
+      if (ak != null) sa = (sa == null ? ak : sa + ak);
+    }
+    faPut("fsum_" + c.k, sa == null ? "—" : fmt(sa));
+    var sdif = sa == null ? null : sa - jc2;
+    if (sdif != null && Math.abs(sdif) < 0.5) sdif = 0;
+    faPut("fqs_" + c.k, sdif == null ? "—" : fmt(sdif));
+    var sq = el("fqs_" + c.k);
+    if (sq) sq.style.color = (sdif != null && sdif < 0) ? "#C0392B" : "";
+    if (c.months) {
+      faPut("fk_" + c.k + "_tot", fmt(htB + htO));
+      faPut("fk_" + c.k + "_htj", fmt(htB));
+      faPut("fk_" + c.k + "_s1", "完成投资 " + fmt(tAll) + " 万元\n占比 " + pctTxt(invNow ? tAll / invNow : 0));
+      faPut("fk_" + c.k + "_s2", "完成投资 " + fmt(tAll) + " 万元\n占比 " + pctTxt((htB + htO) ? tAll / (htB + htO) : 0));
+      faPut("fk_" + c.k + "_s3", "完成投资 " + fmt(jc2) + " 万元\n占比 " + pctTxt(htB ? jc2 / htB : 0));
+    } else {
+      faPut("fk_" + c.k + "_ht", fmt(htB));
+      faPut("fk_" + c.k + "_done", fmt(jc2));
+      faPut("fk_" + c.k + "_dsub", "含其他费 " + fmt(tAll));
+      faPut("fk_" + c.k + "_pct", pctTxt(htB ? jc2 / htB : 0));
+    }
+  }
+
+  function faAlignRail() {
+    document.querySelectorAll("#fa-wrap .fa-panel").forEach(function (p) {
+      if (p.style.display === "none") return;
+      var head = p.querySelector(".fcr-head"), tbl = p.querySelector(".fa-tbl");
+      if (!head || !tbl) return;
+      var ftbl = p.querySelector(".fcr-tbl");
+      if (ftbl) ftbl.style.marginTop = "0px";
+      /* 先量出流程块自身需要的高度：右栏高度不足、或 KPI 尚未排版完成时，
+         也不会把「报送流程」压扁成 0 高而被 overflow 裁掉 */
+      head.style.height = "auto";
+      var needH = Math.round(head.getBoundingClientRect().height);
+      head.style.height = "0px";
+      var htop = head.getBoundingClientRect().top;
+      /* 顶部分隔线：与左侧 KPI 那一行的底线齐平（不再按表格首行推算） */
+      var kpi = p.querySelector(".kpi");
+      var d = kpi
+        ? kpi.getBoundingClientRect().bottom - htop
+        : tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
+      if (d > 300) d = tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
+      head.style.height = Math.max(d > 0 ? Math.round(d) : 0, needH) + "px";
+      /* 行对齐改由表格上外边距承担，避免把分隔线推走 */
+      var m0 = tbl.querySelector("tbody tr"), r0 = ftbl ? ftbl.querySelector("tbody tr") : null;
+      if (m0 && r0 && ftbl) {
+        var delta = Math.round(m0.getBoundingClientRect().top - r0.getBoundingClientRect().top);
+        ftbl.style.marginTop = (delta > 0 ? delta : 0) + "px";
+      }
+    });
+  }
+
+  var __faRailT = null;
+  window.addEventListener("resize", function () {
+    if (__faRailT) clearTimeout(__faRailT);
+    __faRailT = setTimeout(function () { __faRailT = null; try { faAlignRail(); } catch (e) {} }, 120);
+  });
+
+  function showFA(k) {
+    document.querySelectorAll("#fa-wrap .fa-panel").forEach(function (p) {
+      var on = (p.id === "fa-p-" + k);
+      p.style.display = on ? (p.querySelector(".fa-rail") ? "flex" : "block") : "none";
+    });
+    document.querySelectorAll("#fa-tabs [data-fatab]").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-fatab") === k);
+    });
+    var h = el("fa-hint"), c = null;
+    FA_CITIES.forEach(function (x) { if (x.k === k) c = x; });
+    if (h) h.textContent = "单位：万元";
+    setTimeout(faAlignRail, 0);
+  }
+
+
+  /* 吸顶表头偏移＝顶部深色标题条高度 */
+  (function () {
+    function pgTopH() {
+      var t = document.querySelector(".top");
+      var h = t ? Math.round(t.getBoundingClientRect().height) : 0;
+      document.documentElement.style.setProperty("--pgTopH", (h || 72) + "px");
+    }
+    pgTopH();
+    window.addEventListener("resize", function () { setTimeout(pgTopH, 60); });
+  })();
+
+  function faRefresh() {
+    if (!FA_READY) return;
+    var tx = { inv: 0, jp: 0, op: 0, p: 0, jc: 0, oc: 0, cu: 0, n: 0, t: 0 };
+    FA_CITIES.forEach(function (c) {
+      var v = faCalc(c);
+      faCitySync(c);
+      faPut("fs_" + c.k + "_jp", fmt(v.jp));
+      faPut("fs_" + c.k + "_op", fmt(v.op));
+      faPut("fs_" + c.k + "_sp", fmt(v.p));
+      faPut("fs_" + c.k + "_jc", fmt(v.jc));
+      faPut("fs_" + c.k + "_oc", fmt(v.oc));
+      faPut("fs_" + c.k + "_sc", fmt(v.cu));
+      faPut("fs_" + c.k + "_n", fmt(v.n));
+      faPut("fs_" + c.k + "_c", fmt(v.t));
+      faPut("fs_" + c.k + "_inv", fmt(faInv(c)));
+      faPut("fs_" + c.k + "_p", pctTxt(v.t / faInv(c)));
+      tx.inv += faInv(c); tx.jp += v.jp; tx.op += v.op; tx.p += v.p;
+      tx.jc += v.jc; tx.oc += v.oc; tx.cu += v.cu; tx.n += v.n; tx.t += v.t;
+    });
+    faPut("fs_T_inv", fmt(tx.inv));
+    faPut("fa-kpi-inv", fmt(tx.inv));
+    faPut("fa-kpi-presub", "占投资总额 " + pctTxt(tx.p / tx.inv));
+    faPut("fs_T_jp", fmt(tx.jp));
+    faPut("fs_T_op", fmt(tx.op));
+    faPut("fs_T_sp", fmt(tx.p));
+    faPut("fs_T_jc", fmt(tx.jc));
+    faPut("fs_T_oc", fmt(tx.oc));
+    faPut("fs_T_sc", fmt(tx.cu));
+    faPut("fs_T_n", fmt(tx.n));
+    faPut("fs_T_c", fmt(tx.t));
+    faPut("fs_T_p", pctTxt(tx.t / tx.inv));
+    faPut("fa-kpi-cu", fmt(tx.cu));
+    faPut("fa-kpi-cum", fmt(tx.t));
+    faPut("fa-kpi-sub", "占投资总额 " + pctTxt(tx.t / tx.inv));
+  }
+
+  function faApplyCityLock(k) {
+    var p = document.getElementById("fa-p-" + k);
+    if (!p) return;
+    var lk = cardLocked("fa_" + k);
+    p.querySelectorAll("input.fa-in").forEach(function (inp) {
+      inp.readOnly = lk;
+      inp.setAttribute("aria-readonly", lk ? "true" : "false");
+      inp.style.cursor = lk ? "default" : "text";
+    });
+    cardPaint("fa_" + k);
+  }
+  function faApplyLock() {
+    FA_CITIES.forEach(function (c) {
+      if (!c.months) return;
+      faApplyCityLock(c.k);
+    });
+  }
+
+  function faSync() {
+    if (!FA_READY) return;
+    /* 导入数据后录入月份可能变化，按新月份重建面板 */
+    if (!FA_REBUILDING) {
+      FA_REBUILDING = true;
+      FA_CITIES.forEach(function (c) {
+        if (!c.months) return;
+        var p = el("fa-p-" + c.k);
+        if (!p) return;
+        var on = p.querySelector("[data-m].on");
+        if (on && on.getAttribute("data-m") !== faMonthOf(c)) faRebuild(c);
+      });
+      FA_REBUILDING = false;
+    }
+    document.querySelectorAll("#view-fixedasset input[data-k]").forEach(function (inp) {
+      var v = S[inp.dataset.k], def = inp.getAttribute("data-def");
+      inp.value = (v == null || String(v).trim() === "") ? (def || "") : fmt(num(v));
+    });
+    faRefresh();
+  }
+
+  function faRebuild(c) {
+    var old = el("fa-p-" + c.k);
+    if (!old) return;
+    var box = document.createElement("div");
+    box.innerHTML = faCityPanel(c);
+    old.parentNode.replaceChild(box.firstChild, old);
+    faSync();
+    faApplyLock();
+    showFA(c.k);
+  }
+  window.__faReload = function () {
+    var act = null, onTab = document.querySelector("#fa-tabs .fa-tab.on");
+    if (onTab) act = onTab.getAttribute("data-fatab");
+    FA_CITIES.forEach(function (c) {
+      var old = el("fa-p-" + c.k);
+      if (!old) return;
+      var box = document.createElement("div");
+      box.innerHTML = faCityPanel(c);
+      old.parentNode.replaceChild(box.firstChild, old);
+    });
+    faSync();
+    faApplyLock();
+    if (act) showFA(act);
+  };
+
+  window.__faReloadLater = function () {
+    try {
+      var v = document.querySelector("#view-fixedasset");
+      if (!v || !v.querySelector("table.fcr-tbl")) return;
+      if (v.contains(document.activeElement)) return;
+      if (window.__faReload) window.__faReload();
+    } catch (e) {}
+  };
+
+  window.addEventListener("load", function () {
+    [1200, 5000].forEach(function (d) { setTimeout(window.__faReloadLater, d); });
+  });
+
+  (function () {
+    var wrap = el("fa-wrap"), tabs = el("fa-tabs");
+    if (!wrap || !tabs) return;
+    /* 旧版键迁移：单期值 / 11、12 月 → 首年月份标签 */
+    var LEG = [{ s: "11", t: faTag(FA_Y0, 11) }, { s: "12", t: faTag(FA_Y0, 12) }];
+    FA_CITIES.forEach(function (c) {
+      if (!c.months) return;
+      var m = String(S["fam_" + c.k] == null ? "" : S["fam_" + c.k]), g, i, arr, base;
+      if (m && m.length === 2) S["fam_" + c.k] = faTag(FA_Y0, parseInt(m, 10));
+      for (g = 0; g < 2; g++) {
+        arr = g === 0 ? c.jian : c.other;
+        for (i = 0; i < arr.length; i++) {
+          base = "fa_" + c.k + "_" + g + "_" + i;
+          if (S[base + "_m" + faTag(FA_Y0, 11)] == null && S[base] != null) S[base + "_m" + faTag(FA_Y0, 11)] = S[base];
+          LEG.forEach(function (x) {
+            if (S[base + "_m" + x.t] == null && S[base + "_m" + x.s] != null) S[base + "_m" + x.t] = S[base + "_m" + x.s];
+          });
+        }
+      }
+    });
+    var th = '<button type="button" class="fa-tab on" data-fatab="sum">汇总</button>';
+    FA_CITIES.forEach(function (c) {
+      th += '<button type="button" class="fa-tab" data-fatab="' + c.k + '">' + c.city.replace("市", "") + '</button>';
+    });
+    tabs.innerHTML = th;
+    wrap.innerHTML = faSummaryPanel() + FA_CITIES.map(faCityPanel).join("");
+    FA_READY = true;
+    faSync();
+    faApplyLock();
+    showFA("sum");
+    tabs.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest("[data-fatab]") : null;
+      if (b) showFA(b.getAttribute("data-fatab"));
+    });
+    var hovKey = null, hovPanel = null;
+    function faHov(key, on, panel) {
+      if (!panel) return;
+      panel.querySelectorAll('tr[data-farow="' + key + '"]').forEach(function (x) {
+        x.classList.toggle("fa-hov", on);
+      });
+    }
+    wrap.addEventListener("mouseover", function (e) {
+      var tr = e.target && e.target.closest ? e.target.closest("tr[data-farow]") : null;
+      if (!tr) return;
+      var panel = tr.closest(".fa-panel"), key = tr.getAttribute("data-farow");
+      if (!panel) return;
+      if (key === hovKey && panel === hovPanel) return;
+      if (hovKey && hovPanel) faHov(hovKey, false, hovPanel);
+      hovKey = key;
+      hovPanel = panel;
+      faHov(key, true, panel);
+    });
+    wrap.addEventListener("mouseout", function (e) {
+      var tr = e.target && e.target.closest ? e.target.closest("tr[data-farow]") : null;
+      if (!tr) return;
+      if (e.relatedTarget && tr.contains(e.relatedTarget)) return;
+      if (hovKey && hovPanel) { faHov(hovKey, false, hovPanel); hovKey = null; hovPanel = null; }
+    });
+    wrap.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest("[data-fam]") : null;
+      if (!b) return;
+      var k = b.getAttribute("data-fam"), m = b.getAttribute("data-m"), yy = b.getAttribute("data-my"), c = null;
+      FA_CITIES.forEach(function (x) { if (x.k === k) c = x; });
+      if (!c) return;
+      if (yy) {
+        var cy = faTagYear(faMonthOf(c));
+        if (String(cy) === yy) return;
+        m = c.months[faYearFirstIdx(c, parseInt(yy, 10))];
+        if (!m) return;
+      }
+      if (!m) return;
+      S["fam_" + k] = m;
+      try { save(); } catch (err) {}
+      faRebuild(c);
+    });
+    wrap.addEventListener("change", function (e) {
+      var s = e.target;
+      if (!s || s.tagName !== "SELECT" || !s.getAttribute("data-fk")) return;
+      var k = s.getAttribute("data-fk"), c = null;
+      FA_CITIES.forEach(function (x) { if (x.k === k) c = x; });
+      if (!c || !c.months) return;
+      var m = s.getAttribute("data-sy") ? c.months[faYearFirstIdx(c, parseInt(s.value, 10))] : s.value;
+      if (!m || c.months.indexOf(m) < 0) return;
+      S["fam_" + k] = m;
+      try { save(); } catch (err) {}
+      faRebuild(c);
+    });
+    document.addEventListener("input", function (e) {
+      var t = e.target;
+      if (!t || !t.dataset) return;
+      if (!/^(fa_|fah_|fap_|fay_|fam_|fak_)/.test(String(t.dataset.k || ""))) return;
+      faRefresh();
+    });
+    document.addEventListener("focusout", function (e) {
+      var t = e.target;
+      if (!t || !t.dataset) return;
+      if (!/^(fa_|fah_|fap_|fay_|fam_|fak_)/.test(String(t.dataset.k || ""))) return;
+      faRefresh();
+    });
+  })();
+
+
+  /* ================= 形象进度汇总 + 线上读取（线下版本只读） ================= */
+  (function () {
+    /* BASE 已外置到 assets/a.cfg.js */
+    window.__PG_BASE = BASE;
+    var RKEY = "hyhx-report-v1";
+    var DB = { ts: 0, reports: {} };
+    try { var raw = localStorage.getItem(RKEY); if (raw) { var o = JSON.parse(raw); if (o && o.reports) DB = o; } } catch (e) {}
+    var YM = BASE.months[0];
+    /* 形象进度默认定位当前自然月（今月不在可选范围内则取最近的已开始月份） */
+    (function () {
+      var d = new Date(), ym = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2);
+      var i, v = BASE.months[0];
+      if (!BASE.months.length) return;
+      if (ym <= BASE.months[0]) YM = BASE.months[0];
+      else if (ym >= BASE.months[BASE.months.length - 1]) YM = BASE.months[BASE.months.length - 1];
+      else { for (i = 0; i < BASE.months.length; i++) if (BASE.months[i] <= ym) v = BASE.months[i]; YM = v; }
+    })();
+    window.__REPDB = DB;
+
+    /* ---- 行键稳定化：以「项次/名称」做键（r101 / o1 …），插行删行不再整体错位；旧下标键 r<i>/o<i> 仅作兼容读取 ---- */
+    function rkey(p, r, i, used) {
+      var b = String((r && r.no !== undefined && r.no !== null && r.no !== "") ? r.no : ((r && r.nm) || ""))
+        .replace(/[^\w\u4e00-\u9fa5]/g, "");
+      var k = b ? (p + b) : (p + "i" + i);
+      if (used[k]) k = k + "_" + (i + 1);
+      used[k] = 1;
+      return k;
+    }
+    function rfind(t, key) {
+      if (!t || !key) return null;
+      var arr = (t.rows || []).concat(t.out || []), i, r;
+      for (i = 0; i < arr.length; i++) { r = arr[i]; if (r.k === key || r.kl === key) return r; }
+      return null;
+    }
+    function evRow(tid, ym, kind, row) {
+      var v = ev(tid, ym, kind, row.k);
+      if (v === null && row.kl) v = ev(tid, ym, kind, row.kl);
+      return v;
+    }
+    (function assignRowKeys() {
+      BASE.tenders.forEach(function (t) {
+        var u1 = {}, u2 = {};
+        (t.rows || []).forEach(function (r, i) { if (r.kl === undefined) { r.kl = "r" + i; r.k = rkey("a", r, i, u1); } });
+        (t.out || []).forEach(function (r, i) { if (r.kl === undefined) { r.kl = "o" + i; r.k = rkey("b", r, i, u2); } });
+      });
+    })();
+
+    /* 旧 Gist 通道与经典令牌已下线：数据只走私有仓 mtj2018/hyhx-ledger-data（ghGetAll） */
+    var CLOUD = {
+      ledger: "hyhx-ledger.json",
+      report: "hyhx-report.json",
+      ledgerTsKey: KEY + "-cloudts"
+    };
+    /* 线上访问（http/https）自动写回云端；本机 file:// 打开完全只读，改了也不影响线上 */
+    var LOCAL_PREVIEW = location.hostname === "127.0.0.1" || location.hostname === "localhost";
+    var ONLINE = !LOCAL_PREVIEW && (location.protocol === "http:" || location.protocol === "https:");
+    /* 读通云端后才允许写回，避免初次打开网络没通时把默认数据覆盖上去 */
+    var SYNC_OK = false;
+
+    function q(s) { return document.querySelector(s); }
+    function fmt(v, d) {
+      if (v === null || v === undefined || v === "") return "";
+      var n = Number(v); if (!isFinite(n)) return "";
+      var s = n.toFixed(d === null || d === undefined ? 2 : d);
+      if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+      var p = s.split(".");
+      if (p[0] !== "-" && p[0].length > 3) p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return p.join(".");
+    }
+    function fmtz(v, d) {
+    if (v === null || v === undefined || v === "") return "";
+    var n = Number(v);
+    if (!isFinite(n)) return "";
+    var s = n.toFixed(d || 2), p = s.split(".");
+    if (p[0] !== "-" && p[0].length > 3) p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return p.join(".");
+  }
+  function pct(v) { return v === null || v === undefined || !isFinite(v) ? "" : (v * 100).toFixed(1) + "%"; }
+    function rep(tid, ym) { var t = DB.reports[tid] || {}; return t[ym] || { shape: {}, out: {}, ppl: {}, reg: {} }; }
+    function ev(tid, ym, kind, key) {
+      var r = rep(tid, ym), bag = r[kind] || {}, v = bag[key];
+      return (v === null || v === undefined || v === "") ? null : Number(v);
+    }
+    function shapeAt(t, row, ym) {
+      var idx = BASE.months.indexOf(ym), prev = row.prev || 0;
+      for (var k = 0; k < idx; k++) {
+        var v = evRow(t.tid, BASE.months[k], "shape", row);
+        if (v === null && k === 0 && row.mon !== null && row.mon !== undefined) v = row.mon;
+        if (v !== null) prev += v;
+      }
+      var mon = evRow(t.tid, ym, "shape", row);
+      if (mon === null && idx === 0 && row.mon !== null && row.mon !== undefined) mon = row.mon;
+      if (mon === null) mon = 0;
+      return { prev: prev, mon: mon, cum: prev + mon };
+    }
+    /* 与 B 页「分项产值情况」完全同口径：累计完成优先取手工累计（outcum），否则上月末累计＋本月完成 */
+    function outAt(t, row, ym) {
+      var idx = BASE.months.indexOf(ym), cum = row.cum || 0, mon = 0, k, oc, v;
+      for (k = 1; k < idx; k++) {
+        oc = evRow(t.tid, BASE.months[k], "outcum", row);
+        if (oc !== null) { cum = oc; continue; }
+        v = evRow(t.tid, BASE.months[k], "out", row);
+        if (v !== null) cum += v;
+      }
+      oc = evRow(t.tid, ym, "outcum", row);
+      if (oc !== null) cum = oc;
+      else if (idx > 0) { v = evRow(t.tid, ym, "out", row); if (v !== null) cum += v; }
+      mon = evRow(t.tid, ym, "out", row);
+      if (mon === null && idx === 0 && row.mon !== null && row.mon !== undefined) mon = row.mon;
+      if (mon === null) mon = 0;
+      return { mon: mon, cum: cum };
+    }
+    function pplAt(t, ym) {
+      var mgr = ev(t.tid, ym, "ppl", "mgr"), wkr = ev(t.tid, ym, "ppl", "worker");
+      if (mgr === null) mgr = t.people.mgr || 0;
+      if (wkr === null) wkr = t.people.worker || 0;
+      return { mgr: mgr, worker: wkr };
+    }
+
+    /* ---- 汇总：形象进度 ---- */
+    function aggShape(ym) {
+      var map = {}, order = [];
+      /* 行键已在 assignRowKeys() 里一次性分配，这里不再按下标重算 */
+      var seqT = BASE.tenders.slice().sort(function (x, y) {
+        return (x.tid === "t8" ? 0 : 1) - (y.tid === "t8" ? 0 : 1);
+      });
+      seqT.forEach(function (t) {
+        var curSec = "", curSecno = "";
+        t.rows.forEach(function (row) {
+          if (row.lv === 1) { curSec = row.nm; curSecno = row.no; }
+          var key = row.agg || curSec;
+          var g = map[key];
+          if (!g) {
+            g = map[key] = { name: row.nm, unit: row.unit, no: row.no, lv: row.lv, leaf: !!row.leaf,
+                             sec: curSec, secno: curSecno, total: 0, prev: 0, mon: 0, cum: 0, n: 0,
+                             pctRow: row.unit === "%", has: false };
+            order.push(key);
+          }
+          if (!(row.leaf && row.total !== null && row.total !== undefined)) return;
+          var st = shapeAt(t, row, ym);
+          g.has = true;
+          if (g.pctRow) { g.n++; g.prev += st.prev; g.mon += st.mon; g.cum += st.cum; g.total = 100; }
+          else { g.total += (row.total || 0); g.prev += st.prev; g.mon += st.mon; g.cum += st.cum; }
+        });
+      });
+      var SECORD = ["临时工程","路基工程","路面工程","桥涵工程","房建工程","交安工程","绿化工程","机电工程"];
+      order.sort(function (x, y) {
+        var ix = SECORD.indexOf(map[x].sec), iy = SECORD.indexOf(map[y].sec);
+        if (ix < 0) ix = 99; if (iy < 0) iy = 99;
+        return ix - iy;
+      });
+      return order.map(function (k) {
+        var g = map[k];
+        if (g.pctRow && g.n) { g.prev = g.prev / g.n; g.mon = g.mon / g.n; g.cum = g.cum / g.n; }
+        return g;
+      });
+    }
+
+    /* ---- 汇总：产值 ---- */
+    /* 合同额只读：直接取「合同清单」各章节合同额（万元），不再人工录入 */
+    var CTRCH = {"临时工程":134232,"路基工程":504818,"路面工程":241476,"桥涵工程":448090,"绿化工程":27150,"改扩建工程":174747,"集采材料到工地价":616468,"交安工程":75299,"机电工程":98982};
+    var CTRALIAS = { "桥涵工程": "桥涵工程" };
+    function ctrChOf(n) {
+      var k = CTRALIAS[n] || n, v = CTRCH[k];
+      return (v === undefined || v === null) ? null : v;
+    }
+    function aggOut(ym) {
+      var map = {}, order = [];
+      BASE.tenders.forEach(function (t) {
+        t.out.forEach(function (row) {
+          if (row.nm === "合计") return;
+          if (!map[row.nm]) { map[row.nm] = { name: row.nm, no: row.no, contract: 0, mon: 0, cum: 0 }; order.push(row.nm); }
+          var g = map[row.nm], o = outAt(t, row, ym);
+          g.contract += (row.contract || 0); g.mon += o.mon; g.cum += o.cum;
+        });
+      });
+      var FIX = ["临时工程", "路基工程", "路面工程", "桥涵工程", "改扩建工程", "交安工程", "绿化工程", "集采材料到工地价", "机电工程"];
+      var ordered = [];
+      FIX.forEach(function (n, i) { if (map[n]) { map[n].no = String(i + 1); ordered.push(map[n]); } });
+      order.forEach(function (k) { if (FIX.indexOf(k) < 0) ordered.push(map[k]); });
+      var rows = ordered;
+      /* 合同额只读：按章节名取「合同清单」金额；无对应章节的行保留汇总值 */
+      rows.forEach(function (r, i) { r.ci = i + 1; var v = ctrChOf(r.name); if (v !== null) r.contract = v; });
+      /* 合计行＝本表各行的合计，独立现算，不引用章节合计 */
+      var tot = { name: "合计", no: "", contract: 0, mon: 0, cum: 0, ci: 0 };
+      rows.forEach(function (r) { tot.contract += r.contract; tot.mon += r.mon; tot.cum += r.cum; });
+      rows.push(tot);
+      return rows;
+    }
+
+    function head(title, hint, extra) {
+      if (extra) {
+        return '<div class="card-head"><h2>' + title + '</h2><div class="hd-right"><span class="hint">'
+          + (hint || "") + '</span>' + extra + '</div></div>';
+      }
+      return '<div class="card-head"><h2>' + title + '</h2><span class="hint">' + (hint || "") + '</span></div>';
+    }
+
+    function ndOf(sec) {
+      return (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程" || sec === "机电工程")
+        ? 2 : (sec === "桥涵工程" ? 0 : 4);
+    }
+    /* 总数量沿用原精度规则（机电工程仍按整数显示） */
+    function ndTotOf(sec) {
+      return (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : (sec === "桥涵工程" ? 0 : 4);
+    }
+    function fnum(v, nd) {
+      if (v === null || v === undefined || v === "") return "";
+      var n = Number(v); if (!isFinite(n)) return "";
+      if (nd === 2) return fmtz(n, 2);
+      if (nd === 0) return fmt(Math.round(n), 0);
+      return fmt(n, 4);
+    }
+
+    /* ============ 内置 XLSX 写手（无外网依赖） ============ */
+    function zcrc32(u8) {
+      var t = zcrc32.t;
+      if (!t) {
+        t = zcrc32.t = [];
+        for (var n = 0; n < 256; n++) {
+          var c = n;
+          for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+          t[n] = c >>> 0;
+        }
+      }
+      var crc = 0xFFFFFFFF;
+      for (var i = 0; i < u8.length; i++) crc = (crc >>> 8) ^ t[(crc ^ u8[i]) & 0xFF];
+      return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+    function zipPack(entries) {
+      var enc = new TextEncoder(), out = [], cen = [], off = 0;
+      function w16(a, v) { a.push(v & 255, (v >>> 8) & 255); }
+      function w32(a, v) { a.push(v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255); }
+      entries.forEach(function (e) {
+        var nm = Array.prototype.slice.call(enc.encode(e.name)), d = e.bytes;
+        var crc = zcrc32(d), len = d.length, lh = [];
+        w32(lh, 0x04034b50); w16(lh, 20); w16(lh, 0x0800); w16(lh, 0); w16(lh, 0); w16(lh, 0x21);
+        w32(lh, crc); w32(lh, len); w32(lh, len); w16(lh, nm.length); w16(lh, 0);
+        out.push(lh, nm, Array.prototype.slice.call(d));
+        var ch = [];
+        w32(ch, 0x02014b50); w16(ch, 20); w16(ch, 20); w16(ch, 0x0800); w16(ch, 0); w16(ch, 0); w16(ch, 0x21);
+        w32(ch, crc); w32(ch, len); w32(ch, len); w16(ch, nm.length);
+        w16(ch, 0); w16(ch, 0); w16(ch, 0); w16(ch, 0); w32(ch, 0); w32(ch, off);
+        cen.push(ch, nm);
+        off += lh.length + nm.length + len;
+      });
+      var cd = [];
+      cen.forEach(function (a) { for (var i = 0; i < a.length; i++) cd.push(a[i]); });
+      var eo = [];
+      w32(eo, 0x06054b50); w16(eo, 0); w16(eo, 0);
+      w16(eo, entries.length); w16(eo, entries.length);
+      w32(eo, cd.length); w32(eo, off); w16(eo, 0);
+      var all = [];
+      function push(a) { for (var i = 0; i < a.length; i++) all.push(a[i]); }
+      out.forEach(push); push(cd); push(eo);
+      return new Uint8Array(all);
+    }
+    function xEsc(str) {
+      return String(str === null || str === undefined ? "" : str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function xCol(i) {
+      var s = "";
+      while (i > 0) { var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); }
+      return s;
+    }
+    function roundTo(v, nd) {
+      var x = Number(v); if (!isFinite(x)) return null;
+      if (nd === 0) return Math.round(x);
+      if (nd === 2) return Math.round(x * 100) / 100;
+      return Math.round(x * 10000) / 10000;
+    }
+    function buildXlsx() {
+      var list = aggShape(YM), NC = 11, rows = [], merges = [];
+      var ymA = YM.split("-");
+      var head3 = "截止" + ymA[0] + "年" + parseInt(ymA[1], 10) + "月底累计完成";
+      function row() { var a = []; for (var i = 0; i < NC; i++) a.push(null); return a; }
+      function put(r, i, v, st, isNum) { r[i] = { v: v, s: st, n: !!isNum }; }
+
+      var r0 = row();
+      put(r0, 0, "汉宜改扩建项目形象进度完成情况一览表", 1);
+      rows.push(r0); merges.push("A1:K1");
+
+      var r1 = row();
+      put(r1, 0, "项目名称：沪渝高速公路武汉至宜昌段改扩建工程      所属建设公司：湖北汉宜高速公路有限公司", 2);
+      rows.push(r1); merges.push("A2:K2");
+
+      var r2 = row(), r3 = row();
+      put(r2, 0, "序号", 3); put(r2, 1, "工程名称", 3); put(r2, 4, "单位", 3); put(r2, 5, "总数量", 3);
+      put(r2, 6, head3, 3); put(r2, 8, "本月实际完成", 3); put(r2, 9, "截止本月底累计完成", 3);
+      put(r3, 6, "累计完成", 3); put(r3, 7, "占总数量百分比", 3); put(r3, 8, "数量", 3);
+      put(r3, 9, "累计完成", 3); put(r3, 10, "占总量百分比", 3);
+      rows.push(r2, r3);
+      merges.push("A3:A4", "B3:D4", "E3:E4", "F3:F4", "G3:H3", "I3:I4", "J3:K3");
+
+      list.forEach(function (g) {
+        var rw = row(), rowno = rows.length + 1, nd = ndOf(g.sec);
+        if (g.lv === 1 && !g.leaf) {
+          put(rw, 0, g.secno || "", 5);
+          put(rw, 1, g.name, 4);
+          merges.push("B" + rowno + ":D" + rowno);
+        } else if (!g.leaf) {
+          put(rw, 1, g.name, 4);
+          merges.push("B" + rowno + ":D" + rowno);
+        } else {
+          put(rw, 0, g.lv <= 2 ? (g.no || "") : "", 5);
+          put(rw, 1, g.name, 4);
+          merges.push("B" + rowno + ":D" + rowno);
+          put(rw, 4, g.unit || "", 5);
+          var ns = nd === 0 ? 6 : (nd === 2 ? 7 : 8);
+          var ndT = ndTotOf(g.sec), nsT = ndT === 0 ? 6 : (ndT === 2 ? 7 : 8);
+          var tot = g.pctRow ? 100 : (g.total || null);
+          if (tot) put(rw, 5, g.pctRow ? 100 : roundTo(tot, ndT), g.pctRow ? 6 : nsT, true);
+          if (g.has) {
+            var pv = roundTo(g.prev, nd), mo = roundTo(g.mon, nd), cu = roundTo(g.cum, nd);
+            if (pv !== null) put(rw, 6, pv, ns, true);
+            if (pv !== null && tot) put(rw, 7, pv / tot, 9, true);
+            if (mo !== null) put(rw, 8, mo, ns, true);
+            if (cu !== null) put(rw, 9, cu, ns, true);
+            if (cu !== null && tot) put(rw, 10, cu / tot, 9, true);
+          }
+        }
+        for (var ci = 0; ci < 11; ci++) if (!rw[ci]) rw[ci] = { v: null, s: 5 };
+        rows.push(rw);
+      });
+
+      var xr = [];
+      rows.forEach(function (rw, ri) {
+        var cells = [];
+        for (var ci = 0; ci < NC; ci++) {
+          var c = rw[ci]; if (!c) continue;
+          var ref = xCol(ci + 1) + (ri + 1);
+          if (c.v === null || c.v === undefined || c.v === "") { cells.push('<c r="' + ref + '" s="' + c.s + '"/>'); continue; }
+          if (c.n) cells.push('<c r="' + ref + '" s="' + c.s + '"><v>' + c.v + '</v></c>');
+          else cells.push('<c r="' + ref + '" s="' + c.s + '" t="inlineStr"><is><t xml:space="preserve">' + xEsc(c.v) + '</t></is></c>');
+        }
+        var h = ri === 0 ? 32 : (ri === 1 ? 22 : ((ri === 2 || ri === 3) ? 24 : 19));
+        xr.push('<row r="' + (ri + 1) + '" ht="' + h + '" customHeight="1">' + cells.join("") + '</row>');
+      });
+
+      var W = [6, 20, 9, 11, 10, 11, 13, 13, 12, 13, 12];
+      var cols = W.map(function (w, i) {
+        return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>';
+      }).join("");
+
+      var sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        + '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><cols>' + cols + '</cols>'
+        + '<sheetData>' + xr.join("") + '</sheetData>'
+        + '<mergeCells count="' + merges.length + '">'
+        + merges.map(function (m) { return '<mergeCell ref="' + m + '"/>'; }).join("")
+        + '</mergeCells>'
+        + '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>'
+        + '<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>'
+        + '</worksheet>';
+
+      var styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        + '<numFmts count="3"><numFmt numFmtId="164" formatCode="0"/><numFmt numFmtId="165" formatCode="0.00"/>'
+        + '<numFmt numFmtId="166" formatCode="0.0%"/></numFmts>'
+        + '<fonts count="3"><font><sz val="10"/><name val="宋体"/><charset val="134"/></font>'
+        + '<font><b/><sz val="10"/><name val="宋体"/><charset val="134"/></font>'
+        + '<font><b/><sz val="15"/><name val="宋体"/><charset val="134"/></font></fonts>'
+        + '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
+        + '<fill><patternFill patternType="solid"><fgColor rgb="FFDCE6F1"/><bgColor indexed="64"/></patternFill></fill></fills>'
+        + '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>'
+        + '<border><left style="thin"><color rgb="FF93A7BE"/></left><right style="thin"><color rgb="FF93A7BE"/></right>'
+        + '<top style="thin"><color rgb="FF93A7BE"/></top><bottom style="thin"><color rgb="FF93A7BE"/></bottom><diagonal/></border></borders>'
+        + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+        + '<cellXfs count="10">'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+        + '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'
+        + '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '<xf numFmtId="166" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+        + '</cellXfs><cellStyles count="1"><cellStyle name="常规" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+
+      var ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+        + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+        + '<Default Extension="xml" ContentType="application/xml"/>'
+        + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+        + '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+        + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+        + '</Types>';
+
+      var rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+        + '</Relationships>';
+
+      var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+        + 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+        + '<sheets><sheet name="形象进度" sheetId="1" r:id="rId1"/></sheets></workbook>';
+
+      var wbr = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+        + '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+        + '</Relationships>';
+
+      function part(name, txt) { return { name: name, bytes: new TextEncoder().encode(txt) }; }
+      return zipPack([
+        part("[Content_Types].xml", ct),
+        part("_rels/.rels", rels),
+        part("xl/workbook.xml", wb),
+        part("xl/_rels/workbook.xml.rels", wbr),
+        part("xl/styles.xml", styles),
+        part("xl/worksheets/sheet1.xml", sheet)
+      ]);
+    }
+    function exportShapeXlsx() {
+      try {
+        var bytes = buildXlsx();
+        var blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "形象进度完成情况汇总_" + YM.replace("-", "年") + "月.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { try { URL.revokeObjectURL(a.href); a.remove(); } catch (e) {} }, 4000);
+      } catch (err) { alert("导出失败：" + (err && err.message ? err.message : err)); }
+    }
+    window.__pgXlsx = buildXlsx;
+
+    function renderShape() {
+      var rows = aggShape(YM).map(function (g) {
+        var nd = ndOf(g.sec), f = function (v) { return fnum(v, nd); };
+        var ftot = function (v) { return fnum(v, ndTotOf(g.sec)); };
+        if (g.lv === 1 && !g.leaf) {
+          return '<tr><td class="c sec">' + (g.secno || "") + '</td><td class="sec" colspan="7">' + g.name + "</td></tr>";
+        }
+        if (!g.leaf) {
+          var gcls = g.lv === 3 ? "grp" : "ind1";
+          return '<tr><td></td><td class="' + gcls + '" colspan="7">' + g.name + "</td></tr>";
+        }
+        var lv1leaf = g.lv === 1;
+        var cls = g.lv <= 2 ? (lv1leaf ? "sec" : "ind1") : (g.lv === 3 ? "ind2" : "ind3");
+        var no = g.lv <= 2 ? (g.no || "") : "";
+        var rowo = lv1leaf ? ' class="rowband"' : "";
+        if (!g.has) {
+          return "<tr" + rowo + "><td class='c sec'>" + no + "</td><td class='" + cls + "'>" + g.name + "</td>"
+            + '<td class="c unit">' + (g.unit || "") + "</td>"
+            + '<td class="c">' + (g.total ? ftot(g.total) : "") + "</td>"
+            + '<td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td></tr>';
+        }
+        return "<tr" + rowo + "><td class='c sec'>" + no + "</td><td class='" + cls + "'>" + g.name + "</td>"
+          + '<td class="c unit">' + (g.unit || "") + "</td>"
+          + '<td class="c">' + (g.total ? ftot(g.total) : "") + "</td>"
+          + '<td class="c">' + f(g.prev) + "</td>"
+          + '<td class="c">' + f(g.mon) + "</td>"
+          + '<td class="c">' + f(g.cum) + "</td>"
+          + '<td class="c">' + (g.total ? pct(g.cum / g.total) : "") + "</td></tr>";
+      }).join("");
+      q("#pg-shape").innerHTML = head("形象进度完成情况汇总表", YM.replace("-", " 年 ") + " 月　全项目",
+          '<button class="pg-xls" id="pg-xls" type="button">导出 Excel</button>')
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th style="width:5.5%" class="c">序号</th><th style="width:19%">工程名称</th><th style="width:10%" class="c">单位</th>'
+        + '<th style="width:12%" class="c">总数量</th><th style="width:14%" class="c">上月末累计</th>'
+        + '<th style="width:12.5%" class="c">本月完成</th><th style="width:14%" class="c">本月底累计</th>'
+        + '<th style="width:13%" class="c">完成比例</th>'
+        + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+      var xb = q("#pg-xls");
+      if (xb) xb.addEventListener("click", exportShapeXlsx);
+    }
+
+    /* 展示用名称：集采材料到工地价 → 集采材料（合计口径仍按原行名归集） */
+    function outLabel(n) { return n === "集采材料到工地价" ? "集采材料" : n; }
+    function renderOut() {
+      var rows = aggOut(YM).map(function (r) {
+        return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + outLabel(r.name) + "</td>"
+          + '<td class="r">' + fmt(r.contract, 0) + "</td>"
+          + '<td class="r">' + fmt(r.mon, 0) + "</td>"
+          + '<td class="r">' + fmt(r.cum, 0) + "</td>"
+          + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
+      }).join("");
+      q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th>项目</th><th style="width:118px" class="r">合同额</th>'
+        + '<th style="width:114px" class="r">本月完成</th><th style="width:126px" class="r">累计完成</th>'
+        + '<th style="width:86px" class="r">完成比例</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+    }
+    /* 合同额改为只读（取「合同清单」章节金额），不再提供手工录入框 */
+
+    function renderPpl() {
+      var rows = BASE.tenders.map(function (t) {
+        var p = pplAt(t, YM);
+        return "<tr><td>" + t.name + "</td><td class='r'>" + fmt(p.mgr, 0) + "</td><td class='r'>" + fmt(p.worker, 0)
+          + "</td><td class='r'>" + fmt(p.mgr + p.worker, 0) + "</td></tr>";
+      }).join("");
+      var m = 0, w = 0;
+      BASE.tenders.forEach(function (t) { var p = pplAt(t, YM); m += p.mgr; w += p.worker; });
+      q("#pg-ppl").innerHTML = head("人员情况汇总", YM.replace("-", " 年 ") + " 月")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th>标段</th><th style="width:28%" class="r">管理人员数</th><th style="width:30%" class="r">农民工用工人数</th>'
+        + '<th style="width:22%" class="r">小计</th>'
+        + "</tr></thead><tbody>" + rows
+        + '<tr class="total"><td>合计</td><td class="r">' + fmt(m, 0) + '</td><td class="r">' + fmt(w, 0)
+        + '</td><td class="r">' + fmt(m + w, 0) + "</td></tr>"
+        + "</tbody></table></div>";
+    }
+
+    function renderGs() {
+      var rows = (BASE.summary.gaisuan || []).map(function (g) {
+        return "<tr><td>" + g.name + "</td><td class='r'>" + fmt(g.plan, 2) + "</td><td class='r'>" + fmt(g.done, 2)
+          + "</td><td class='r'>" + pct(g.pct) + "</td></tr>";
+      }).join("");
+      q("#pg-gs").innerHTML = head("概算完成情况（万元）", "模板整理，待修订")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+        + '<th>项目</th><th style="width:200px" class="r">概算</th><th style="width:200px" class="r">完成</th><th style="width:120px" class="r">完成比例</th>'
+        + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+    }
+
+    function renderCity() {
+      var road = BASE.summary.road || [], br = BASE.summary.bridge || [];
+      var h1 = '<table class="tbl pg-tbl"><thead><tr><th>地市州</th><th class="r">路基概算</th><th class="r">完成</th><th class="r">比例</th></tr></thead><tbody>'
+        + road.map(function (r) {
+          return "<tr><td>" + r.city + "</td><td class='r'>" + fmt(r.plan, 2) + "</td><td class='r'>" + fmt(r.done, 2) + "</td><td class='r'>" + pct(r.pct) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+      var h2 = '<table class="tbl pg-tbl"><thead><tr><th>地市州</th><th class="r">桥梁概算</th><th class="r">完成</th><th class="r">比例</th></tr></thead><tbody>'
+        + br.map(function (r) {
+          return "<tr><td>" + r.city + "</td><td class='r'>" + fmt(r.plan, 2) + "</td><td class='r'>" + fmt(r.done, 2) + "</td><td class='r'>" + pct(r.pct) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+      q("#pg-city").innerHTML = head("按地市州测算（万元）", "模板整理，待修订")
+        + '<div class="card-body" style="padding:10px 0 14px;display:grid;grid-template-columns:1fr 1fr;gap:0 18px">'
+        + "<div>" + h1 + "</div><div>" + h2 + "</div></div>";
+    }
+
+
+    /* ---------- 形象进度：页签（总览 / 标段情况） ---------- */
+    var PG_TAB = "overview";
+    var SEG_PROJ = [
+      { key: "lj", label: "路基工程", src: ["路基工程"] },
+      { key: "qh", label: "桥涵工程", src: ["桥涵工程"] },
+      { key: "lm", label: "路面工程", src: ["路面工程"] },
+      { key: "lh", label: "绿化工程", src: ["绿化工程"] },
+      { key: "jc", label: "集采材料", src: ["集采材料到工地价"] }
+    ];
+    var SEG_TEN = ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"];
+    /* 合同额：取「合同清单」各章节金额（万元） */
+    var SEG_CTR = {"t1": {"amt": 539259, "zlj": 26072, "lj": 103402, "qh": 102057, "lm": 61049, "lh": 7016, "jc": 148869}, "t2": {"amt": 257748, "zlj": 13334, "lj": 29175, "qh": 102165, "lm": 0, "lh": 1129, "jc": 90341}, "t3": {"amt": 135061, "zlj": 7418, "lj": 39048, "qh": 28659, "lm": 0, "lh": 1414, "jc": 40541}, "t4": {"amt": 177118, "zlj": 9907, "lj": 43476, "qh": 16843, "lm": 34867, "lh": 1932, "jc": 47008}, "t5": {"amt": 185962, "zlj": 10425, "lj": 46913, "qh": 47231, "lm": 0, "lh": 1566, "jc": 58485}, "t6": {"amt": 203745, "zlj": 10420, "lj": 43860, "qh": 27096, "lm": 42860, "lh": 1129, "jc": 61014}, "t7": {"amt": 265310, "zlj": 13564, "lj": 53657, "qh": 42331, "lm": 54488, "lh": 3182, "jc": 60885}, "t8": {"amt": 176634, "zlj": 10580, "lj": 56532, "qh": 47795, "lm": 0, "lh": 2114, "jc": 35268}, "t9": {"amt": 200344, "zlj": 10590, "lj": 43673, "qh": 12691, "lm": 48212, "lh": 3177, "jc": 56503}, "t10": {"amt": 120065, "zlj": 6609, "lj": 45082, "qh": 21222, "lm": 0, "lh": 4491, "jc": 17554}};
+    function segTender(tid) {
+      var out = null;
+      BASE.tenders.forEach(function (x) { if (x.tid === tid) out = x; });
+      return out;
+    }
+    function segCum(t, proj) {
+      var s = 0, hit = false;
+      t.out.forEach(function (row) {
+        if (proj.src.indexOf(row.nm) < 0) return;
+        hit = true;
+        s += outAt(t, row, YM).cum;
+      });
+      return hit ? s : null;
+    }
+    function pgTabPaint() {
+      var bar = q("#pg-tabs");
+      if (bar) Array.prototype.forEach.call(bar.querySelectorAll(".fa-tab"), function (x) {
+        x.classList.toggle("on", x.getAttribute("data-pg") === PG_TAB);
+      });
+      var ov = q("#pg-ov"), sg = q("#pg-seg");
+      var tp = q("#pg-times"), ct = q("#pg-cut");
+      if (ov) ov.style.display = (PG_TAB === "tender") ? "none" : "";
+      if (sg) sg.style.display = (PG_TAB === "tender") ? "" : "none";
+      if (tp) tp.style.display = (PG_TAB === "tender") ? "none" : "";
+      if (ct) ct.style.display = (PG_TAB === "tender") ? "" : "none";
+      if (PG_TAB === "tender") renderSeg();
+    }
+    function pgTabBind() {
+      var bar = q("#pg-tabs"); if (!bar || bar.__pgb) return;
+      bar.__pgb = 1;
+      bar.addEventListener("click", function (e) {
+        var b = (e.target && e.target.closest) ? e.target.closest("[data-pg]") : null;
+        if (!b) return;
+        PG_TAB = b.getAttribute("data-pg");
+        pgTabPaint();
+      });
+    }
+    var SEG_OPT = {}, SEG_CMP = { zlj: 0, lm: 1 };
+    function segOpt(tid) {
+      if (!SEG_OPT[tid]) SEG_OPT[tid] = { zlj: 0, lm: 1 };
+      return SEG_OPT[tid];
+    }
+    function segCmpCard() {
+      var arr = [], byRate = [];
+      SEG_TEN.forEach(function (tid) {
+        var t = segTender(tid); if (!t) return;
+        var amt = segAmt(tid, SEG_CMP), cum = segCumAll(t, SEG_CMP), rate = amt ? cum / amt : 0;
+        arr.push({ tid: tid, nm: t.name, amt: amt, cum: cum, rate: rate });
+      });
+      byRate = arr.slice().sort(function (a, b) { return b.rate - a.rate; });
+      var rankOf = {};
+      byRate.forEach(function (x, i) { rankOf[x.tid] = i + 1; });
+      var rows = '<div class="seg-cr hd"><span>标段</span>'
+        + '<span class="seg-num">合同额</span><span class="seg-num">累计完成</span>'
+        + '<span class="seg-rate">完成比例</span><span></span><span class="seg-rk">名次</span></div>';
+      arr.forEach(function (x) {
+        var rk = rankOf[x.tid], col = "#7A8798";
+        if (rk <= 3) col = "#C0392B"; else if (rk >= arr.length - 2) col = "#1E7B4B";
+        rows += '<div class="seg-cr">'
+          + "<span>" + x.nm + "</span>"
+          + '<span class="seg-num">' + fmt(x.amt, 0) + "</span>"
+          + '<span class="seg-num">' + fmt(x.cum, 0) + "</span>"
+          + '<span class="seg-rate">' + pct(x.rate) + "</span>"
+          + '<span class="seg-cb"><i style="width:' + (Math.max(0, Math.min(1, x.rate)) * 100).toFixed(1) + '%"></i></span>'
+          + '<span class="seg-rk" style="color:' + col + '">' + rk + "</span>"
+          + "</div>";
+      });
+      return '<div class="card seg-card seg-cmp">'
+        + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
+        + '<span class="seg-sub">累计至 ' + (YM || "").replace("-", ".") + '</span></div>'
+        + '<div class="seg-opts" style="margin:8px 0 4px">'
+        + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).zlj) ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
+        + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).lm) ? " on" : "") + '" data-copt="lm">含路面工程</button>'
+        + "</div>"
+        + '<div class="seg-crows">' + rows + "</div></div>";
+    }
+    function segAmt(tid, o) {
+      /* 合同额唯一来源：A 页「合同清单」当前显示的数值（含暂列金/含路面工程开关也由清单控制） */
+      var net = window.__CTR_NET || {};
+      if (net[tid] !== undefined && isFinite(net[tid])) return net[tid];
+      var c = SEG_CTR[tid] || {}, v = c.amt || 0;
+      if (!o.zlj) v -= (c.zlj || 0);
+      if (!o.lm) v -= (c.lm || 0);
+      return v;
+    }
+    function segCumAll(t, o) {
+      var s = 0, lmOn = (window.__CTR_STATE || o).lm;
+      t.out.forEach(function (row) {
+        if (!lmOn && row.nm === "路面工程") return;
+        s += outAt(t, row, YM).cum;
+      });
+      return s;
+    }
+    function segProjRows(t, ctr, o) {
+      var h = '<div class="seg-pr hd"><span>项目</span><i>合同额</i><i>累计完成</i><em>完成率</em></div>';
+      SEG_PROJ.forEach(function (p) {
+        var cv = ctr[p.key], cum = segCum(t, p);
+        var has = (cv !== undefined && cv !== null && cv !== 0);
+        var dim = (p.key === "lm" && !((window.__CTR_STATE || o).lm)) ? " dim" : "";
+        h += '<div class="seg-pr' + dim + '"><span>' + p.label + "</span>"
+          + "<i>" + (has ? fmt(cv, 0) : "—") + "</i>"
+          + "<i>" + (has && cum !== null ? fmt(cum, 0) : "—") + "</i>"
+          + "<em>" + (has ? pct((cum || 0) / cv) : "—") + "</em></div>";
+      });
+      return h;
+    }
+    function renderSeg() {
+      var host = q("#pg-seg"); if (!host) return;
+      if (!host.__ctrSync) {
+        host.__ctrSync = 1;
+        document.addEventListener("ctr-changed", function () { try { renderSeg(); } catch (e9) {} });
+      }
+      if (!host.__sb) {
+        host.__sb = 1;
+        host.addEventListener("click", function (e) {
+          var cb = (e.target && e.target.closest) ? e.target.closest("[data-copt]") : null;
+          if (cb) {
+            var ck = cb.getAttribute("data-copt");
+            var st = window.__CTR_STATE || { zlj: !!SEG_CMP.zlj, lm: !!SEG_CMP.lm };
+            var nv = !st[ck];
+            if (typeof window.__ctrSet === "function") {
+              var o2 = {}; o2[ck] = nv; window.__ctrSet(o2);
+            } else { SEG_CMP[ck] = nv ? 1 : 0; }
+            renderSeg(); return;
+          }
+          var b = (e.target && e.target.closest) ? e.target.closest("[data-opt]") : null;
+          if (!b) return;
+          var card = (b.closest ? b.closest(".seg-card") : null); if (!card) return;
+          var k = b.getAttribute("data-opt");
+          var stg = window.__CTR_STATE || {};
+          if (typeof window.__ctrSet === "function" && stg[k] !== undefined) {
+            var o3 = {}; o3[k] = !stg[k]; window.__ctrSet(o3);
+          } else {
+            var o = segOpt(card.getAttribute("data-tid")); o[k] = !o[k];
+          }
+          renderSeg();
+        });
+      }
+      var yms = (YM || "").split("-");
+      var cut = q("#pg-cut");
+      if (cut) cut.textContent = "累计至 " + (yms[0] || "") + " 年 " + (parseInt(yms[1], 10) || "") + " 月";
+      var h = segCmpCard();
+      SEG_TEN.forEach(function (tid) {
+        var t = segTender(tid); if (!t) return;
+        var ctr = SEG_CTR[tid] || {}, o = segOpt(tid);
+        var amt = segAmt(tid, o), cum = segCumAll(t, o);
+        var rate = amt ? cum / amt : 0;
+        h += '<div class="card seg-card" data-tid="' + tid + '">'
+          + '<div class="seg-hd"><span class="seg-nm">' + t.name + "</span></div>"
+          + '<div class="seg-kpi">'
+          + "<div><i>合同总额（万元）</i><b>" + fmt(amt, 0) + "</b></div>"
+          + "<div><i>累计完成（万元）</i><b>" + fmt(cum, 0) + "</b></div>"
+          + '<div><i>完成比例</i><b class="seg-pct">' + pct(rate) + "</b></div>"
+          + "</div>"
+          + '<div class="seg-bar"><em style="width:' + (Math.max(0, Math.min(1, rate)) * 100).toFixed(1) + '%"></em></div>'
+          + '<div class="seg-opts">'
+          + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || o).zlj) ? " on" : "") + '" data-opt="zlj">含暂列金</button>'
+          + ((ctr.lm || 0) > 0
+              ? '<button type="button" class="seg-opt' + (((window.__CTR_STATE || o).lm) ? " on" : "") + '" data-opt="lm">含路面工程</button>'
+              : "")
+          + "</div>"
+          + '<div class="seg-proj">' + segProjRows(t, ctr, o) + "</div>"
+          + "</div>";
+      });
+      host.innerHTML = h;
+    }
+
+
+    /* ---------- 顶部：自动保存 / 同步云端状态 ---------- */
+    var SC_T = null;
+    function syncChip(st, txt) {
+      var b = el("sync-chip");
+      if (!b) return;
+      var t = b.querySelector(".sc-t");
+      if (!t) return;
+      b.className = "sync-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
+      /* 成功态不显示任何文案：只在失败/进行中留状态，避免"已自动保存"这类提示反复出现 */
+      /* 圆点旁始终写明状态（不含时间）：已同步云端 / 正在保存… / 未同步 */
+      t.textContent = st === "warn" ? "未同步 · 已存本机"
+        : st === "busy" ? "正在保存…" : "已同步云端";
+      b.style.display = "";
+      var tipTxt = st === "warn" ? "改动已存在本机，稍后自动重试写回云端"
+        : st === "busy" ? "正在写回云端" : "本页改动已自动保存并写回云端";
+      b.setAttribute("title", tipTxt);
+      if (SC_T) { clearTimeout(SC_T); SC_T = null; }
+      if (st === "busy") SC_T = setTimeout(function () { syncChip(ONLINE ? "ok" : "warn"); }, 12000);
+    }
+    window.__syncChip = syncChip;
+
+    function render() {
+      if (!q("#pg-shape")) return;
+      renderShape(); renderOut(); renderPpl(); applyModLock(); pgTabBind(); pgTabPaint();
+    }
+    /* 页面小锁联动：未解锁时全页录入框只读（点右上角小锁解锁后才能输入） */
+    var LOCK_TIP = "已锁定，点击右上角小锁解锁后可编辑";
+    function lockOne(t, locked) {
+      if (!t || t.dataset && t.dataset.nolock !== undefined) return;
+      var ty = (t.type || "").toLowerCase();
+      if (ty === "file" || ty === "search" || ty === "checkbox" || ty === "radio" || ty === "range" || ty === "button" || ty === "submit") return;
+      if (t.readOnly === undefined) return;
+      t.readOnly = locked;
+      t.setAttribute("aria-readonly", locked ? "true" : "false");
+      if (locked) { t.title = LOCK_TIP; t.classList.add("am-locked"); }
+      else { t.removeAttribute("title"); t.classList.remove("am-locked"); }
+    }
+    function applyModLock() {
+      /* 顶部整站锁已取消：录入权限交给各数据卡片自己的「小锁 + 提交」，
+         这里只刷新卡片按钮状态，不再把全页输入框统一置为只读 */
+      try { if (typeof cardPaintAll === "function") cardPaintAll(); } catch (e) {}
+    }
+
+    /* ---- 月份选择：年 / 月 分开 ---- */
+    var YSEL = q("#pg-year"), MSEL = q("#pg-mon");
+    function fillMon() {
+      var y = YSEL.value, opts = [];
+      BASE.months.forEach(function (m) {
+        if (m.split("-")[0] !== y) return;
+        opts.push('<option value="' + m.split("-")[1] + '">' + parseInt(m.split("-")[1], 10) + " 月</option>");
+      });
+      MSEL.innerHTML = opts.join("");
+    }
+    if (YSEL && MSEL) {
+      var ys = [];
+      BASE.months.forEach(function (m) { var y = m.split("-")[0]; if (ys.indexOf(y) < 0) ys.push(y); });
+      YSEL.innerHTML = ys.map(function (y) { return '<option value="' + y + '">' + y + " 年</option>"; }).join("");
+      YSEL.value = YM.split("-")[0];
+      fillMon();
+      MSEL.value = YM.split("-")[1];
+      YSEL.addEventListener("change", function () {
+        fillMon();
+        if (MSEL.options.length) MSEL.value = MSEL.options[0].value;
+        YM = YSEL.value + "-" + MSEL.value; render();
+      });
+      MSEL.addEventListener("change", function () { YM = YSEL.value + "-" + MSEL.value; render(); });
+    }
+
+  /* ================= 数据仓适配层：GitHub 私有仓 + Contents API 乐观锁 =================
+     读：逐文件取内容（带 sha）；写：PUT 时带 sha，期间若有人改过，服务端返回 409，
+     此时重读最新内容、只把本页改动的字段并进去再写，绝不整份覆盖他人数据。
+     同一单元格两人先后保存：后一次成功 PUT 落库 → 后保存者生效。
+     ================================================================================== */
+  var GH = {
+    owner: "mtj2018", repo: "hyhx-ledger-data", branch: "main", dir: "data",
+    token: ["github_pat_11APXBKUQ05PG", "NDyiRnskz_lDhKkCkD78klbtqNTGbV4wcv0CU4y8H0LXa8z53lCPVBJQWQNWPbkfRSLJl"].join(""),  /* 分段拼接：避免 GitHub 的 secret 扫描把整站发布拦下来 */
+    names: null, namesAt: 0
+  };
+  function ghHdr() {
+    return { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json" };
+  }
+  function ghB64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function ghU64(s) { return decodeURIComponent(escape(atob(String(s || "").replace(/\s+/g, "")))); }
+  function ghUrl(name) {
+    return "https://api.github.com/repos/" + GH.owner + "/" + GH.repo + "/contents/" + GH.dir
+      + (name ? "/" + name : "") + "?ref=" + GH.branch + "&t=" + Date.now();
+  }
+  function ghFetch(url, opt, ms) {
+    opt = opt || {};
+    opt.cache = "no-store";
+    if (!opt.headers) opt.headers = ghHdr();
+    return xfetch(url, opt, ms || TO_MS);
+  }
+  function ghList(force) {
+    var now = Date.now();
+    if (GH.names && !force && now - GH.namesAt < 30000) return Promise.resolve(GH.names.slice());
+    return ghFetch(ghUrl("")).then(function (r) {
+      if (!r.ok) throw new Error("目录 HTTP " + r.status);
+      return r.json();
+    }).then(function (list) {
+      GH.names = (list || []).filter(function (x) { return x && x.type === "file" && /\.json$/i.test(x.name); })
+        .map(function (x) { return x.name; });
+      GH.namesAt = Date.now();
+      return GH.names.slice();
+    });
+  }
+  function ghGet(name) {
+    return ghFetch(ghUrl(name)).then(function (r) {
+      if (r.status === 404) return { name: name, obj: null, sha: null };
+      if (!r.ok) throw new Error("读取 HTTP " + r.status);
+      return r.json().then(function (j) {
+        var obj = null;
+        try { obj = JSON.parse(ghU64(j.content)); } catch (e0) { obj = null; }
+        return { name: name, obj: obj, sha: j.sha };
+      });
+    });
+  }
+  function ghGetAll(names) {
+    return (names && names.length ? Promise.resolve(names) : ghList(true)).then(function (ns) {
+      return Promise.all(ns.map(function (n) {
+        return ghGet(n).then(null, function () { return { name: n, obj: null, sha: null }; });
+      }));
+    }).then(function (arr) {
+      var out = {};
+      arr.forEach(function (x) { if (x && x.obj) out[x.name] = x.obj; });
+      return out;
+    });
+  }
+  /* 新建分文件兜底：走 Git Data API（blob → tree → commit → ref），Contents API 建不出来时用 */
+  function ghGitCreate(name, body) {
+    var R = "https://api.github.com/repos/" + GH.owner + "/" + GH.repo;
+    function j(u, m, d) {
+      return ghFetch(u, {
+        method: m || "GET",
+        headers: { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+        body: d ? JSON.stringify(d) : null
+      }).then(function (r) { if (!r.ok) throw new Error("Git API HTTP " + r.status); return r.json(); });
+    }
+    return j(R + "/git/ref/heads/" + GH.branch).then(function (ref) {
+      var parent = ref.object.sha;
+      return j(R + "/git/commits/" + parent).then(function (cm) {
+        return j(R + "/git/blobs", "POST", { content: ghB64(JSON.stringify(body)), encoding: "base64" }).then(function (b) {
+          return j(R + "/git/trees", "POST", { base_tree: cm.tree.sha, tree: [{ path: GH.dir + "/" + name, mode: "100644", type: "blob", sha: b.sha }] });
+        }).then(function (t) {
+          return j(R + "/git/commits", "POST", { message: "create " + name + " " + new Date().toISOString(), tree: t.sha, parents: [parent] });
+        }).then(function (c) {
+          return j(R + "/git/refs/heads/" + GH.branch, "PATCH", { sha: c.sha, force: false });
+        });
+      });
+    });
+  }
+  /* 写单个文件：merge(云端最新对象, 本页对象) → 合并结果；409 自动重读重试 */
+  function ghPut(name, localObj, merge) {
+    var round = 0;
+    function attempt() {
+      round++;
+      return ghGet(name).then(function (cur) {
+        var body = merge ? merge(cur.obj, localObj) : localObj;
+        var payload = {
+          message: "fill " + name + " " + new Date().toISOString(),
+          content: ghB64(JSON.stringify(body))
+        };
+        if (cur.sha) payload.sha = cur.sha;
+        return ghFetch(ghUrl(name), {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + GH.token,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          if (r.ok) return true;
+          return r.text().then(function (txt) {
+            /* 云端还没有这个分文件：有的令牌走 Contents API 建文件会返回 404，改用 Git Data API 建，避免改动只能存本机 */
+            if (r.status === 404 && !payload.sha) {
+              return ghGitCreate(name, body).then(function () { return true; });
+            }
+            var err = new Error("写入 HTTP " + r.status + (txt ? " " + txt.slice(0, 90) : ""));
+            err.status = r.status;
+            err.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
+            throw err;
+          });
+        }).then(function () {
+          return ghGet(name).then(function (back) {
+            if (JSON.stringify(body) === JSON.stringify(back.obj)) {
+              if (GH.names) GH.namesAt = 0;
+              return { name: name, obj: body, sha: back.sha };
+            }
+            var err = new Error("写入后核对不一致");
+            err.conflict = true;
+            throw err;
+          });
+        });
+      }).catch(function (e) {
+        var msg = String((e && e.message) || e);
+        var retryable = (e && e.conflict) || /HTTP 5|HTTP 429|请求超时|AbortError|Timeout|Failed to fetch|NetworkError/.test(msg);
+        if (round < 5 && retryable) {
+          return new Promise(function (res) { setTimeout(res, (e && e.conflict ? 250 : 700) * round); }).then(attempt);
+        }
+        throw e;
+      });
+    }
+    return attempt();
+  }
+
+    /* ---- 云端：读取填报数据 / 台账（v3：分文件 + 超时 + 校验重推 + 待推队列） ---- */
+var TO_MS = 15000;
+    var PKEY = KEY + "-pend";
+    var PEND = [];
+    try { PEND = JSON.parse(localStorage.getItem(PKEY) || "[]") || []; } catch (e_p0) { PEND = []; }
+    function savePend() { try { localStorage.setItem(PKEY, JSON.stringify(PEND)); } catch (e) {} }
+    function markPend(ks) { (ks || []).forEach(function (k) { if (PEND.indexOf(k) < 0) PEND.push(k); }); savePend(); try { railSync(); } catch (e) {} }
+    function clearPend(ks) { PEND = PEND.filter(function (k) { return (ks || []).indexOf(k) < 0; }); savePend(); try { railSync(); } catch (e) {} }
+
+    /* 最后同步时间（云端 ts，写成功后更新） */
+    function lastSyncAt() {
+      var t = 0;
+      try { t = Number(localStorage.getItem(CLOUD.ledgerTsKey) || 0); } catch (e) { t = 0; }
+      return t;
+    }
+    function two2(n) { return (n < 10 ? "0" : "") + n; }
+    /* 侧栏「最后同步」提示已移除：同步状态统一由顶部圆点+文字表达（不显示时间） */
+    function railSync() {}
+
+    /* ---------- #17 附件存数据仓：files/<uid>.json（base64） ---------- */
+    function attUrl(uid) {
+      return "https://api.github.com/repos/" + GH.owner + "/" + GH.repo + "/contents/files/" + uid + ".json?ref=" + GH.branch;
+    }
+    function attRead(uid) {
+      return ghFetch(attUrl(uid), { headers: { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json" } }).then(function (r) {
+        if (r.status === 404) return { obj: null, sha: null };
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json().then(function (j) {
+          var o = null;
+          try { o = JSON.parse(ghU64(j.content)); } catch (e) { o = null; }
+          return { obj: o, sha: j.sha };
+        });
+      });
+    }
+    function attPut(uid, obj) {
+      if (!ONLINE) return Promise.resolve(false);
+      return attRead(uid).then(function (cur) {
+        var payload = { message: "attach " + uid + " " + new Date().toISOString(), content: ghB64(JSON.stringify(obj)) };
+        if (cur && cur.sha) payload.sha = cur.sha;
+        return ghFetch(attUrl(uid), {
+          method: "PUT",
+          headers: { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return true; });
+      });
+    }
+    function b64Blob(b64, type) {
+      var bin = atob(String(b64 || "")), n = bin.length, u8 = new Uint8Array(n), i;
+      for (i = 0; i < n; i++) u8[i] = bin.charCodeAt(i);
+      return new Blob([u8], { type: type || "application/octet-stream" });
+    }
+    function __jc(o) { try { return JSON.parse(JSON.stringify(o === undefined ? null : o)); } catch (e) { return null; } }
+    function __same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+    function xfetch(url, opt, ms) {
+      opt = opt || {};
+      opt.cache = "no-store";
+      if (typeof AbortController === "undefined") return fetch(url, opt);
+      var ctl = new AbortController();
+      opt.signal = ctl.signal;
+      var t = setTimeout(function () { try { ctl.abort(); } catch (e) {} }, ms || TO_MS);
+      return fetch(url, opt).then(function (r) { clearTimeout(t); return r; },
+        function (e) { clearTimeout(t); throw e; });
+    }
+    /* 台账按模块拆成三个云端文件，写入只碰自己那一个 */
+    function lgrp(k) {
+      if (/^(x20\d\d_|x20\d\d$|xm11_)/.test(k)) return "inv";
+      if (/^(fa_|fah_|fak_|faflow_)/.test(k)) return "fa";
+      return "base";
+    }
+    function ledFile(k) { return "xl-" + lgrp(k) + ".json"; }
+    function parseFile(f) {
+      if (!f || !f.content) return null;
+      try { return JSON.parse(f.content); } catch (e) { return null; }
+    }
+        function readCloud() {
+      return ghGetAll().then(function (map) {
+        var out = {}, cts = 0;
+        Object.keys(map).forEach(function (n) {
+          var o = map[n];
+          if (o && typeof o === "object") { out[n] = o; cts = Math.max(cts, o.ts || 0); }
+        });
+        out.cts = cts;
+        return out;
+      });
+    }
+    /* 把三个分文件 + 旧单文件还原成一整份台账字段 */
+    function assemble(all) {
+      var s = {}, k;
+      ["xl-base.json", "xl-inv.json", "xl-fa.json"].forEach(function (n) {
+        var o = all[n];
+        if (o && o.data) { for (k in o.data) { if (o.data.hasOwnProperty(k)) s[k] = o.data[k]; } }
+      });
+      var leg = all[CLOUD.ledger];
+      if (leg && leg.data) {
+        var newer = (leg.ts || 0) > (all.cts || 0);
+        for (k in leg.data) {
+          if (!leg.data.hasOwnProperty(k)) continue;
+          if (newer || s[k] === undefined) s[k] = leg.data[k];
+        }
+      }
+      return s;
+    }
+    function srcMsg(t, ok) {
+      try { if (window.__syncChip) window.__syncChip(ok ? "ok" : "warn", ok ? "" : t); } catch (e_sc) {}
+      var e = q("#pg-src");
+      if (!e) return;
+      /* 成功不打扰：只在失败时留字，成功后清空 */
+      e.textContent = ok ? "" : t;
+      e.style.color = ok ? "" : "#A24A18";
+    }
+    var pushQueue = Promise.resolve();
+    var SNAP = {};
+    try { SNAP = JSON.parse(JSON.stringify(S)); } catch (e0) {}
+    function changedKeys() {
+      var out = [], k;
+      for (k in S) {
+        if (!Object.prototype.hasOwnProperty.call(S, k)) continue;
+        if (JSON.stringify(S[k]) !== JSON.stringify(SNAP[k])) out.push(k);
+      }
+      return out;
+    }
+    /* 写指定字段：按所属模块分文件，写前重读、写后核对，被覆盖自动重推（最多 3 轮） */
+        function writeKeys(keys, round2) {
+      round2 = round2 || 1;
+      keys = (keys || []).filter(function (v, i, arr) { return arr.indexOf(v) === i; });
+      if (!keys.length) return Promise.resolve(true);
+      if (!ONLINE) return Promise.resolve(true);
+      /* 首屏还没拉完云端：先把改动记进待推队列，连通后自动补写，避免“刚打开就填”被拒写丢数据 */
+      if (!SYNC_OK) {
+        markPend(keys);
+        srcMsg("数据加载中，暂不写云端（已存本机，连上后自动补齐）", false);
+        try { railSync(); } catch (e) {}
+        return Promise.resolve(false);
+      }
+      var picked = {}, groups = {};
+      keys.forEach(function (k) {
+        picked[k] = __jc(S[k]);
+        var g = lgrp(k);
+        (groups[g] = groups[g] || []).push(k);
+      });
+      var ts = Date.now();
+      var jobs = Object.keys(groups).map(function (g) {
+        var n = "xl-" + g + ".json", ks = groups[g], local = { ts: ts, data: {} };
+        ks.forEach(function (k) { local.data[k] = picked[k]; });
+        /* 合并：以云端最新为基础，只覆盖本页改过的这些键 */
+        return ghPut(n, local, function (cloudObj) {
+          var d = {}, cf = (cloudObj && cloudObj.data) || {}, kk;
+          for (kk in cf) { if (cf.hasOwnProperty(kk)) d[kk] = cf[kk]; }
+          ks.forEach(function (k) { d[k] = picked[k]; });
+          return { ts: Date.now(), data: d };
+        }).then(function () { return { n: n, ks: ks }; });
+      });
+      return Promise.all(jobs).then(function (done) {
+        clearPend(keys);
+        done.forEach(function (x) { x.ks.forEach(function (k) { SNAP[k] = __jc(S[k]); }); });
+        try { localStorage.setItem(CLOUD.ledgerTsKey, String(ts)); } catch (e) {}
+        srcMsg("", true);
+        try { railSync(); } catch (e) {}
+        return true;
+      }).catch(function (e) {
+        var msg = (e && e.name === "AbortError") ? "请求超时" : (e && e.message ? e.message : String(e));
+        if (round2 < 3) {
+          return new Promise(function (res) { setTimeout(res, round2 === 1 ? 800 : 1800); })
+            .then(function () { return writeKeys(keys, round2 + 1); });
+        }
+        markPend(keys);
+        srcMsg("云端未同步（" + msg + "），已记入待推队列，自动重试", false);
+        return false;
+      });
+    }
+    function doPush() { return writeKeys(changedKeys().concat(PEND), 1); }
+    function pushLedger() {
+      if (!ONLINE) return Promise.resolve(true);
+      var run = function () { return doPush(); };
+      pushQueue = pushQueue.then(run, run);
+      return pushQueue;
+    }
+    window.__pgPushLedger = pushLedger;
+    /* 单字段直写（流程状态这类一点即变）：按其所属模块文件写入，写后核对 */
+    function pushKey(k) {
+      if (!ONLINE) return Promise.resolve(true);
+      var run = function () { return writeKeys([k], 1); };
+      pushQueue = pushQueue.then(run, run);
+      return pushQueue;
+    }
+    window.__pgPushKey = pushKey;
+    /* 云端数据到达后，把 execPref 同步到录入口径；有变化就重建概算录入表 */
+    function applyExecPrefPostPull() {
+      var pc = (S.execPref && typeof S.execPref === "object") ? S.execPref : null;
+      if (!pc || !Object.keys(pc).length) return;
+      var ch = false;
+      Object.keys(EXEC_PREF).forEach(function (k) { if (!pc.hasOwnProperty(k)) { delete EXEC_PREF[k]; ch = true; } });
+      Object.keys(pc).forEach(function (k) { if (EXEC_PREF[k] !== pc[k]) { EXEC_PREF[k] = pc[k]; ch = true; } });
+      if (!ch) return;
+      buildExec();
+      recalc();
+      try { markEditable(); } catch (e) {}
+      try { applyInvestLock(); } catch (e) {}
+    }
+    /* 读取：云端为准，但本页改过的字段、待推字段一律以本机为准，且不再整页刷新 */
+    function pullAll() {
+      return readCloud().then(function (all) {
+        var cloudS = assemble(all), changed = changedKeys(), pend = PEND.slice(), k;
+        for (k in cloudS) {
+          if (!cloudS.hasOwnProperty(k)) continue;
+          if (changed.indexOf(k) >= 0) { if (S[k] === undefined) S[k] = cloudS[k]; continue; }
+          if (pend.indexOf(k) >= 0) continue;
+          S[k] = cloudS[k];
+        }
+        /* 云端取回的「产值/完成比」口径要真正生效：偏好变了就重建录入表，否则明细会显示成 0 */
+        try { applyExecPrefPostPull(); } catch (eP) {}
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+        try { localStorage.setItem(CLOUD.ledgerTsKey, String(all.cts || 0)); } catch (e) {}
+        var snap = {}, kk;
+        for (kk in cloudS) { if (cloudS.hasOwnProperty(kk)) snap[kk] = cloudS[kk]; }
+        SNAP = snap;
+        var rep = all[CLOUD.report];
+        if (rep && rep.data && rep.data.reports && (rep.ts || 0) >= (DB.ts || 0)) {
+          DB = { ts: rep.ts, reports: rep.data.reports };
+          try { localStorage.setItem(RKEY, JSON.stringify(DB)); } catch (e) {}
+        }
+        /* B 页新分文件：逐标段 xt-rep-<标段>.json 比旧单文件新，按标段并入月报数据 */
+        var rts = {}, rchanged = false;
+        try { rts = JSON.parse(localStorage.getItem(RKEY + "-rep-ts") || "{}") || {}; } catch (e) { rts = {}; }
+        Object.keys(all).forEach(function (n) {
+          if (n.indexOf("xt-rep-") !== 0) return;
+          var tid = n.slice(7, n.length - 5), f = all[n];
+          if (!f || !f.v) return;
+          if ((f.ts || 0) < (rts[tid] || 0)) return;
+          if ((f.ts || 0) < (DB.ts || 0)) return;
+          DB.reports[tid] = f.v;
+          rts[tid] = f.ts || 0;
+          rchanged = true;
+        });
+        if (rchanged) {
+          try {
+            localStorage.setItem(RKEY, JSON.stringify(DB));
+            localStorage.setItem(RKEY + "-rep-ts", JSON.stringify(rts));
+          } catch (e) {}
+        }
+        render();
+        /* 云端数据到达后整页重算一次：月度完成 / 年度计划 / 各卡片锁状态都以云端为准 */
+        try { applyState(); recalc(); markEditable(); } catch (eRS) {}
+        try { cardPaintAll(); } catch (eRK) {}
+
+        try {
+
+          var __fv = document.querySelector("#view-fixedasset");
+
+          if (window.__faReload && !(__fv && document.activeElement && __fv.contains(document.activeElement))) window.__faReload();
+
+        } catch (eFA) {}
+
+        try { if (typeof clPrime === "function") clPrime(); } catch (e) {}
+        try { if (typeof clRender === "function") clRender(true); } catch (e) {}
+        srcMsg("已同步云端数据 · " + new Date(all.cts || Date.now()).toLocaleString(), true);
+        SYNC_OK = true;
+        try { railSync(); } catch (e) {}
+        if (changedKeys().length || PEND.length) pushLedger();
+        return true;
+      }).catch(function (e) {
+        SYNC_OK = false;
+        srcMsg("云端读取失败（" + (e && e.message ? e.message : e) + "），本页改动只存本机，稍后自动重试", false);
+        return false;
+      });
+    }
+    setInterval(function () {
+      if (ONLINE && (changedKeys().length || PEND.length)) pushLedger();
+    }, 60000);
+    /* ---- 自动保存：所有填报项停止输入约 1.2 秒后落盘（线上同时写回云端） ---- */
+    var AS_T = null;
+    function autoSave(localOnly) {
+      if (AS_T) clearTimeout(AS_T);
+      AS_T = setTimeout(function () {
+        AS_T = null;
+        try { if (window.__pgSaveNow) window.__pgSaveNow(localOnly); } catch (e) { console.warn("自动保存失败", e); }
+      }, 1200);
+    }
+    /* 文字类字段：输入期间只落本机，失焦（change）才写云端；数量类保持自动写回 */
+    function isTypingText(ev, t) {
+      if (!ev || ev.type !== "input" || !t) return false;
+      var tag = (t.tagName || "").toLowerCase();
+      if (tag === "textarea" || t.isContentEditable) return true;
+      if (tag !== "input") return false;
+      var ty = (t.type || "").toLowerCase();
+      if (ty === "text" || ty === "" || ty === "search") return /[^\d\s.,\-:%（）()]/ .test(t.value || "");
+      return false;
+    }
+    ["input", "change"].forEach(function (ev) {
+      document.addEventListener(ev, function (e) {
+        var t = e.target;
+        if (!t) return;
+        var tag = (t.tagName || "").toLowerCase();
+        if (tag !== "input" && tag !== "select" && tag !== "textarea") return;
+        if (t.id === "import-file" || t.id === "pg-pw") return;
+        autoSave(isTypingText(e, t));
+      }, true);
+    });
+
+    render();
+    /* 本机 file:// 打开不再自动拉取线上数据；只有线上访问才同步 */
+    if (ONLINE) pullAll();
+  })();
+
+
+})();

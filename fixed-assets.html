@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<script src="assets/a.cfg.js?v=261126195407"></script>
+<script>
+(function () {
+  var BUILD = "261126195407";
+  if (!BUILD || (location.protocol !== "http:" && location.protocol !== "https:")) return;
+  var verUrl = (location.pathname.indexOf("/report/") >= 0 ? "../ver.json" : "ver.json") + "?t=" + Date.now();
+  fetch(verUrl, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+    if (!j || !j.build || j.build === BUILD) return;
+    var key = "pg-ver-" + location.pathname;
+    try { if (sessionStorage.getItem(key) === j.build) return; sessionStorage.setItem(key, j.build); } catch (e) {}
+    location.replace(location.pathname + "?v=" + encodeURIComponent(j.build) + location.hash);
+  }).catch(function () {});
+})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>沪渝高速公路武汉至宜昌段改扩建工程 · 固定投资</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/a.css?v=261126195407">
+<link rel="stylesheet" href="assets/xb.css?v=261126195407">
+<link rel="stylesheet" href="shared/css/ui.css?v=261126195407">
+</head>
+<body data-page="fixedassets" data-view="fixedasset">
+<header class="top">
+  <div class="top-in">
+    <div class="top-main">
+      <h1 class="top-name">沪渝高速公路武汉至宜昌段改扩建工程</h1>
+      <div class="top-sub">建设单位 <span>湖北汉宜高速公路有限公司</span>　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
+    </div>
+    <div class="top-meta">
+      <div class="sync-chip" id="sync-chip" style="display:none" title="本页改动会自动保存并写回云端"><span class="sc-dot"></span><span class="sc-t"></span></div>
+      <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
+      <button id="btn-import" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导入数据</button>
+      <input type="file" id="import-file" accept=".json,application/json" style="display:none" aria-label="导入 JSON 数据文件">
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <nav aria-label="主要导航">
+      <a class="nav-item" href="index.html"><span>项目基本情况</span></a>
+      <a class="nav-item" href="investment.html"><span>概算执行管理</span></a>
+      <a class="nav-item is-on" href="fixed-assets.html" aria-current="page"><span>固定投资管理</span></a>
+      <a class="nav-item" href="progress.html"><span>形象进度管理</span></a>
+      <a class="nav-item" href="regions.html"><span>地市州管理</span></a>
+    </nav>
+    <a class="nav-jump" href="report.html" title="打开数据填报入口"><span>基础数据填报</span></a>
+  </aside>
+  <main id="main-content" tabindex="-1">
+<section class="view" id="view-fixedasset">
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 18px">
+          <div id="fa-tabs" style="display:flex;flex-wrap:wrap;gap:8px;flex:1 1 auto"></div>
+          <span id="fa-hint" style="font-size:12px;color:#68727F">单位：万元</span>
+        </div>
+      </div>
+      <div id="fa-wrap"></div>
+    </section>
+  </main>
+</div>
+<div class="pg-gate" id="pg-gate" role="dialog" aria-modal="true" aria-labelledby="pg-gate-title">
+  <div class="pg-gate-box">
+    <div class="pg-gate-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="15.6" r="1.4" fill="currentColor" stroke="none"/></svg></div>
+    <h3 id="pg-gate-title">页面信息已隐藏</h3>
+    <p>本页面涉及项目数据，为保护数据隐私，需输入查看密码后方可显示。</p>
+    <div class="pg-gate-row">
+      <input id="pg-pw" type="password" autocomplete="off" placeholder="请输入查看密码">
+      <button id="pg-go" type="button">查看</button>
+    </div>
+    <div class="pg-gate-err" id="pg-err"></div>
+    <div class="pg-gate-tip" id="pg-tip">本机输入一次密码后，7 天内无需重复输入</div>
+  </div>
+</div>
+<script src="shared/js/index-app.js?v=261126195407"></script>
+
+<script src="shared/js/gate.js?v=261126195407"></script>
+<script src="shared/js/ui.js?v=261126195407"></script>
+</body>
+</html>

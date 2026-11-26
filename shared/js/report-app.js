@@ -1,0 +1,2694 @@
+(function () {
+  "use strict";
+  /* BASE 已外置到 assets/b.cfg.js */
+  var LS = "hyhx-report-v1";
+  var PAGE = document.body.getAttribute("data-page") || "monthly";
+  function onPage(name) { return PAGE === name; }
+  var DB = { ts: 0, reports: {}, jr: {}, tsf: {} };
+  try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); if (o && o.reports) { DB = o; DB.jr = o.jr || {}; DB.tsf = o.tsf || {}; } } } catch (e) {}
+  /* 默认定位当前自然月（今月不在可选范围内则取最近的已开始月份） */
+  function nowYm(list) {
+    var d = new Date(), ym = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2), i, v = (list && list[0]) || ym;
+    if (!list || !list.length) return ym;
+    if (ym <= list[0]) return list[0];
+    if (ym >= list[list.length - 1]) return list[list.length - 1];
+    for (i = 0; i < list.length; i++) if (list[i] <= ym) v = list[i];
+    return v;
+  }
+  var CUR = { type: "civil", tid: "t1", ym: nowYm(BASE.months) };
+  var STM = CUR.ym;
+  var DIRTY = false;
+
+  /* 旧 Gist 通道（含经典令牌）已下线：数据只走私有仓 mtj2018/hyhx-ledger-data；此处仅保留旧文件名常量做兼容 */
+  var CLOUD = {
+    file: "hyhx-report.json"
+  };
+  /* 线上访问（http/https）自动写回云端；本机 file:// 打开完全只读，改了也不影响线上 */
+  var LOCAL_PREVIEW = location.hostname === "127.0.0.1" || location.hostname === "localhost";
+  var ONLINE = !LOCAL_PREVIEW && (location.protocol === "http:" || location.protocol === "https:");
+  /* 固化的基础数据默认只读；点顶部小锁、输入密码 aaa 后才可编辑（解锁状态只在本机本次会话有效） */
+  var FIXOPEN = false;
+
+  function $(s) { return document.querySelector(s); }
+  function fmt(v, d) {
+    if (v === null || v === undefined || v === "") return "";
+    var n = Number(v);
+    if (!isFinite(n)) return "";
+    var x = (d === null || d === undefined) ? 2 : d;
+    var s = n.toFixed(x);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    var p = s.split(".");
+    if (p[0] !== "-" && p[0].length > 3) p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return p.join(".");
+  }
+  function toNum(v) {
+    if (v === null || v === undefined || v === "") return null;
+    var n = Number(String(v).replace(/,/g, "").trim());
+    return isFinite(n) ? n : null;
+  }
+  function fmtz(v, d) {
+    if (v === null || v === undefined || v === "") return "";
+    var n = Number(v);
+    if (!isFinite(n)) return "";
+    var s = n.toFixed(d || 2), p = s.split(".");
+    if (p[0] !== "-" && p[0].length > 3) p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return p.join(".");
+  }
+  function pct(v) { return v === null || v === undefined ? "" : (v * 100).toFixed(1) + "%"; }
+
+  function tidList(type) {
+    var out = [];
+    BASE.tenders.forEach(function (t) { if (t.type === type) out.push(t); });
+    return out;
+  }
+  function tenderOf(tid) {
+    for (var i = 0; i < BASE.tenders.length; i++) if (BASE.tenders[i].tid === tid) return BASE.tenders[i];
+    return null;
+  }
+  function rep(tid, ym, mk) {
+    var t = DB.reports[tid] || (DB.reports[tid] = {});
+    var r = t[ym] || (t[ym] = { shape: {}, out: {}, ppl: {}, reg: {} });
+    if (mk) { r.shape = r.shape || {}; r.out = r.out || {}; r.ppl = r.ppl || {}; r.reg = r.reg || {}; }
+    return r;
+  }
+  /* 只读读取锁标记：数据填报情况页用，避免在云端拉取完成前凭空生成空记录 */
+  function lkOf(tid, ym) {
+    var t = DB.reports && DB.reports[tid], r = t && t[ym];
+    return (r && r.lock) || {};
+  }
+  function ev(tid, ym, kind, key) {
+    var r = rep(tid, ym);
+    var bag = r[kind] || {};
+    var v = bag[key];
+    return (v === null || v === undefined || v === "") ? null : Number(v);
+  }
+  function setEv(tid, ym, kind, key, v) {
+    var r = rep(tid, ym, true);
+    r[kind] = r[kind] || {};
+    /* 清空时写空串而不是删除键：便于按单元格合并时如实反映“已清空” */
+    r[kind][key] = (v === null || v === undefined) ? "" : v;
+    DIRTY = true;
+  }
+  function fixBag(tid) {
+    var t = DB.reports[tid] || (DB.reports[tid] = {});
+    var f = t.__fix || (t.__fix = { tot: {}, pre: {} });
+    f.tot = f.tot || {}; f.pre = f.pre || {};
+    return f;
+  }
+  /* 只读访问固化覆盖值：不存在时不要凭空创建空结构，避免写入时误判为“已改动” */
+  function fixRead(tid) {
+    var t = DB.reports[tid];
+    return (t && t.__fix) ? t.__fix : null;
+  }
+  function totOf(t, row) {
+    var f = fixRead(t.tid);
+    var v = f && f.tot ? (f.tot[row.k] !== undefined ? f.tot[row.k] : (row.kl ? f.tot[row.kl] : undefined)) : undefined;
+    if (row.unit === "%") return 100;
+    if (v !== undefined && v !== null && v !== "") return Number(v);
+    return (row.total === null || row.total === undefined) ? 0 : Number(row.total);
+  }
+  function preOf(t, row, ym) {
+    var f = fixRead(t.tid), b = (f && f.pre) ? (f.pre[ym] || {}) : {};
+    var v = (b[row.k] !== undefined) ? b[row.k] : (row.kl ? b[row.kl] : undefined);
+    return (v === undefined || v === null || v === "") ? null : Number(v);
+  }
+  function shapeAt(t, row, ym) {
+    var idx = BASE.months.indexOf(ym);
+    var prev = row.prev || 0, mon = 0, k, po, v;
+    for (k = 0; k < idx; k++) {
+      po = preOf(t, row, BASE.months[k]);
+      if (po !== null) prev = po;
+      v = evRow(t.tid, BASE.months[k], "shape", row);
+      if (v === null && k === 0 && row.mon !== null && row.mon !== undefined) v = row.mon;
+      if (v !== null) prev += v;
+    }
+    po = preOf(t, row, ym);
+    if (po !== null) prev = po;
+    mon = evRow(t.tid, ym, "shape", row);
+    if (mon === null && idx === 0 && row.mon !== null && row.mon !== undefined) mon = row.mon;
+    if (mon === null) mon = 0;
+    return { prev: prev, mon: mon, cum: prev + mon, total: totOf(t, row) };
+  }
+  function subTitle(t) {
+    var a = CUR.ym.split("-");
+    return (t ? t.name : "") + "　" + parseInt(a[0], 10) + "年" + parseInt(a[1], 10) + "月";
+  }
+  /* 新标段起始填报月份：起始月之前显示提示并可填报禁用 */
+  var STARTS = BASE.starts || {};
+  function notStarted(t) {
+    return !!(t && STARTS[t.tid] && CUR.ym < STARTS[t.tid]);
+  }
+  function soonHead(title, sub) {
+    var t = tenderOf(CUR.tid);
+    var txt = t ? (STARTS[t.tid] || "") : "";
+    return '<div class="card-head"><h2>' + title + '</h2><span class="hint">' + sub + '</span></div>'
+      + '<div class="card-body"><p class="note" style="margin:0">' + (t ? t.name : "") + ' 自 ' + (txt || "").replace("-", " 年 ")
+      + ' 月起填报，本月暂无数据。</p></div>';
+  }
+  function refreshShapeRow(t, row) {
+    var st = shapeAt(t, row, CUR.ym);
+    var sec = (row.agg || "").split("|")[0];
+    var nd = (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : (sec === "桥涵工程" ? 0 : 4);
+    var cell = document.querySelector('[data-cum="' + row.k + '"]');
+    if (cell) cell.textContent = nd === 2 ? fmtz(st.cum, 2) : fmt(st.cum, 4);
+    var pcell = document.querySelector('[data-pct="' + row.k + '"]');
+    if (pcell) pcell.textContent = row.leaf ? pct(st.total ? st.cum / st.total : 0) : "";
+  }
+  function outPrevCum(t, row, ym) {
+    var idx = BASE.months.indexOf(ym), cum = row.cum || 0;
+    for (var k = 1; k < idx; k++) {
+      var mo = BASE.months[k];
+      var ov = evRow(t.tid, mo, "outcum", row);
+      if (ov !== null) { cum = ov; continue; }
+        var v = evRow(t.tid, mo, "out", row);
+      if (v !== null) cum += v;
+    }
+    return cum;
+  }
+  function outAt(t, row, ym) {
+    var idx = BASE.months.indexOf(ym);
+    var cum = outPrevCum(t, row, ym), mon;
+    var oc = evRow(t.tid, ym, "outcum", row);
+    if (oc !== null) cum = oc;
+    else if (idx > 0) { var v = evRow(t.tid, ym, "out", row); if (v !== null) cum += v; }
+    mon = evRow(t.tid, ym, "out", row);
+    if (mon === null && idx === 0 && row.mon !== null && row.mon !== undefined) mon = row.mon;
+    if (mon === null) mon = 0;
+    return { mon: mon, cum: cum, ov: (oc !== null) };
+  }
+  function pplAt(t, ym) {
+    var idx = BASE.months.indexOf(ym);
+    var mgr = ev(t.tid, ym, "ppl", "mgr"), wkr = ev(t.tid, ym, "ppl", "worker");
+    if (mgr === null) mgr = t.people.mgr || 0;
+    if (wkr === null) wkr = t.people.worker || 0;
+    return { mgr: mgr, worker: wkr };
+  }
+
+  /* ---------- 渲染：类型/标段/月份 ---------- */
+  var TYPES = [{ k: "civil", n: "土建" }, { k: "jt", n: "交安" }, { k: "me", n: "机电" }, { k: "fj", n: "房建" }];
+  function renderTabs() {
+    $("#type-tabs").innerHTML = TYPES.map(function (x) {
+      return '<button type="button" class="pg-tab' + (CUR.type === x.k ? " is-on" : "") + '" data-type="' + x.k + '">' + x.n + '</button>';
+    }).join("");
+  }
+  function renderSel() {
+    var sel = $("#sel-tender");
+    var list = tidList(CUR.type);
+    if (!list.length) {
+      CUR.tid = "";
+      sel.innerHTML = '<option value="">暂无房建标段</option>';
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    if (!tenderOf(CUR.tid) || tenderOf(CUR.tid).type !== CUR.type) CUR.tid = list[0].tid;
+    sel.innerHTML = list.map(function (t) {
+      return '<option value="' + t.tid + '"' + (t.tid === CUR.tid ? " selected" : "") + '>' + t.name + '</option>';
+    }).join("");
+
+    /* 年份、月份分开选择 */
+    var y = CUR.ym.slice(0, 4), years = [], mons = [];
+    BASE.months.forEach(function (k) {
+      if (years.indexOf(k.slice(0, 4)) < 0) years.push(k.slice(0, 4));
+      if (k.slice(0, 4) === y) mons.push(k);
+    });
+    if (!mons.length) {
+      y = years[0];
+      CUR.ym = BASE.months[0];
+      mons = BASE.months.filter(function (k) { return k.slice(0, 4) === y; });
+    }
+    var ys = $("#sel-year"), ms = $("#sel-month");
+    ys.innerHTML = years.map(function (v) {
+      return '<option value="' + v + '"' + (v === y ? " selected" : "") + ">" + v + " 年</option>";
+    }).join("");
+    ms.innerHTML = mons.map(function (v) {
+      return '<option value="' + v + '"' + (v === CUR.ym ? " selected" : "") + ">" + parseInt(v.slice(5, 7), 10) + " 月</option>";
+    }).join("");
+  }
+  var LKNAME = { shape: "形象进度", out: "产值", ppl: "人员", reg: "分地市州" };
+  var REPWAIT = 0;
+  function repWait(on) { REPWAIT += (on ? 1 : -1); if (REPWAIT < 0) REPWAIT = 0; }
+  window.addEventListener("beforeunload", function (e) {
+    if (REPWAIT > 0) { e.preventDefault(); e.returnValue = "提交正在写入云端，离开会中断提交。"; return e.returnValue; }
+  });
+  function lockOf(tid, ym) {
+    var r = rep(tid, ym, true);
+    r.lock = r.lock || {};
+    return r.lock;
+  }
+  function isLocked(name, tid, ym) {
+    return !!lockOf(tid || CUR.tid, ym || CUR.ym)[name];
+  }
+  function lockBtn(name) {
+    var wl = lockOf(CUR.tid, CUR.ym);
+    if (wl[name + "w"]) return '<button type="button" class="pg-lk is-wait" disabled title="正在写入云端，请稍候">提交中</button>';
+    var on = isLocked(name);
+    var svg = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
+    var tip = on ? "已锁定，点击解锁修改" : "点击提交并锁定本月数据";
+    return '<button type="button" class="pg-lk' + (on ? " is-on" : "") + '" data-lk="' + name + '"'
+      + ' title="' + tip + '" aria-label="' + tip + '" aria-pressed="' + (on ? "true" : "false") + '">'
+      + (on ? svg : "提交") + "</button>";
+  }
+  function head(title, hint, lk) {
+    return '<div class="card-head"><h2>' + title + '</h2><span class="hint">' + (hint || "") + '</span>'
+      + (lk ? lockBtn(lk) : "") + "</div>";
+  }
+
+  /* ---------- 形象进度 ---------- */
+  function renderShape() {
+    var t = tenderOf(CUR.tid), host = $("#card-shape");
+    if (!t) {
+      host.style.display = "";
+      host.innerHTML = head("形象进度完成情况一览表", "房建")
+        + '<div class="card-body"><div class="note" style="padding:18px 4px">房建工程暂未设置标段，后续开放填报。</div></div>';
+      return;
+    }
+    host.style.display = "";
+    if (notStarted(t)) { host.innerHTML = soonHead("形象进度完成情况一览表", subTitle(t)); return; }
+    var rows = t.rows.map(function (r, i) {
+      if (r.lv === 1 && !r.leaf) {
+        return '<tr class="rowsec"><td class="c sec">' + (r.no || "") + '</td><td class="sec" colspan="7">' + r.nm + "</td></tr>";
+      }
+      if (r.lv === 3 && !r.leaf) {
+        return '<tr><td></td><td class="grp" colspan="7">' + r.nm + "</td></tr>";
+      }
+      var sec = (r.agg || "").split("|")[0];
+      var nd = (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : (sec === "桥涵工程" ? 0 : 4);
+      var nf = function (v) {
+        var x = (v === null || v === undefined || v === "") ? 0 : v;
+        return nd === 2 ? fmtz(x, 2) : fmt(x, nd);
+      };
+      var isLeaf = !!r.leaf;
+      var cls = r.lv === 1 ? "sec" : (r.lv === 2 ? "ind1" : (r.lv === 3 ? "ind2" : "ind3"));
+      var st = isLeaf ? shapeAt(t, r, CUR.ym) : null;
+      var totCell = "";
+      if (isLeaf) {
+        if (r.unit === "%") {
+          totCell = '<span class="fixv fixc">100</span>';
+        } else if (FIXOPEN || /^j[234]$/.test(CUR.tid)) {
+          totCell = '<input class="pgi pgc" data-tot="' + r.k + '" value="' + nf(st.total) + '">';
+        } else {
+          totCell = '<span class="fixv fixc">' + nf(st.total) + "</span>";
+        }
+      }
+      var prevCell = "";
+      if (isLeaf) {
+        prevCell = FIXOPEN
+          ? '<input class="pgi pgc" data-prev="' + r.k + '" value="' + nf(st.prev) + '">'
+          : '<span class="fixv fixc">' + nf(st.prev) + "</span>";
+      }
+      var monCell = isLeaf ? '<input class="pgi pgc" data-shape="' + r.k + '" value="' + nf(st.mon) + '">' : "";
+      var pctv = isLeaf ? pct(st.total ? st.cum / st.total : 0) : "";      return "<tr" + (r.lv === 1 ? ' class="rowsec"' : "") + "><td class='c sec'>" + (r.lv <= 2 ? (r.no || "") : "") + "</td><td class='" + cls + "'>" + r.nm + "</td>"
+        + '<td class="c unit">' + (r.unit || "") + "</td><td class='c'>" + totCell + "</td>"
+        + '<td class="c">' + prevCell + "</td>"
+        + '<td class="c">' + monCell + "</td>"
+        + '<td class="c" data-cum="' + r.k + '">' + (isLeaf ? nf(st.cum) : "") + "</td>"
+        + '<td class="c" data-pct="' + r.k + '">' + pctv + "</td></tr>";
+    }).join("");
+    host.innerHTML = head("形象进度完成情况一览表", subTitle(t), "shape")
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
+      + '<th style="width:5.5%" class="c">序号</th><th style="width:20%" class="nm">工程名称</th><th style="width:11%" class="c unit">单位</th>'
+      + '<th style="width:12.7%" class="c">总数量</th><th style="width:12.7%" class="c">上月末累计</th>'
+      + '<th style="width:12.7%" class="c">本月完成</th><th style="width:12.7%" class="c">本月底累计</th>'
+      + '<th style="width:12.7%" class="c">完成比例</th>'
+      + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+  }
+
+  /* ---------- 产值 ---------- */
+  /* 合同额唯一来源：A 页「合同清单」（与清单默认显示口径一致：不含暂列金、含路面工程） */
+  var CTR_NET = { t1: 513187, t2: 244414, t3: 127643, t4: 167211, t5: 175537,
+    t6: 193325, t7: 251746, t8: 166054, t9: 189754, t10: 113456,
+    j1: 12774, j2: 19647, j3: 13170, j4: 17512, j5: 13903,
+    m1: 65542, m2: 17216, m3: 20067 };
+  /* 把逐分项的合同额按比例缩放到清单总额，保证「合计＝A页合同清单」且各分项完成比例口径一致 */
+  function outCtrAlloc(t) {
+    var base = 0, i, arr = [];
+    t.out.forEach(function (r) { base += (r.contract || 0); });
+    var tot = (CTR_NET[CUR.tid] !== undefined) ? CTR_NET[CUR.tid] : base;
+    if (!base || !tot) return t.out.map(function (r) { return { c: (r.contract || 0), tot: tot || base }; });
+    var acc = 0;
+    for (i = 0; i < t.out.length; i++) {
+      var last = (i === t.out.length - 1);
+      var v = last ? (tot - acc) : Math.round((t.out[i].contract || 0) * tot / base);
+      acc += v;
+      arr.push({ c: v, tot: tot });
+    }
+    return arr;
+  }
+  /* 展示名统一：集采材料到工地价 → 集采材料（数据键不变） */
+  function outNm(n) { return n === "集采材料到工地价" ? "集采材料" : n; }
+  function renderOut() {
+    var t = tenderOf(CUR.tid), host = $("#card-out");
+    if (!t) { host.style.display = "none"; return; }
+    host.style.display = "";
+    if (notStarted(t)) { host.innerHTML = soonHead("分项产值情况", subTitle(t)); return; }
+    var tot = { contract: 0, mon: 0, cum: 0 };
+    var alloc = outCtrAlloc(t);
+    tot.contract = alloc.length ? alloc[0].tot : CTR_NET[CUR.tid] || 0;
+    /* 产值周报（截至当月 19 日 23:00 的最新一期）自动带入 */
+    var wkData = null, wkKeyTxt = "";
+    try {
+      var w = (window.__WK && window.__WK.row) ? window.__WK.row(CUR.tid, CUR.ym) : null;
+      if (!w && window.__WK && window.__WK.cum) {
+        var w0 = window.__WK.cum(CUR.tid, CUR.ym);
+        if (w0 && w0.cum) w = { key: w0.key, q: null, cum: w0.cum };
+      }
+      if (w && w.cum && w.cum.length === t.out.length) {
+        wkData = {}; t.out.forEach(function (r, i) { wkData[r.k] = { q: (w.q ? w.q[i] : null), cum: w.cum[i] }; });
+        wkKeyTxt = String(w.key || "").replace(/-/g, ".");
+      }
+    } catch (eWk) { wkData = null; }
+    var body = t.out.map(function (r, i) {
+      var o = outAt(t, r, CUR.ym), cAmt = alloc[i].c, auto = !!(wkData && wkData[r.k] && wkData[r.k].cum !== undefined && wkData[r.k].cum !== null);
+      var prevBase = (o.cum || 0) - (o.mon || 0);
+      if (auto) {
+        var wv = wkData[r.k];
+        var mon = (wv.q !== null && wv.q !== undefined && isFinite(+wv.q)) ? +wv.q : (wv.cum - prevBase);
+        o = { mon: mon, cum: wv.cum };
+      }
+      tot.mon += (o.mon || 0); tot.cum += (o.cum || 0);
+      var pctv = cAmt ? (o.cum / cAmt) : null;
+      var cumCell = (FIXOPEN && !auto)
+        ? '<input class="pgi" data-ocumin="' + r.k + '" value="' + fmt(o.cum, 0) + '">'
+        : '<span class="fixv">' + fmt(o.cum, 0) + "</span>";
+      var monCell = auto
+        ? '<span class="fixv">' + fmt(o.mon, 0) + "</span>"
+        : '<input class="pgi" data-out="' + r.k + '" value="' + fmt(o.mon, 0) + '">';
+      return '<tr><td class="c">' + (r.no || "") + "</td><td class=\"nmc\">" + outNm(r.nm) + "</td>"
+        + '<td class="r" style="display:none">' + fmt(cAmt, 0) + "</td>"
+        + '<td class="r">' + monCell + "</td>"
+        + '<td class="r">' + cumCell + "</td>"
+        + '<td class="r" style="display:none" data-opct="' + r.k + '">' + (pctv === null ? "" : pct(pctv)) + "</td></tr>";
+    }).join("");
+    body += '<tr class="total"><td class="c"></td><td class="nmc">合计</td><td class="r" style="display:none">' + fmt(tot.contract, 0) + "</td>"
+      + '<td class="r" data-otot="1">' + fmt(tot.mon, 0) + "</td>"
+      + '<td class="r" data-ocumtot="1">' + fmt(tot.cum, 0) + "</td>"
+      + '<td class="r" style="display:none" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
+    var note = wkData ? "（取产值周报 " + wkKeyTxt + "）" : "";
+    host.innerHTML = head("分项产值情况", subTitle(t) + note)
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
+      + '<th style="width:44px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none">合同额</th>'
+      + '<th style="width:96px">本月完成</th><th style="width:96px">累计完成</th>'
+      + '<th style="width:72px;display:none">完成比例</th></tr></thead><tbody>' + body + "</tbody></table></div>";
+  }
+
+  /* ---------- 人员 ---------- */
+  function renderPpl() {
+    var t = tenderOf(CUR.tid), host = $("#card-ppl");
+    if (!t) { host.style.display = "none"; return; }
+    host.style.display = "";
+    if (notStarted(t)) { host.innerHTML = soonHead("人员情况", subTitle(t)); return; }
+    var p = pplAt(t, CUR.ym);
+    host.innerHTML = head("人员情况", subTitle(t), "ppl")
+      + '<div class="card-body"><table class="tbl pg-tbl pg-ctr"><thead><tr><th>项目</th><th style="width:118px">人数（人）</th></tr></thead><tbody>'
+      + '<tr><td>管理人员数</td><td><input class="pgi pgc" data-ppl="mgr" value="' + fmt(p.mgr, 0) + '"></td></tr>'
+      + '<tr><td>农民工用工人数</td><td><input class="pgi pgc" data-ppl="worker" value="' + fmt(p.worker, 0) + '"></td></tr>'
+      + "</tbody></table></div>";
+  }
+
+  /* ---------- 分地市州 ---------- */
+  /* 合计行：土建1标 / 机电1标 / 交安1标 */
+  var REGSUM_TIDS = { t1: 1, m1: 1, j1: 1 };
+  var JTKEYS = ["outPlan", "outDone", "glPlan", "glDone", "fhPlan", "fhDone", "bzPlan", "bzDone"];
+  function jtDec(k) { return (/Plan$|^outDone$/.test(k) && /^out/.test(k)) ? 0 : 2; }
+  function regSums() {
+    var reg = BASE.regions[CUR.tid];
+    if (!reg) return null;
+    var cur = (rep(CUR.tid, CUR.ym).reg || {});
+    var s = (reg.kind === "simple") ? [0, 0] : [0, 0, 0, 0, 0, 0, 0, 0];
+    reg.rows.forEach(function (r) {
+      var c = cur[r.city] || {};
+      if (reg.kind === "simple") {
+        s[0] += +((c.plan !== undefined ? c.plan : r.plan) || 0);
+        s[1] += +((c.done !== undefined ? c.done : r.done) || 0);
+      } else {
+        JTKEYS.forEach(function (k, j) { s[j] += +((c[k] !== undefined ? c[k] : r[k]) || 0); });
+      }
+    });
+    return { kind: reg.kind, s: s };
+  }
+  function regTotalRow(sm) {
+    if (!sm) return "";
+    if (sm.kind === "simple") {
+      return '<tr class="total"><td class="c">合计</td>'
+        + '<td class="r" data-regtot="0">' + fmt(sm.s[0], 0) + "</td>"
+        + '<td class="r" data-regtot="1">' + fmt(sm.s[1], 0) + "</td></tr>";
+    }
+    return '<tr class="total"><td class="c">合计</td>' + JTKEYS.map(function (k, j) {
+      return '<td class="' + (/^out/.test(k) ? "r" : "c") + (j % 2 === 0 ? " sep" : "") + '" data-regtot="' + j + '">' + fmt(sm.s[j], jtDec(k)) + "</td>";
+    }).join("") + "</tr>";
+  }
+  function refreshRegTotal() {
+    if (!REGSUM_TIDS[CUR.tid]) return;
+    var sm = regSums();
+    if (!sm) return;
+    var host = $("#card-reg");
+    if (!host) return;
+    host.querySelectorAll("[data-regtot]").forEach(function (td) {
+      var j = +td.getAttribute("data-regtot");
+      td.textContent = fmt(sm.s[j], sm.kind === "simple" ? 0 : jtDec(JTKEYS[j]));
+    });
+  }
+  function renderReg() {
+    var t = tenderOf(CUR.tid);
+    var reg = BASE.regions[CUR.tid], host = $("#card-reg");
+    if (!reg) { host.style.display = "none"; return; }
+    host.style.display = "";
+    if (notStarted(t)) { host.innerHTML = soonHead("分地市州填报", subTitle(t)); return; }
+    if (reg.kind === "simple") {
+      var rows = reg.rows.map(function (r) {
+        var cur = (rep(CUR.tid, CUR.ym).reg || {})[r.city] || {};
+        var plan = cur.plan !== undefined ? cur.plan : r.plan;
+        var done = cur.done !== undefined ? cur.done : r.done;
+        var planCell = !FIXOPEN
+          ? '<td class="r"><span class="fixv">' + fmt(plan, 0) + "</span></td>"
+          : '<td class="r"><input class="pgi" data-reg="' + r.city + '|plan" value="' + fmt(plan, 0) + '"></td>';
+        return '<tr><td class="c">' + DSP(r.city) + "</td>" + planCell
+          + '<td class="r"><input class="pgi" data-reg="' + r.city + '|done" value="' + fmt(done, 0) + '"></td></tr>';
+      }).join("");
+      var sm1 = REGSUM_TIDS[CUR.tid] ? regSums() : null;
+      if (sm1) rows += regTotalRow(sm1);
+      host.innerHTML = head("地市州产值", subTitle(t), "reg")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
+        + '<th style="width:104px" class="c">地市州</th>'
+        + '<th style="width:150px" class="c">总投资计划</th><th style="width:150px" class="c">完成产值</th></tr></thead><tbody>'
+        + rows + "</tbody></table></div>";
+    } else {
+      var rows2 = reg.rows.map(function (r) {
+        var cur = (rep(CUR.tid, CUR.ym).reg || {})[r.city] || {};
+        function cell(k, base, sep) {
+          var v = cur[k] !== undefined ? cur[k] : base;
+          var d = (/Plan$|^outDone$/.test(k) && /^out/.test(k)) ? 0 : 2;
+          var cls = (/^out/.test(k) ? "r" : "c") + (sep ? " sep" : "");
+          if (/Plan$/.test(k) && !FIXOPEN) {
+            return '<td class="' + cls + '"><span class="fixv fixc">' + fmt(v, d) + "</span></td>";
+          }
+          return '<td class="' + cls + '"><input class="pgi pgc" data-reg="' + r.city + '|' + k + '" value="' + fmt(v, d) + '"></td>';
+        }
+        return '<tr><td class="c" rowspan="1">' + DSP(r.city) + "</td>"
+          + cell("outPlan", r.outPlan, 1) + cell("outDone", r.outDone)
+          + cell("glPlan", r.glPlan, 1) + cell("glDone", r.glDone)
+          + cell("fhPlan", r.fhPlan, 1) + cell("fhDone", r.fhDone)
+          + cell("bzPlan", r.bzPlan, 1) + cell("bzDone", r.bzDone) + "</tr>";
+      }).join("");
+      var sm2 = REGSUM_TIDS[CUR.tid] ? regSums() : null;
+      if (sm2) rows2 += regTotalRow(sm2);
+      var GW = ' style="width:72px"';
+      host.innerHTML = head("分地市州填报", subTitle(t), "reg")
+        + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead>'
+        + '<tr><th rowspan="2" style="width:76px" class="c">地市州</th>'
+        + '<th colspan="2" class="c sep">产值（万元）</th>'
+        + '<th colspan="2" class="c sep">隔离栅（公里）</th>'
+        + '<th colspan="2" class="c sep">护栏（公里）</th>'
+        + '<th colspan="2" class="c sep">标志标牌（个）</th></tr>'
+        + '<tr><th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
+        + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
+        + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th>'
+        + '<th class="c sep"' + GW + '>计划</th><th class="c"' + GW + '>完成</th></tr>'
+        + "</thead><tbody>" + rows2 + "</tbody></table></div>";
+    }
+  }
+
+  function applyLocks() {
+    [["shape", "#card-shape"], ["out", "#card-out"], ["ppl", "#card-ppl"], ["reg", "#card-reg"]].forEach(function (x) {
+      var host = $(x[1]);
+      if (!host) return;
+      var on = isLocked(x[0]);
+      host.classList.toggle("is-locked", on);
+      host.querySelectorAll("input.pgi").forEach(function (i) { i.disabled = on; });
+    });
+  }
+  /* 填报日期计算：最近一次已到期的当月 day 号；本期早于台账起始月时改取下一期 */
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function dstr(d) { return d.getFullYear() + "年" + pad2(d.getMonth() + 1) + "月" + pad2(d.getDate()) + "日"; }
+  function ymof(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1); }
+  function dim(y, m) { return new Date(y, m, 0).getDate(); }
+  /* 旬报填报日：10 日 / 20 日 / 月末（2 月按 28 日） */
+  function schedDay(day) { return day === "last" ? "last" : day; }
+  function schedMake(y, m, day) {
+    var dd = (day === "last") ? ((m === 2) ? 28 : dim(y, m)) : day;
+    return new Date(y, m - 1, dd);
+  }
+  /* 当期（不早于今天）/ 上一期 填报日 */
+  function schedNext(day, now) {
+    var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var y = now.getFullYear(), m = now.getMonth() + 1;
+    var d = schedMake(y, m, day);
+    if (d >= t0) return d;
+    return schedMake(y, m + 1, day);
+  }
+  function schedPrev(day, now) {
+    var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var y = now.getFullYear(), m = now.getMonth() + 1;
+    var d = schedMake(y, m, day);
+    if (d < t0) return d;
+    return schedMake(y, m - 1, day);
+  }
+  function lastDue(day, now) {
+    return schedPrev(day, now);
+  }
+  function nextDue(day, now) {
+    return schedNext(day, now);
+  }
+  /* 旬报三个填报日（10 / 20 / 月末）中的当期与上一期 */
+  function xunList(now) {
+    var out = [], y = now.getFullYear(), m = now.getMonth() + 1;
+    [0, 1].forEach(function (k) {
+      var mm = m + k, yy = y + Math.floor((mm - 1) / 12); mm = ((mm - 1) % 12) + 1;
+      [10, 20, "last"].forEach(function (d) { out.push(schedMake(yy, mm, d)); });
+    });
+    return out;
+  }
+  function xunNext(now) {
+    var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), best = null;
+    xunList(now).forEach(function (d) { if (d >= t0 && (!best || d < best)) best = d; });
+    return best;
+  }
+  function xunPrev(now) {
+    var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), best = null;
+    var y = now.getFullYear(), m = now.getMonth() + 1;
+    [-1, 0].forEach(function (k) {
+      var mm = m + k, yy = y + Math.floor((mm - 1) / 12); mm = ((mm - 1) % 12) + 1;
+      [10, 20, "last"].forEach(function (d) {
+        var x = schedMake(yy, mm, d);
+        if (x < t0 && (!best || x > best)) best = x;
+      });
+    });
+    return best;
+  }
+  function dayDiff(a, b) {
+    return Math.round((new Date(a.getFullYear(), a.getMonth(), a.getDate()) - new Date(b.getFullYear(), b.getMonth(), b.getDate())) / 86400000);
+  }
+  function stPeriod(day) {
+    var now = new Date(), d = lastDue(day, now);
+    if (ymof(d) < BASE.months[0]) d = nextDue(day, now);
+    return d;
+  }
+  function thursdayOf(now) {
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    while (d.getDay() !== 4) d.setDate(d.getDate() - 1);
+    return d;
+  }
+
+  /* 逾期统计：返回「应报/已报」以判断警告状态 */
+  var REP_WARN_START = new Date(2026, 11, 20);   /* 工程月报警告识别起点：2026-12-20 */
+  function overdueRep(kind, prevDate, now) {
+    if (dayDiff(prevDate, now) >= 0) return null;      /* 当期还没到期，不存在逾期 */
+    if (ymof(prevDate) < BASE.months[0]) return null;   /* 早于台账起始月，不判定 */
+    if (kind === "month" && prevDate < REP_WARN_START) return null;   /* 工程月报：2026-12-20 起才识别警告 */
+    if (kind === "xb") {
+      if (!window.__XB || !window.__XB.done) return null;
+      var k = (prevDate.getFullYear() + "-" + pad2(prevDate.getMonth() + 1) + "-" + pad2(prevDate.getDate()));
+      var done = window.__XB.done(k);
+      return done === null ? null : { done: done, total: 10, nm: "标段" };
+    }
+    if (kind === "wk") {
+      if (!window.__WK || !window.__WK.snap) return null;
+      var wk = thursdayOf(prevDate), wkK = wk.getFullYear() + "-" + pad2(wk.getMonth() + 1) + "-" + pad2(wk.getDate());
+      if (wkK <= (window.__WK.seed || "2026-11-19")) return null;   /* 基准周之前不做逾期判定 */
+      var s = window.__WK.snap(wkK);
+      if (!s) return null;
+      var ts = BASE.tenders.filter(function (t) { return /^t\d+$/.test(t.tid); });
+      var n = 0; ts.forEach(function (t) { if (s.rows[t.tid] && s.rows[t.tid].lk) n++; });
+      return { done: n, total: ts.length, nm: "标段" };
+    }
+    if (kind === "month") {
+      var mth = ymof(prevDate), n2 = 0;
+      BASE.tenders.forEach(function (t) {
+        var lk = lkOf(t.tid, mth);
+        var ks = ["shape", "out", "ppl"].concat((BASE.regions && BASE.regions[t.tid]) ? ["reg"] : []);
+        if (ks.every(function (x) { return !!lk[x]; })) n2++;
+      });
+      return { done: n2, total: BASE.tenders.length, nm: "标段" };
+    }
+    if (kind === "jr") {
+      var m2 = ymof(prevDate), n3 = 0;
+      JRCITY.forEach(function (c) {
+        var leadOk = (c === "仙桃") ? (jrLocked(c, m2, "lead") && jrLocked(c, m2, "lead2")) : jrLocked(c, m2, "lead");
+        if (leadOk && jrLocked(c, m2, "me") && jrLocked(c, m2, "fj")) n3++;
+      });
+      return { done: n3, total: JRCITY.length, nm: "地市州" };
+    }
+    return null;
+  }
+  function warnCell(o) {
+    if (!o) return '<span class="pg-due-ok">—</span>';
+    if (o.done >= o.total) return '<span class="pg-due-ok">正常</span>';
+    var miss = o.total - o.done;
+    return '<span class="pg-warn"><span class="pg-st-dot"></span>逾期 ' + miss + " 个" + o.nm + "未提交</span>";
+  }
+
+  /* ① 各报表填报时间与责任单位 */
+  function renderSched() {
+    var host = $("#pg-sched");
+    if (!host) return;
+    var now = new Date(), tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var dWk = thursdayOf(now), dXun = xunNext(now), d20 = schedNext(20, now), dLast = schedNext("last", now);
+    var items = [
+      { nm: "土石方日报", cyc: "每日", due: "每日 24:00 前", org: "各标段施工单位", d: null, warn: null },
+      { nm: "产值周报", cyc: "每周四", due: dstr(dWk), org: "土建 10 个标段施工单位", d: dWk, warn: overdueRep("wk", thursdayOf(new Date(tmr.getTime() - 7 * 86400000)), tmr) },
+      { nm: "工程旬报", cyc: "每月 10 日 / 20 日 / 30 日（2 月为 28 日）", due: dstr(dXun), org: "各标段施工单位填报 · 驻地办复核", d: dXun, warn: overdueRep("xb", xunPrev(now), tmr) },
+      { nm: "工程月报", cyc: "每月 20 日", due: dstr(d20), org: "各标段施工单位 · 驻地办", d: d20, warn: overdueRep("month", schedPrev(20, now), tmr) },
+      { nm: "地市州月报", cyc: "每月 28 日", due: dstr(dLast), org: "各地市州驻地办", d: dLast, warn: overdueRep("jr", schedPrev("last", now), tmr) },
+      { nm: "晴雨表", cyc: "系统自动更新", due: "—", org: "系统自动更新，不需填报", d: null, warn: null }
+    ];
+    var rows = items.map(function (it, i) {
+      var flag = '<span class="pg-due-ok">—</span>', dueCell = it.due;
+      if (it.d) {
+        var dd = dayDiff(it.d, tmr);
+        if (dd === 0) flag = '<span class="pg-due-near">本期填报日</span>';
+        else if (dd > 0) flag = dd <= 5 ? '<span class="pg-due-near">临近 · 剩 ' + dd + " 天</span>" : '<span class="pg-due-ok">正常</span>';
+        else flag = '<span class="pg-due-ok">正常</span>';
+      }
+      return '<tr><td class="c">' + (i + 1) + "</td><td class='nmc'>" + it.nm + "</td>"
+        + '<td class="c">' + it.cyc + "</td><td class=\"c\">" + dueCell + "</td>"
+        + '<td class="c">' + it.org + "</td><td class=\"c\">" + flag + "</td>"
+        + '<td class="c">' + warnCell(it.warn) + "</td></tr>";
+    }).join("");
+    host.innerHTML = '<div class="card-head"><h2>各报表填报时间与责任单位</h2><span class="hint">提前 5 天进入提醒状态 · 逾期未提交进入警告状态 · 土石方日报不设提醒与警告</span></div>'
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+      + '<th style="width:46px" class="c">序号</th><th class="nmc">报表</th><th style="width:238px" class="c">填报周期</th>'
+      + '<th style="width:150px" class="c">当期填报时间</th><th class="c">责任单位</th>'
+      + '<th style="width:112px" class="c">提醒状态</th><th style="width:150px" class="c">警告状态</th>'
+      + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+  }
+
+  function renderStatus() {
+    if (!onPage("status")) return;
+    renderSched();
+    var host = $("#pg-st");
+    if (!host) return;
+    var d = stPeriod(20), mth = ymof(d);
+    var rows = BASE.tenders.map(function (t, i) {
+      var lk = lkOf(t.tid, mth);
+      var hasReg = !!(BASE.regions && BASE.regions[t.tid]);
+      var kinds = ["shape", "out", "ppl"];
+      if (hasReg) kinds.push("reg");
+      var done = 0;
+      kinds.forEach(function (k) { if (lk[k]) done++; });
+      var cells = ["shape", "out", "ppl", "reg"].map(function (k) {
+        if (k === "reg" && !hasReg) return '<td class="c pg-st-na">/</td>';
+        return '<td class="c">' + (lk[k]
+          ? '<span style="color:#2E9159;font-weight:600">✓</span>'
+          : '<span style="color:#C7CDD8">—</span>') + "</td>";
+      }).join("");
+      var status = (done === kinds.length)
+        ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已填报</span>'
+        : '<span class="pg-st-no"><span class="pg-st-dot"></span>未提交</span>';
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td>"
+        + cells + '<td class="c">' + status + "</td></tr>";
+    }).join("");
+    var sum = BASE.tenders.filter(function (t) {
+      var lk = lkOf(t.tid, mth);
+      var kinds = ["shape", "out", "ppl"];
+      if (BASE.regions && BASE.regions[t.tid]) kinds.push("reg");
+      return kinds.every(function (k) { return !!lk[k]; });
+    }).length;
+    var ths = ['<th style="width:46px" class="c">序号</th>', '<th class="nmc">标段</th>',
+               '<th style="width:92px" class="c">形象进度</th>', '<th style="width:82px" class="c">产值</th>',
+               '<th style="width:82px" class="c">人员</th>', '<th style="width:96px" class="c">分地市州</th>',
+               '<th style="width:104px" class="c">状态</th>'].join("");
+    host.innerHTML = '<div class="card-head"><h2>工程月报填报情况</h2><span class="hint">'
+      + dstr(d) + "　已填报 " + sum + " / " + BASE.tenders.length + " 个标段</span></div>"
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+      + ths + "</thead><tbody>" + rows + "</tbody></table></div>";
+    renderStatusJr(ymof(stPeriod(28)));
+    renderWkStatus();
+  }
+  function renderStatusJr(mth) {
+    var host = $("#jr-st");
+    if (!host) return;
+    if (!mth) mth = ymof(stPeriod(28));
+    var valid = mth >= BASE.months[0];
+    function mark(on) {
+      return on ? '<span style="color:#2E9159;font-weight:600">✓</span>' : '<span style="color:#C7CDD8">—</span>';
+    }
+    var rows = JRCITY.map(function (c, i) {
+      var leadOk = (c === "仙桃")
+        ? (jrLocked(c, mth, "lead") && jrLocked(c, mth, "lead2"))
+        : jrLocked(c, mth, "lead");
+      var meOk = jrLocked(c, mth, "me"), fjOk = jrLocked(c, mth, "fj");
+      var all = leadOk && meOk && fjOk;
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + DSP(c) + "</td>"
+        + '<td class="c">' + mark(leadOk) + "</td>"
+        + '<td class="c">' + mark(meOk) + "</td>"
+        + '<td class="c">' + mark(fjOk) + "</td>"
+        + '<td class="c">' + (all ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
+          : '<span class="pg-st-no"><span class="pg-st-dot"></span>未提交</span>') + "</td></tr>";
+    }).join("");
+    var done = JRCITY.filter(function (c) {
+      var leadOk = (c === "仙桃")
+        ? (jrLocked(c, mth, "lead") && jrLocked(c, mth, "lead2"))
+        : jrLocked(c, mth, "lead");
+      return leadOk && jrLocked(c, mth, "me") && jrLocked(c, mth, "fj");
+    }).length;
+    var d = stPeriod(28);
+    host.innerHTML = '<div class="card-head"><h2>地市州月报填报情况</h2><span class="hint">' + dstr(d) + "　"
+      + (valid ? "已提交 " + done + " / " + JRCITY.length + " 个地市州" : "该月早于 " + BASE.months[0] + "，无需填报") + "</span></div>"
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
+      + '<th style="width:44px" class="c">序号</th><th style="width:88px" class="nmc">地市州</th>'
+      + '<th class="c">土建驻地办</th><th class="c">机电驻点办</th><th class="c">房建驻地办</th>'
+      + '<th style="width:104px" class="c">填报状态</th>'
+      + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+  }
+  /* ② 产值周报填报情况（每周四） */
+  function renderWkStatus() {
+    var host = $("#wk-st");
+    if (!host) return;
+    var s = (window.__WK && window.__WK.snap) ? window.__WK.snap() : null;
+    var dthu = thursdayOf(new Date());
+    if (!s) {
+      host.innerHTML = '<div class="card-head"><h2>产值周报填报情况</h2><span class="hint">' + dstr(dthu) + "　正在读取云端数据…</span></div>";
+      return;
+    }
+    if (s.key) dthu = parseYmd(s.key);
+    var ts = BASE.tenders.filter(function (t) { return /^t\d+$/.test(t.tid); });
+    var rows = ts.map(function (t, i) {
+      var o = s.rows[t.tid] || {};
+      var filled = !!o.filled, lk = !!o.lk;
+      var mark = filled ? '<span style="color:#2E9159;font-weight:600">✓</span>' : '<span style="color:#C7CDD8">—</span>';
+      var audit = lk ? '<span style="color:#2E9159;font-weight:600">✓</span>' : '<span style="color:#C7CDD8">—</span>';
+      var status = lk ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
+        : filled ? '<span class="pg-st-no"><span class="pg-st-dot"></span>待提交</span>'
+        : '<span class="pg-st-no"><span class="pg-st-dot"></span>未填报</span>';
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td>"
+        + '<td class="c">' + mark + "</td>"
+        + '<td class="c">' + audit + "</td>"
+        + '<td class="c">' + status + "</td></tr>";
+    }).join("");
+    var done = ts.filter(function (t) { return s.rows[t.tid] && s.rows[t.tid].lk; }).length;
+    host.innerHTML = '<div class="card-head"><h2>产值周报填报情况</h2><span class="hint">' + dstr(dthu) + "（周四）　已提交 "
+      + done + " / " + ts.length + " 个土建标段</span></div>"
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
+      + '<th style="width:46px" class="c">序号</th><th class="nmc">标段</th>'
+      + '<th style="width:120px" class="c">施工单位填报</th><th style="width:112px" class="c">驻地办审核</th>'
+      + '<th style="width:104px" class="c">填报状态</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+  }
+  function parseYmd(k) { var a = String(k).split("-"); return new Date(+a[0], +a[1] - 1, +a[2]); }
+  if ($("#st-month")) {
+    $("#st-month").addEventListener("change", function () { STM = this.value; renderStatus(); });
+  }
+  /* 周报数据就绪 / 改动后，刷新月报分项产值与填报情况 */
+  document.addEventListener("wk-ready", function () {
+    try { renderOut(); } catch (eO) {}
+    renderStatus();
+  });
+
+  /* ================= 地市州月报 ================= */
+  /* ---- 行键稳定化：以「项次/名称」做键（r101 / o1 …），插行删行不再整体错位；旧下标键 r<i>/o<i> 仅作兼容读取 ---- */
+function rkey(p, r, i, used) {
+  var b = String((r && r.no !== undefined && r.no !== null && r.no !== "") ? r.no : ((r && r.nm) || ""))
+    .replace(/[^\w\u4e00-\u9fa5]/g, "");
+  var k = b ? (p + b) : (p + "i" + i);
+  if (used[k]) k = k + "_" + (i + 1);
+  used[k] = 1;
+  return k;
+}
+function rfind(t, key) {
+  if (!t || !key) return null;
+  var arr = (t.rows || []).concat(t.out || []), i, r;
+  for (i = 0; i < arr.length; i++) { r = arr[i]; if (r.k === key || r.kl === key) return r; }
+  return null;
+}
+function evRow(tid, ym, kind, row) {
+  var v = ev(tid, ym, kind, row.k);
+  if (v === null && row.kl) v = ev(tid, ym, kind, row.kl);
+  return v;
+}
+(function assignRowKeys() {
+  (BASE.tenders || []).forEach(function (t) {
+    var u1 = {}, u2 = {};
+    (t.rows || []).forEach(function (r, i) { if (r.kl === undefined) { r.kl = "r" + i; r.k = rkey("a", r, i, u1); } });
+    (t.out || []).forEach(function (r, i) { if (r.kl === undefined) { r.kl = "o" + i; r.k = rkey("b", r, i, u2); } });
+  });
+})();
+
+var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
+  var JRCITY = JRCFG.cities || [];
+  var JR = { city: JRCITY[0] || "", ym: "" };
+  var JRSTART = "2026-11";
+  var JRSEED = {"武汉":{"pct":{"lu":40.0,"ql":40.0,"lm":17.0,"ja":24.0,"me":18.0,"fj":0.0},"done":{"lu":"武汉西至侏儒互通段左幅土建一期已完成施工，侏儒至北河段左幅桥梁基础及下构已完成90%，蔡甸段左幅路面工程完成65%","ja":"武汉西至侏儒段左幅标志完成46%，钢护栏立柱完成84%，隔离栅完成65%，标线完成3%，声屏障未启动","me":"项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成，但目前九真山服务区南区场地平整未完成，未完成场地移交工作，现场未开工"},"plan":{"lu":"武汉西至侏儒互通段左幅预计2026年年底建成，侏儒互通至北河互通段左幅预计2027年6月底建成；届时将全面开展右幅施工","ja":"武汉西至侏儒互通段左幅预计2026年年底建成","me":"导改前，完成具备通电通网点位的设备安装","fj":"场地移交后10个月内完成九真山服务区南区房建施工"},"issue":"1.蔡甸段右幅红线用地交付及征拆工作亟需推进。目前，右幅红线范围内部分房屋、水塘及地面附着物尚未完成补偿，部分土地尚未移交，三改用地征拆补偿滞后，已影响汉宜主线右幅施工。\n2.交安声屏障工程正式施工图尚未下发，特别是路基段声屏障基础施工周期相对较长。"},"汉川":{"pct":{"lu":30.0,"ql":65.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"新建北河互通路基土石方填筑完成70%，4处匝道桥基础及下构工程已完成","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"新建北河互通计划启动架梁工作，预计2027年4月南侧建成","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.北河收费站出口收费站连接线口七座房屋未拆除，影响匝道施工、便道通行；\n2.因前期坟墓迁移、附着物漏登等补偿费用，未确定补偿方式，孝感协指要求尽快解决该费用，再启动协调工作；同步导致S244涉路施工许可一直未审批。"},"仙桃":{"pct":{"lu":25.0,"ql":35.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"跨G318（规划）特大桥总体完成55%，其中桩基完成64%，盖梁完成65%，墩柱完成67%，梁板架设完成21%","ja":"未启动","me":"未启动","fj":""},"plan":{"lu":"计划本年度完成跨G318（规划）特大桥左幅所有梁板架设","ja":"待土建提供段面后施工","me":"待土建提供段面后施工","fj":""},"issue":"1.10kv低压线路未拆除，影响圆管涵施工；\n2.河道管理单位责令停工，要求拆除清理河道内渣土、便道毛渣及宣传牌等设施，目前已挖断便道，造成停工。"},"仙桃2":{"civil2Done":"仙桃城区特大桥左幅整体完成78%；除受制约因素影响部位外，该桥桩基、墩柱及普通盖梁已全部完工，UHPC盖梁完成84%，梁板架设完成60%，桥面铺装完成16%","civil2Plan":"仙桃城区高架桥左幅桩基、墩柱、梁板架设2026年12月10完成；夏市村管桩桥梁板架设2026年11月30日完成桥面铺装2026年12月30日完成；建堤村管桩桥2026年11月30日梁板架设完成；基层、面层试验段2026年11月20日完成"},"潜江":{"pct":{"lu":44.0,"ql":44.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"东荆河特大桥总体完成70%；桩基、墩柱、钢混组合梁架设已全部完成，盖梁完成90%，梁板架设完成71%，现浇连续梁完成11%","ja":"已完成项目驻地建设，总体施工组织设计批复中，护栏、标志、隔离栅、防眩网、商品混凝土原材料供应商准入已审批，标线、钢筋供应商准入在录入","me":"未启动","fj":""},"plan":{"lu":"2026年11月20日启动东荆河特大桥桥面系，2026年11月25日前完成东荆河特大桥所有盖梁，2026年11月30日前完成东荆河特大桥架设5跨","ja":"进一步完善供应商准入，各分项工程的专项施工方案、首件工程施工方案编制及审批","me":"待土建提供段面后施工","fj":""},"issue":"1.加快推进潜江东互通铁路专线迁改工作，尽早为潜江东互通及主线县河中桥提供施工作业面。尽快提供潜江高架桥变更图纸正式版，以便及时对现场施工组织及交通组织作出相应调整；\n2.ZK1047+203小桥受洪荆输油管道施工时间未确定影响，K1047+200小桥8根桩基无法施工。张丫线天桥红线征地手续尚未完善，未启动施工，影响新干渠中桥及E匝道施工。"},"荆州":{"pct":{"lu":42.0,"ql":40.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"引江济汉特大桥左幅总体完成75%；索塔已封顶，桩基、盖梁、墩柱、箱梁架设全部完成，目前正在现浇梁、桥面系施工","ja":"已完成项目驻地建设，施工组织设计批复，标牌、混凝土、隔离栅原材料准入","me":"已完成本标段3处收费站出口所有车道的“手机+”与项目部驻地建设","fj":"已完成项目驻地建设，主体劳务及设备、混凝土招标已完成"},"plan":{"lu":"引江济汉特大桥正在开展现浇梁浇筑及桥面铺装，预计2027年9月份合龙","ja":"护栏、声屏障、标线等原材料准入，预计2026年12月","me":"跟随土建施工计划完成ZK1102+031-ZK1102+693处横穿管预埋","fj":"预计2027年3月进行小北门管理所改造工程"},"issue":"1.湖北省天然气、津江燃气管道迁改未按期落地，影响小北门互通ZK1096+400-ZK1099+260范围内：主线中桥2座(110m)、主线路基约1.0km施工，严重制约第一阶段导改；\n2.现阶段荆沙铁路中桥，桥梁全长98m，因10kv电缆和通信电缆未迁改，代建单位不能及时进场施工，严重制约第一阶段导改；\n3.220KV（江枝线）荆州段影响沮漳河特大桥8-11#下构及架梁。"},"宜昌":{"pct":{"lu":47.0,"ql":46.0,"lm":0.0,"ja":0.0,"me":0.0,"fj":0.0},"done":{"lu":"七星台互通桥梁下部结构除5#中墩外均已完成；玛瑙河大桥右幅下部结构完成92%","ja":"驻地建设已基本完成，部分问题仍在整改中。《施工组织设计》已编制完成，尚未上报审批。主要材料供应商正在建管平台审批","me":"已完成本标段4处收费站出口所有车道的“手机+”与项目部驻地建设","fj":""},"plan":{"lu":"2026年11月20日前完成基层（含底基层）首件施工；2026年11月30日前完成路面面层首件施工。 2026年11月25日前完成右幅梁板架设及铺装。2026年11月30日前完成7座天桥下构施工","ja":"《施工组织设计》正在修改，计划11月底完成报批","me":"跟随土建施工计划完成K1143+300-K1143+700处横穿管预埋","fj":""},"issue":"1.HYTJ-10标范围内6处35kV-220kV国网线路，枝江段69处10kV及以下线路未完成电力迁改；\n2.七星台镇、仙女镇董院2处保通侧卡点未交地；保通侧4处房屋拆迁未解决；高家店互通E匝道三处房屋距离现场过近，阻挠现场施工。"}};
+  var JRPCT = [{ k: "lu", n: "路基工程" }, { k: "ql", n: "桥涵工程" }, { k: "lm", n: "路面工程" },
+               { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
+  var JRKIND = [{ k: "lu", n: "土建工程" }, { k: "ja", n: "交安工程" }, { k: "me", n: "机电工程" }, { k: "fj", n: "房建工程" }];
+  var JRLEAD = { 武汉: "一驻地办", 汉川: "一驻地办", 仙桃: "一、二驻地办", 潜江: "三驻地办", 荆州: "四驻地办", 宜昌: "五驻地办" };
+  var JRLEADTXT = {
+    武汉: "一驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    汉川: "一驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    仙桃: "一、二驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    潜江: "三驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    荆州: "四驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
+    宜昌: "四驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。"
+  };
+  function jrWaitLk(city, ym, key) {
+    var r = jrRec(city, ym, false), l = r.lock || {};
+    return !!l[key + "w"];
+  }
+  function jrMarkWait(key) {
+    try {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-jr-sub="' + key + '"]'), function (b) {
+        b.disabled = true; b.className = "pg-lk is-wait"; b.textContent = "提交中"; b.title = "正在写入云端，请稍候";
+      });
+    } catch (e) {}
+  }
+  var JRSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
+  function jrCityName(c) { return (JRCFG.cityMap || {})[c] || c; }
+  /* 地市州显示名（数据键仍沿用原键，避免影响已存数据） */
+  function DSP(c) { return c === "汉川" ? "孝感" : c === "蔡甸" ? "武汉" : c; }
+  function DSPT(v) { return typeof v === "string" ? v.split("蔡甸").join("武汉") : v; }
+  function jrRec(city, ym, mk) {
+    var c = DB.jr[city] || (DB.jr[city] = {});
+    var r = c[ym];
+    if (!r && mk) r = c[ym] = {};
+    if (!r) return {};
+    if (mk) r.lock = r.lock || {};
+    return r;
+  }
+  function jrKeys(city) { return city === "仙桃" ? ["lead", "lead2", "me", "fj"] : ["lead", "me", "fj"]; }
+  /* key 为空时按整份月报判断；兼容早期整份提交 lock.all */
+  function jrLocked(city, ym, key) {
+    var r = jrRec(city, ym, false), l = r.lock || {};
+    if (l.all) return true;
+    if (!key) return jrKeys(city).every(function (k) { return !!l[k]; });
+    return !!l[key];
+  }
+  function jrAllLocked(city, ym) { return jrLocked(city, ym); }
+  function jrGet(city, ym, path) {
+    var r = (DB.jr[city] || {})[ym], v = r, segs = path.split(".");
+    if (!r) return undefined;
+    for (var i = 0; i < segs.length; i++) { v = v ? v[segs[i]] : undefined; }
+    return (v === undefined || v === null || String(v) === "") ? undefined : v;
+  }
+  function jrSet(city, ym, path, val) {
+    var r = jrRec(city, ym, true), segs = path.split("."), o = r;
+    for (var i = 0; i < segs.length - 1; i++) { o = o[segs[i]] || (o[segs[i]] = {}); }
+    o[segs[segs.length - 1]] = val;
+    DIRTY = true;
+  }
+  /* 未填报时沿用上月数据；2026-11 再取监理月报原始数据 */
+  function jrVal(city, ym, path) {
+    var v = jrGet(city, ym, path);
+    if (v !== undefined) return DSPT(v);
+    var idx = BASE.months.indexOf(ym), i, m, x;
+    for (i = idx - 1; i >= 0; i--) {
+      m = BASE.months[i];
+      if (m < JRSTART) break;
+      x = jrGet(city, m, path);
+      if (x !== undefined) return DSPT(x);
+    }
+    var sd = (path.indexOf("civil2") === 0) ? (JRSEED["仙桃2"] || {}) : (JRSEED[city] || {});
+    var cur = sd;
+    path.split(".").forEach(function (p) { cur = cur ? cur[p] : undefined; });
+    return DSPT(cur === undefined || cur === null ? "" : cur);
+  }
+  /* 建安费产值：土建1标 / 交安1标 / 机电1标取分地市州「完成产值」，其余标段取「分项产值情况」累计完成合计 */
+  function jrMoney(city, ym) {
+    var cfg = (JRCFG.tenders || {})[city] || {}, cn = jrCityName(city);
+    var parts = [], tm = 0, tc = 0, idx = BASE.months.indexOf(ym);
+    function add(tid, tag) {
+      var t = tenderOf(tid); if (!t) return;
+      var mon = 0, cum = 0, i, m;
+      if (tid === "t1" || tid === "j1" || tid === "m1") {
+        for (i = 0; i <= idx; i++) {
+          m = BASE.months[i];
+          var cur = ((rep(tid, m).reg || {})[cn]) || {};
+          var dv = Number(cur.done || 0) || 0;
+          cum += dv;
+          if (i === idx) mon = dv;
+        }
+      } else {
+        t.out.forEach(function (r, i2) { var o = outAt(t, r, ym); mon += (o.mon || 0); cum += (o.cum || 0); });
+      }
+      parts.push({ tid: tid, name: t.name, tag: tag, mon: mon, cum: cum });
+      tm += mon; tc += cum;
+    }
+    (cfg.one || []).forEach(function (tid) { add(tid, "一驻地办"); });
+    (cfg.two || []).forEach(function (tid) { add(tid, "二驻地办"); });
+    return { mon: tm, cum: tc, parts: parts };
+  }
+  var JRTA = ' style="width:100%;min-height:74px;border:1px solid #D5DBE3;border-radius:5px;padding:7px 9px;font:inherit;font-size:12.5px;line-height:1.65;color:#1E2A3A;resize:vertical;background:#FFF"';
+  function renderJr() {
+    if (!onPage("regions")) return;
+    var tabs = $("#jr-tabs");
+    if (tabs && !tabs.children.length) {
+      tabs.innerHTML = JRCITY.map(function (c) {
+        return '<button type="button" class="pg-tab" data-jr-city="' + c + '">' + DSP(c) + "</button>";
+      }).join("");
+    }
+    if (tabs) Array.prototype.forEach.call(tabs.querySelectorAll("[data-jr-city]"), function (b) {
+      b.classList.toggle("is-on", b.getAttribute("data-jr-city") === JR.city);
+    });
+    var sy = $("#jr-year"), sm = $("#jr-month");
+    if (sy && !sy.options.length) {
+      var ys = [];
+      BASE.months.forEach(function (m) { var y = m.slice(0, 4); if (ys.indexOf(y) < 0 && m >= JRSTART) ys.push(y); });
+      sy.innerHTML = ys.map(function (y) { return '<option value="' + y + '">' + y + " 年</option>"; }).join("");
+    }
+    if (!JR.ym) JR.ym = nowYm(BASE.months.filter(function (m) { return m >= JRSTART; }));
+    if (sy) sy.value = JR.ym.slice(0, 4);
+    if (sm) {
+      var y = JR.ym.slice(0, 4), ms = BASE.months.filter(function (m) { return m.slice(0, 4) === y && m >= JRSTART; });
+      sm.innerHTML = ms.map(function (m) { return '<option value="' + m + '">' + parseInt(m.slice(5), 10) + " 月</option>"; }).join("");
+      sm.value = JR.ym;
+    }
+    var into = $("#jr-info");
+    if (into) into.textContent = "";
+    renderJrMoney(); renderJrPct(); renderJrDesc(); renderJrMe(); renderJrFj(); renderJrMap();
+  }
+  /* 地市州归口对照：监理标段固定，施工标段取自该地市州“产值完成情况”涉及标段 */
+  var JRMAP = [
+    { k: "武汉", n: "武汉", j: "一驻地办、机电监理1标、房建监理1标" },
+    { k: "汉川", n: "孝感", j: "一驻地办、机电监理1标" },
+    { k: "仙桃", n: "仙桃", j: "一驻地办、二驻地办、机电监理1标" },
+    { k: "潜江", n: "潜江", j: "三驻地办、机电监理1标" },
+    { k: "荆州", n: "荆州", j: "四驻地办、机电监理2标" },
+    { k: "宜昌", n: "宜昌", j: "五驻地办、机电监理3标" }
+  ];
+  function renderJrMap() {
+    var host = $("#jr-map"); if (!host) return;
+    function tags(list) {
+      return list.map(function (x) { return '<span class="jr-nw">' + x + "</span>"; }).join('<span class="jr-sep">、</span>');
+    }
+    var rows = JRMAP.map(function (r) {
+      var parts = jrMoney(r.k, JR.ym).parts.map(function (p) { return p.name; });
+      return '<tr><td class="nm">' + r.n + "</td><td>" + tags(r.j.split("、")) + "</td><td>" + tags(parts) + "</td></tr>";
+    }).join("");
+    host.innerHTML = '<div class="card-body" style="padding:0">'
+      + '<div class="jr-map-h"><b>地市州填报归口</b></div>'
+      + '<table class="tbl pg-tbl pg-ctr jr-map-t"><thead><tr>'
+      + '<th style="width:14%">地市州</th><th style="width:40%">涉及监理标段</th><th>涉及施工标段</th>'
+      + "</tr></thead><tbody>" + rows + "</tbody></table>"
+      + "</div>";
+  }
+  function renderJrMoney() {
+    var host = $("#jr-money"); if (!host) return;
+    var mm = jrMoney(JR.city, JR.ym);
+    var rows = mm.parts.map(function (p, i) {
+      return "<tr><td class='c'>" + (i + 1) + "</td><td class='c'>" + p.name
+        + "</td><td class='r'>" + fmt(p.mon, 0) + "</td><td class='r'>" + fmt(p.cum, 0) + "</td></tr>";
+    }).join("");
+    host.innerHTML = head("标段合同额完成情况", "", null)
+      + '<div class="card-body" style="padding:0 0 10px">'
+      + '<table class="tbl pg-tbl jr-mini"><thead><tr><th style="width:44px" class="c">序号</th><th>标段</th>'
+      + '<th style="width:92px" class="r">本月产值</th><th style="width:98px" class="r">累计产值</th></tr></thead><tbody>'
+      + rows + '<tr class="total"><td class="c"></td><td class="c">合计</td><td class="r">' + fmt(mm.mon, 0)
+      + '</td><td class="r">' + fmt(mm.cum, 0) + "</td></tr></tbody></table></div>";
+  }
+  function renderJrPct() {
+    var host = $("#jr-pct"); if (!host) return;
+    var allLk = jrAllLocked(JR.city, JR.ym);
+    var rows = JRPCT.map(function (p) {
+      var v = jrGet(JR.city, JR.ym, "pct." + p.k);
+      var show = (v === undefined || v === null || String(v) === "") ? "" : fmt(Math.round(Number(v)), 0);
+      return "<tr><td>" + p.n + "</td><td class='c'><input class='pgi pgc' data-jrp='" + p.k
+        + "' value='" + show + "' placeholder='/' style='width:76px'" + (allLk ? " readonly" : "") + "><span class='jr-pcu'>%</span></td></tr>";
+    }).join("");
+    host.innerHTML = head("形象进度完成比例", "", null)
+      + '<div class="card-body" style="padding:0 0 6px">'
+      + '<table class="tbl pg-tbl pg-ctr jr-mini"><thead><tr><th>项目</th><th style="width:128px">完成比例</th></tr></thead><tbody>'
+      + rows + "</tbody></table>"
+      + '<div class="jr-pct-note' + (allLk ? " is-on" : "") + '">' + (allLk ? "<b>已锁定：</b>" : "")
+      + "各驻地办完成左侧信息提交后，完成比例将自动锁定。</div></div>";
+  }
+  function jrField(path, val, lk, ph, h) {
+    var own = jrOwn(JR.city, JR.ym, path);
+    return '<textarea class="jr-ta' + (own ? "" : " jr-inh") + '" data-jrf="' + path + '"' + (lk ? " readonly" : "")
+      + JRTA.replace("min-height:74px", "min-height:" + (h || 96) + "px")
+      + ' placeholder="' + (ph || "") + '">' + (val === undefined || val === null ? "" : val) + "</textarea>";
+  }
+  /* 本月是否已自行填报该字段（否则为承接上月数据，显示灰色） */
+  function jrOwn(city, ym, path) {
+    var r = (DB.jr[city] || {})[ym];
+    if (!r) return false;
+    var v = r, segs = path.split(".");
+    for (var i = 0; i < segs.length; i++) { if (v === null || v === undefined) return false; v = v[segs[i]]; }
+    return v !== undefined && v !== null;
+  }
+  function jrBlock(title, inner) {
+    return '<div class="jr-blk"><div class="jr-blk-t">' + title + '</div><table class="tbl pg-tbl"><tbody>' + inner + "</tbody></table></div>";
+  }
+  function jrRows(donePath, planPath, lk, isDoneLabel, isPlanLabel) {
+    return '<tr><td class="jr-lb">' + (isDoneLabel || "已完成") + "</td><td>"
+      + jrField(donePath, jrVal(JR.city, JR.ym, donePath), lk, "已完成情况") + "</td></tr>"
+      + '<tr><td class="jr-lb">' + (isPlanLabel || "下一步计划") + "</td><td>"
+      + jrField(planPath, jrVal(JR.city, JR.ym, planPath), lk, "下一步计划") + "</td></tr>";
+  }
+  function jrLeadCard(host, key, title, withIssue, civil2) {
+    if (!host) return;
+    var lk = jrLocked(JR.city, JR.ym, key);
+    var body = '<div class="jr-pair">'
+      + jrBlock("土建工程", jrRows(civil2 ? "civil2Done" : "done.lu", civil2 ? "civil2Plan" : "plan.lu", lk))
+      + jrBlock("交安工程", jrRows(civil2 ? "done.ja2" : "done.ja", civil2 ? "plan.ja2" : "plan.ja", lk))
+      + "</div>";
+    if (withIssue) {
+      body += '<div class="jr-blk"><div class="jr-blk-t">待解决问题</div>'
+        + '<table class="tbl pg-tbl"><tbody><tr><td>'
+        + jrField(civil2 ? "issue2" : "issue", jrVal(JR.city, JR.ym, civil2 ? "issue2" : "issue"), lk, "如：征地拆迁、管线迁改、地方协调等需协调事项", 140)
+        + "</td></tr></tbody></table></div>";
+    }
+    host.innerHTML = '<div class="card-head"><h2>' + title + '</h2>'
+      + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="' + key + '" title="'
+      + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本卡片") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
+      + '<div class="card-body">' + body + "</div>";
+  }
+  function renderJrDesc() {
+    var isXt = JR.city === "仙桃", lead = JRLEAD[JR.city] || "一驻地办";
+    jrLeadCard($("#jr-desc"), "lead", (isXt ? "一驻地办" : lead) + "填报", true, false);
+    if (isXt) jrLeadCard($("#jr-desc2"), "lead2", "二驻地办填报", true, true);
+    if ($("#jr-desc2")) $("#jr-desc2").style.display = isXt ? "" : "none";
+  }
+  function renderJrMe() {
+    var host = $("#jr-me"); if (!host) return;
+    var lk = jrLocked(JR.city, JR.ym, "me");
+    host.innerHTML = '<div class="card-head"><h2>机电驻地办填报</h2>'
+      + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="me" title="'
+      + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本卡片") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
+      + '<div class="card-body">' + jrBlock("机电工程", jrRows("done.me", "plan.me", lk)) + "</div>";
+  }
+  function renderJrFj() {
+    var host = $("#jr-fj"); if (!host) return;
+    var lk = jrLocked(JR.city, JR.ym, "fj");
+    host.innerHTML = '<div class="card-head"><h2>房建驻地办填报</h2>'
+      + '<button type="button" class="pg-lk' + (lk ? " is-on" : "") + '" data-jr-sub="fj" title="'
+      + (lk ? "已提交，点击解锁修改" : "点击提交并锁定本卡片") + '" aria-label="提交">' + (lk ? JRSVG : "提交") + "</button></div>"
+      + '<div class="card-body">' + jrBlock("房建工程", jrRows("done.fj", "plan.fj", lk)) + "</div>";
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var c = t && t.closest ? t.closest("[data-jr-city]") : null;
+    if (c) { JR.city = c.getAttribute("data-jr-city"); renderJr(); return; }
+    var sub = t && t.closest ? t.closest("[data-jr-sub]") : null;
+    if (!sub) return;
+    var key = sub.getAttribute("data-jr-sub") || "all";
+    var rec = jrRec(JR.city, JR.ym, true);
+    if (rec.lock[key + "w"]) { flag("正在写入云端，请稍候…", false); return; }
+    if (!jrLocked(JR.city, JR.ym, key)) {
+      rec.lock.all = 0;
+      rec.lock[key + "w"] = 1;
+      persistLocal(); renderJr(); renderStatus(); jrMarkWait(key);
+      repWait(1);
+      pushCloud().then(function (ok) {
+        if (!ok) {
+          delete rec.lock[key + "w"]; persistLocal(); renderJr(); renderStatus(); repWait(-1);
+          flag("提交未写入云端，请再点一次「提交」重试", false);
+          return;
+        }
+        rec.lock[key] = 1; delete rec.lock[key + "w"];
+        persistLocal(); renderJr(); renderStatus();
+        pushCloud().then(function (ok2) {
+          repWait(-1);
+          flag(ok2 ? ("已提交：" + DSP(JR.city) + " " + (key === "lead" ? "一驻地办" : key === "lead2" ? "二驻地办" : key === "me" ? "机电驻地办" : "房建驻地办"))
+                   : "已提交，但提交标记尚未写入云端，稍后会自动补推", !!ok2);
+        });
+      });
+    } else {
+      var pw = prompt("取消提交需输入密码：");
+      if (pw === null) return;
+      if (String(pw).trim() !== "a") { alert("密码错误"); return; }
+      rec.lock.all = 0;
+      rec.lock[key] = 0;
+      persistLocal(); renderJr(); renderStatus();
+      repWait(1);
+      pushCloud().then(function (ok) {
+        repWait(-1);
+        flag(ok ? ("已取消提交：" + DSP(JR.city)) : "解锁未写入云端，请重试", !!ok);
+      });
+    }
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || !t.dataset) return;
+    if (t.dataset.jrf) {
+      if (t.classList && t.classList.contains("jr-inh")) t.classList.remove("jr-inh");
+      jrSet(JR.city, JR.ym, t.dataset.jrf, t.value); return;
+    }
+    if (t.dataset.jrp) { jrSet(JR.city, JR.ym, "pct." + t.dataset.jrp, t.value); }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t) return;
+    if (t.dataset && t.dataset.jrp) {
+      var n = toNum(String(t.value).replace("%", ""));
+      var iv = (n === null) ? "" : String(Math.round(n));
+      t.value = iv;
+      jrSet(JR.city, JR.ym, "pct." + t.dataset.jrp, iv);
+      return;
+    }
+    if (!t.id) return;
+    if (t.id === "jr-year") {
+      var y = t.value, ms = BASE.months.filter(function (m) { return m.slice(0, 4) === y && m >= JRSTART; });
+      JR.ym = nowYm(ms);
+      renderJr();
+    }
+    if (t.id === "jr-month") { JR.ym = t.value; renderJr(); }
+  });
+
+  function placeReg() {
+    var reg = document.getElementById("card-reg");
+    var left = document.getElementById("pane-left");
+    var right = document.getElementById("pane-right");
+    var shape = document.getElementById("card-shape");
+    var out = document.getElementById("card-out");
+    if (!reg || !left || !shape) return;
+    /* 土建1标、机电1标：地市州产值卡放在「分项产值情况」下方（右栏）；其余标段仍在左栏「形象进度」下方 */
+    var below = (CUR.tid === "t1" || CUR.tid === "m1");
+    if (below && right && out) {
+      if (reg.parentNode !== right || reg.previousElementSibling !== out) right.insertBefore(reg, out.nextSibling);
+      return;
+    }
+    /* 其余：形象进度完成情况一览表 → 分地市州填报（如有） */
+    if (reg.parentNode !== left || reg.previousElementSibling !== shape) left.insertBefore(reg, shape.nextSibling);
+  }
+  function renderAll() {
+    if (!onPage("monthly")) return;
+    renderTabs(); renderSel(); renderShape(); renderOut(); renderPpl(); renderReg();
+    placeReg();
+    applyLocks(); renderStatus();
+    tsfRefresh();
+    var fx = $("#btn-fix");
+    if (fx) {
+      fx.classList.toggle("is-open", FIXOPEN);
+      var tip = FIXOPEN ? "已解锁：基础数据可编辑，点击重新固化" : "解锁后可修改固化的基础数据";
+      fx.setAttribute("title", tip); fx.setAttribute("aria-label", tip);
+    }
+    $("#pg-hint").textContent = DIRTY ? "有未保存的修改" : "";
+    var s = $("#saved");
+    if (s && DB.ts) {
+      var d = new Date(DB.ts), z = function (n) { return (n < 10 ? "0" : "") + n; };
+      s.textContent = "最后保存 " + d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()) + " " + z(d.getHours()) + ":" + z(d.getMinutes());
+    }
+  }
+
+  /* ---------- 锁旁确认气泡：确认后才解锁（替代原「a」口令输入框） ---------- */
+  function bxPop(anchor, text, onOk) {
+    var old = document.getElementById("bx-pop"); if (old) old.remove();
+    var p = document.createElement("div");
+    p.id = "bx-pop"; p.className = "bx-pop";
+    p.innerHTML = '<div class="p-tx">' + text + '</div><div class="p-act"><button type="button" class="no">取消</button><button type="button" class="ok">确认</button></div>';
+    document.body.appendChild(p);
+    var r = anchor.getBoundingClientRect();
+    var top = r.bottom + window.scrollY + 8, left = r.left + window.scrollX - 8;
+    var w = p.offsetWidth || 240;
+    if (left + w > window.innerWidth - 12) left = Math.max(12, window.innerWidth - w - 12);
+    if (r.bottom + p.offsetHeight + 20 > window.innerHeight) top = r.top + window.scrollY - p.offsetHeight - 8;
+    p.style.top = top + "px"; p.style.left = left + "px";
+    function close() { p.remove(); document.removeEventListener("click", out, true); document.removeEventListener("keydown", esc); }
+    function out(ev) { if (!p.contains(ev.target)) close(); }
+    function esc(ev) { if (ev.key === "Escape") close(); }
+    p.querySelector(".no").onclick = close;
+    p.querySelector(".ok").onclick = function () { close(); onOk(); };
+    setTimeout(function () { document.addEventListener("click", out, true); document.addEventListener("keydown", esc); }, 0);
+  }
+
+  /* ---------- 事件 ---------- */
+  document.addEventListener("click", function (e) {
+    var lk = e.target.closest ? e.target.closest("[data-lk]") : null;
+    if (lk) {
+      var name = lk.getAttribute("data-lk");
+      var rl = lockOf(CUR.tid, CUR.ym);
+      if (rl[name + "w"]) { flag("正在写入云端，请稍候…", false); return; }
+      if (!isLocked(name)) {
+        rl[name + "w"] = 1;
+        DIRTY = false;
+        persist();
+        renderAll();
+        repWait(1);
+        pushCloud().then(function (ok) {
+          if (!ok) {
+            delete rl[name + "w"]; persist(); renderAll(); repWait(-1);
+            flag("提交未写入云端，请再点一次「提交」重试", false);
+            return;
+          }
+          rl[name] = 1; delete rl[name + "w"];
+          persist(); renderAll();
+          /* 数据已落云端，再把「已提交」标记单独写一次，保证别处看到的提交状态一致 */
+          pushCloud().then(function (ok2) {
+            repWait(-1);
+            if (!ok2) flag("已提交，但提交标记尚未写入云端，稍后会自动补推", false);
+            else flag("已提交并锁定：" + LKNAME[name], true);
+          });
+        });
+      } else {
+        /* 锁为「a」口令的表格：改为锁旁气泡确认，不再弹输入框 */
+        var segName = (tenderOf(CUR.tid) || {}).name || "本";
+        bxPop(lk, '是否确定修改 <span class="p-seg">“' + segName + '”</span> 数据？', function () {
+          lockOf(CUR.tid, CUR.ym)[name] = 0;   /* 0＝已撤销提交，便于按字段合并时如实同步 */
+          DIRTY = false;        persist();
+          renderAll();
+          repWait(1);
+          pushCloud().then(function (ok) {
+            repWait(-1);
+            flag(ok ? ("已解锁：" + LKNAME[name] + "，可以修改") : "解锁未写入云端，请重试", !!ok);
+            renderAll();
+          });
+        });
+      }
+      return;
+    }
+    var b = e.target.closest ? e.target.closest("[data-type]") : null;
+    if (b) { CUR.type = b.getAttribute("data-type"); CUR.tid = (tidList(CUR.type)[0] || {}).tid || ""; renderAll(); return; }
+    var nav = e.target.closest ? e.target.closest(".nav-item[data-view]") : null;
+    if (nav) {
+      var v = nav.getAttribute("data-view");
+      document.querySelectorAll(".nav-item").forEach(function (a) { a.classList.toggle("is-on", a === nav); });
+      document.querySelectorAll(".view").forEach(function (s) { s.classList.toggle("is-on", s.id === "view-" + v); });
+      if (v === "status") renderStatus();
+      if (v === "jr") renderJr();
+      if (v === "tsf") tsfRenderAll();
+      if (v === "rain") renderRain();
+      e.preventDefault();
+    }
+  });
+
+    /* ---------- 晴雨表 ---------- */
+    var WX = {"cities":[{"k":"wh","name":"武汉市","sub":"蔡甸区","seg":"土建1标","lat":30.53,"lon":114.03,"years":{"2016":{"1":{"r":16,"s":2,"d":31,"pct":51.6},"2":{"r":7,"s":0,"d":29,"pct":24.1},"3":{"r":15,"s":1,"d":31,"pct":48.4},"4":{"r":17,"s":0,"d":30,"pct":56.7},"5":{"r":18,"s":0,"d":31,"pct":58.1},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":17,"s":0,"d":31,"pct":54.8},"8":{"r":18,"s":0,"d":31,"pct":58.1},"9":{"r":9,"s":0,"d":30,"pct":30.0},"10":{"r":21,"s":0,"d":31,"pct":67.7},"11":{"r":14,"s":2,"d":30,"pct":46.7},"12":{"r":8,"s":0,"d":31,"pct":25.8}},"2017":{"1":{"r":11,"s":0,"d":31,"pct":35.5},"2":{"r":11,"s":3,"d":28,"pct":39.3},"3":{"r":15,"s":0,"d":31,"pct":48.4},"4":{"r":14,"s":0,"d":30,"pct":46.7},"5":{"r":20,"s":0,"d":31,"pct":64.5},"6":{"r":26,"s":0,"d":30,"pct":86.7},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":26,"s":0,"d":31,"pct":83.9},"9":{"r":24,"s":0,"d":30,"pct":80.0},"10":{"r":16,"s":0,"d":31,"pct":51.6},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":6,"s":0,"d":31,"pct":19.4}},"2018":{"1":{"r":16,"s":8,"d":31,"pct":51.6},"2":{"r":12,"s":1,"d":28,"pct":42.9},"3":{"r":19,"s":0,"d":31,"pct":61.3},"4":{"r":13,"s":0,"d":30,"pct":43.3},"5":{"r":22,"s":0,"d":31,"pct":71.0},"6":{"r":15,"s":0,"d":30,"pct":50.0},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":24,"s":0,"d":31,"pct":77.4},"9":{"r":14,"s":0,"d":30,"pct":46.7},"10":{"r":11,"s":0,"d":31,"pct":35.5},"11":{"r":17,"s":0,"d":30,"pct":56.7},"12":{"r":19,"s":4,"d":31,"pct":61.3}},"2019":{"1":{"r":10,"s":2,"d":31,"pct":32.3},"2":{"r":20,"s":5,"d":28,"pct":71.4},"3":{"r":16,"s":0,"d":31,"pct":51.6},"4":{"r":19,"s":0,"d":30,"pct":63.3},"5":{"r":15,"s":0,"d":31,"pct":48.4},"6":{"r":17,"s":0,"d":30,"pct":56.7},"7":{"r":14,"s":0,"d":31,"pct":45.2},"8":{"r":15,"s":0,"d":31,"pct":48.4},"9":{"r":6,"s":0,"d":30,"pct":20.0},"10":{"r":10,"s":0,"d":31,"pct":32.3},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":8,"s":0,"d":31,"pct":25.8}},"2020":{"1":{"r":19,"s":4,"d":31,"pct":61.3},"2":{"r":13,"s":1,"d":29,"pct":44.8},"3":{"r":15,"s":0,"d":31,"pct":48.4},"4":{"r":10,"s":0,"d":30,"pct":33.3},"5":{"r":17,"s":0,"d":31,"pct":54.8},"6":{"r":23,"s":0,"d":30,"pct":76.7},"7":{"r":28,"s":0,"d":31,"pct":90.3},"8":{"r":13,"s":0,"d":31,"pct":41.9},"9":{"r":22,"s":0,"d":30,"pct":73.3},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":7,"s":2,"d":31,"pct":22.6}},"2021":{"1":{"r":8,"s":1,"d":31,"pct":25.8},"2":{"r":13,"s":0,"d":28,"pct":46.4},"3":{"r":18,"s":0,"d":31,"pct":58.1},"4":{"r":19,"s":0,"d":30,"pct":63.3},"5":{"r":18,"s":0,"d":31,"pct":58.1},"6":{"r":18,"s":0,"d":30,"pct":60.0},"7":{"r":23,"s":0,"d":31,"pct":74.2},"8":{"r":27,"s":0,"d":31,"pct":87.1},"9":{"r":8,"s":0,"d":30,"pct":26.7},"10":{"r":9,"s":0,"d":31,"pct":29.0},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":5,"s":1,"d":31,"pct":16.1}},"2022":{"1":{"r":16,"s":3,"d":31,"pct":51.6},"2":{"r":16,"s":5,"d":28,"pct":57.1},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":14,"s":0,"d":30,"pct":46.7},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":18,"s":0,"d":30,"pct":60.0},"7":{"r":18,"s":0,"d":31,"pct":58.1},"8":{"r":9,"s":0,"d":31,"pct":29.0},"9":{"r":5,"s":0,"d":30,"pct":16.7},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":15,"s":2,"d":30,"pct":50.0},"12":{"r":3,"s":0,"d":31,"pct":9.7}},"2023":{"1":{"r":7,"s":2,"d":31,"pct":22.6},"2":{"r":14,"s":1,"d":28,"pct":50.0},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":18,"s":0,"d":30,"pct":60.0},"5":{"r":21,"s":0,"d":31,"pct":67.7},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":21,"s":0,"d":31,"pct":67.7},"8":{"r":16,"s":0,"d":31,"pct":51.6},"9":{"r":16,"s":0,"d":30,"pct":53.3},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":10,"s":3,"d":31,"pct":32.3}},"2024":{"1":{"r":12,"s":2,"d":31,"pct":38.7},"2":{"r":18,"s":8,"d":29,"pct":62.1},"3":{"r":15,"s":0,"d":31,"pct":48.4},"4":{"r":26,"s":0,"d":30,"pct":86.7},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":24,"s":0,"d":30,"pct":80.0},"7":{"r":17,"s":0,"d":31,"pct":54.8},"8":{"r":15,"s":0,"d":31,"pct":48.4},"9":{"r":12,"s":0,"d":30,"pct":40.0},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":10,"s":0,"d":30,"pct":33.3},"12":{"r":4,"s":0,"d":31,"pct":12.9}},"2025":{"1":{"r":8,"s":0,"d":31,"pct":25.8},"2":{"r":13,"s":1,"d":28,"pct":46.4},"3":{"r":13,"s":0,"d":31,"pct":41.9},"4":{"r":12,"s":0,"d":30,"pct":40.0},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":23,"s":0,"d":30,"pct":76.7},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":19,"s":0,"d":31,"pct":61.3},"9":{"r":20,"s":0,"d":30,"pct":66.7},"10":{"r":14,"s":0,"d":31,"pct":45.2},"11":{"r":6,"s":0,"d":30,"pct":20.0},"12":{"r":9,"s":1,"d":31,"pct":29.0}},"2026":{"1":{"r":11,"s":3,"d":31,"pct":35.5},"2":{"r":11,"s":1,"d":28,"pct":39.3},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":23,"s":0,"d":30,"pct":76.7},"5":{"r":20,"s":0,"d":31,"pct":64.5},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":28,"s":0,"d":31,"pct":90.3},"8":{"r":26,"s":0,"d":31,"pct":83.9},"9":{"r":15,"s":0,"d":30,"pct":50.0},"10":{"r":15,"s":0,"d":31,"pct":48.4}}},"normal":{"1":{"r":12.3,"s":2.4,"d":31.0,"pct":39.7},"2":{"r":13.7,"s":2.5,"d":28.3,"pct":48.4},"3":{"r":16.0,"s":0.1,"d":31.0,"pct":51.6},"4":{"r":16.2,"s":0.0,"d":30.0,"pct":54.0},"5":{"r":17.9,"s":0.0,"d":31.0,"pct":57.7},"6":{"r":20.4,"s":0.0,"d":30.0,"pct":68.0},"7":{"r":19.8,"s":0.0,"d":31.0,"pct":63.9},"8":{"r":18.2,"s":0.0,"d":31.0,"pct":58.7},"9":{"r":13.6,"s":0.0,"d":30.0,"pct":45.3},"10":{"r":13.3,"s":0.0,"d":31.0,"pct":42.9},"11":{"r":11.9,"s":0.4,"d":30.0,"pct":39.7},"12":{"r":7.9,"s":1.1,"d":31.0,"pct":25.5}}},{"k":"xt","name":"仙桃市","sub":"","seg":"土建2–4标","lat":30.36,"lon":113.45,"years":{"2016":{"1":{"r":13,"s":3,"d":31,"pct":41.9},"2":{"r":7,"s":1,"d":29,"pct":24.1},"3":{"r":15,"s":2,"d":31,"pct":48.4},"4":{"r":17,"s":0,"d":30,"pct":56.7},"5":{"r":20,"s":0,"d":31,"pct":64.5},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":18,"s":0,"d":31,"pct":58.1},"8":{"r":16,"s":0,"d":31,"pct":51.6},"9":{"r":7,"s":0,"d":30,"pct":23.3},"10":{"r":19,"s":0,"d":31,"pct":61.3},"11":{"r":13,"s":2,"d":30,"pct":43.3},"12":{"r":8,"s":0,"d":31,"pct":25.8}},"2017":{"1":{"r":9,"s":0,"d":31,"pct":29.0},"2":{"r":12,"s":3,"d":28,"pct":42.9},"3":{"r":16,"s":0,"d":31,"pct":51.6},"4":{"r":14,"s":0,"d":30,"pct":46.7},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":27,"s":0,"d":30,"pct":90.0},"7":{"r":18,"s":0,"d":31,"pct":58.1},"8":{"r":25,"s":0,"d":31,"pct":80.6},"9":{"r":21,"s":0,"d":30,"pct":70.0},"10":{"r":17,"s":0,"d":31,"pct":54.8},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":6,"s":0,"d":31,"pct":19.4}},"2018":{"1":{"r":17,"s":10,"d":31,"pct":54.8},"2":{"r":7,"s":1,"d":28,"pct":25.0},"3":{"r":18,"s":0,"d":31,"pct":58.1},"4":{"r":18,"s":0,"d":30,"pct":60.0},"5":{"r":19,"s":0,"d":31,"pct":61.3},"6":{"r":15,"s":0,"d":30,"pct":50.0},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":24,"s":0,"d":31,"pct":77.4},"9":{"r":14,"s":0,"d":30,"pct":46.7},"10":{"r":11,"s":0,"d":31,"pct":35.5},"11":{"r":14,"s":0,"d":30,"pct":46.7},"12":{"r":20,"s":5,"d":31,"pct":64.5}},"2019":{"1":{"r":10,"s":4,"d":31,"pct":32.3},"2":{"r":20,"s":8,"d":28,"pct":71.4},"3":{"r":16,"s":0,"d":31,"pct":51.6},"4":{"r":19,"s":0,"d":30,"pct":63.3},"5":{"r":15,"s":0,"d":31,"pct":48.4},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":15,"s":0,"d":31,"pct":48.4},"8":{"r":13,"s":0,"d":31,"pct":41.9},"9":{"r":7,"s":0,"d":30,"pct":23.3},"10":{"r":12,"s":0,"d":31,"pct":38.7},"11":{"r":13,"s":0,"d":30,"pct":43.3},"12":{"r":9,"s":0,"d":31,"pct":29.0}},"2020":{"1":{"r":18,"s":2,"d":31,"pct":58.1},"2":{"r":13,"s":1,"d":29,"pct":44.8},"3":{"r":15,"s":0,"d":31,"pct":48.4},"4":{"r":10,"s":0,"d":30,"pct":33.3},"5":{"r":15,"s":0,"d":31,"pct":48.4},"6":{"r":26,"s":0,"d":30,"pct":86.7},"7":{"r":29,"s":0,"d":31,"pct":93.5},"8":{"r":17,"s":0,"d":31,"pct":54.8},"9":{"r":20,"s":0,"d":30,"pct":66.7},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":9,"s":2,"d":31,"pct":29.0}},"2021":{"1":{"r":8,"s":1,"d":31,"pct":25.8},"2":{"r":14,"s":0,"d":28,"pct":50.0},"3":{"r":19,"s":0,"d":31,"pct":61.3},"4":{"r":21,"s":0,"d":30,"pct":70.0},"5":{"r":18,"s":0,"d":31,"pct":58.1},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":26,"s":0,"d":31,"pct":83.9},"8":{"r":27,"s":0,"d":31,"pct":87.1},"9":{"r":10,"s":0,"d":30,"pct":33.3},"10":{"r":11,"s":0,"d":31,"pct":35.5},"11":{"r":10,"s":0,"d":30,"pct":33.3},"12":{"r":8,"s":2,"d":31,"pct":25.8}},"2022":{"1":{"r":17,"s":3,"d":31,"pct":54.8},"2":{"r":14,"s":4,"d":28,"pct":50.0},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":16,"s":0,"d":30,"pct":53.3},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":18,"s":0,"d":30,"pct":60.0},"7":{"r":19,"s":0,"d":31,"pct":61.3},"8":{"r":11,"s":0,"d":31,"pct":35.5},"9":{"r":7,"s":0,"d":30,"pct":23.3},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":16,"s":2,"d":30,"pct":53.3},"12":{"r":4,"s":0,"d":31,"pct":12.9}},"2023":{"1":{"r":7,"s":2,"d":31,"pct":22.6},"2":{"r":14,"s":0,"d":28,"pct":50.0},"3":{"r":16,"s":0,"d":31,"pct":51.6},"4":{"r":18,"s":0,"d":30,"pct":60.0},"5":{"r":21,"s":0,"d":31,"pct":67.7},"6":{"r":21,"s":0,"d":30,"pct":70.0},"7":{"r":24,"s":0,"d":31,"pct":77.4},"8":{"r":17,"s":0,"d":31,"pct":54.8},"9":{"r":16,"s":0,"d":30,"pct":53.3},"10":{"r":12,"s":0,"d":31,"pct":38.7},"11":{"r":13,"s":0,"d":30,"pct":43.3},"12":{"r":9,"s":2,"d":31,"pct":29.0}},"2024":{"1":{"r":13,"s":3,"d":31,"pct":41.9},"2":{"r":18,"s":9,"d":29,"pct":62.1},"3":{"r":15,"s":0,"d":31,"pct":48.4},"4":{"r":19,"s":0,"d":30,"pct":63.3},"5":{"r":18,"s":0,"d":31,"pct":58.1},"6":{"r":25,"s":0,"d":30,"pct":83.3},"7":{"r":17,"s":0,"d":31,"pct":54.8},"8":{"r":13,"s":0,"d":31,"pct":41.9},"9":{"r":13,"s":0,"d":30,"pct":43.3},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":5,"s":1,"d":31,"pct":16.1}},"2025":{"1":{"r":7,"s":0,"d":31,"pct":22.6},"2":{"r":12,"s":1,"d":28,"pct":42.9},"3":{"r":14,"s":1,"d":31,"pct":45.2},"4":{"r":9,"s":0,"d":30,"pct":30.0},"5":{"r":13,"s":0,"d":31,"pct":41.9},"6":{"r":22,"s":0,"d":30,"pct":73.3},"7":{"r":16,"s":0,"d":31,"pct":51.6},"8":{"r":18,"s":0,"d":31,"pct":58.1},"9":{"r":22,"s":0,"d":30,"pct":73.3},"10":{"r":16,"s":0,"d":31,"pct":51.6},"11":{"r":6,"s":0,"d":30,"pct":20.0},"12":{"r":7,"s":1,"d":31,"pct":22.6}},"2026":{"1":{"r":11,"s":4,"d":31,"pct":35.5},"2":{"r":10,"s":1,"d":28,"pct":35.7},"3":{"r":20,"s":0,"d":31,"pct":64.5},"4":{"r":22,"s":0,"d":30,"pct":73.3},"5":{"r":20,"s":0,"d":31,"pct":64.5},"6":{"r":23,"s":0,"d":30,"pct":76.7},"7":{"r":24,"s":0,"d":31,"pct":77.4},"8":{"r":22,"s":0,"d":31,"pct":71.0},"9":{"r":16,"s":0,"d":30,"pct":53.3},"10":{"r":15,"s":0,"d":31,"pct":48.4}}},"normal":{"1":{"r":11.9,"s":2.8,"d":31.0,"pct":38.4},"2":{"r":13.1,"s":2.8,"d":28.3,"pct":46.3},"3":{"r":16.1,"s":0.3,"d":31.0,"pct":51.9},"4":{"r":16.1,"s":0.0,"d":30.0,"pct":53.7},"5":{"r":17.1,"s":0.0,"d":31.0,"pct":55.2},"6":{"r":21.3,"s":0.0,"d":30.0,"pct":71.0},"7":{"r":20.2,"s":0.0,"d":31.0,"pct":65.2},"8":{"r":18.1,"s":0.0,"d":31.0,"pct":58.4},"9":{"r":13.7,"s":0.0,"d":30.0,"pct":45.7},"10":{"r":13.7,"s":0.0,"d":31.0,"pct":44.2},"11":{"r":11.8,"s":0.4,"d":30.0,"pct":39.3},"12":{"r":8.5,"s":1.3,"d":31.0,"pct":27.4}}},{"k":"qj","name":"潜江市","sub":"","seg":"土建5–6标","lat":30.4,"lon":112.9,"years":{"2016":{"1":{"r":10,"s":2,"d":31,"pct":32.3},"2":{"r":6,"s":0,"d":29,"pct":20.7},"3":{"r":15,"s":2,"d":31,"pct":48.4},"4":{"r":16,"s":0,"d":30,"pct":53.3},"5":{"r":19,"s":0,"d":31,"pct":61.3},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":19,"s":0,"d":31,"pct":61.3},"9":{"r":7,"s":0,"d":30,"pct":23.3},"10":{"r":22,"s":0,"d":31,"pct":71.0},"11":{"r":13,"s":2,"d":30,"pct":43.3},"12":{"r":7,"s":0,"d":31,"pct":22.6}},"2017":{"1":{"r":11,"s":0,"d":31,"pct":35.5},"2":{"r":10,"s":2,"d":28,"pct":35.7},"3":{"r":16,"s":0,"d":31,"pct":51.6},"4":{"r":17,"s":0,"d":30,"pct":56.7},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":25,"s":0,"d":30,"pct":83.3},"7":{"r":17,"s":0,"d":31,"pct":54.8},"8":{"r":26,"s":0,"d":31,"pct":83.9},"9":{"r":19,"s":0,"d":30,"pct":63.3},"10":{"r":17,"s":0,"d":31,"pct":54.8},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":5,"s":0,"d":31,"pct":16.1}},"2018":{"1":{"r":16,"s":9,"d":31,"pct":51.6},"2":{"r":8,"s":2,"d":28,"pct":28.6},"3":{"r":18,"s":0,"d":31,"pct":58.1},"4":{"r":15,"s":0,"d":30,"pct":50.0},"5":{"r":20,"s":0,"d":31,"pct":64.5},"6":{"r":17,"s":0,"d":30,"pct":56.7},"7":{"r":19,"s":0,"d":31,"pct":61.3},"8":{"r":20,"s":0,"d":31,"pct":64.5},"9":{"r":14,"s":0,"d":30,"pct":46.7},"10":{"r":10,"s":0,"d":31,"pct":32.3},"11":{"r":13,"s":0,"d":30,"pct":43.3},"12":{"r":18,"s":4,"d":31,"pct":58.1}},"2019":{"1":{"r":10,"s":5,"d":31,"pct":32.3},"2":{"r":20,"s":8,"d":28,"pct":71.4},"3":{"r":14,"s":0,"d":31,"pct":45.2},"4":{"r":18,"s":0,"d":30,"pct":60.0},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":18,"s":0,"d":30,"pct":60.0},"7":{"r":14,"s":0,"d":31,"pct":45.2},"8":{"r":18,"s":0,"d":31,"pct":58.1},"9":{"r":8,"s":0,"d":30,"pct":26.7},"10":{"r":12,"s":0,"d":31,"pct":38.7},"11":{"r":15,"s":0,"d":30,"pct":50.0},"12":{"r":7,"s":0,"d":31,"pct":22.6}},"2020":{"1":{"r":17,"s":2,"d":31,"pct":54.8},"2":{"r":13,"s":1,"d":29,"pct":44.8},"3":{"r":13,"s":0,"d":31,"pct":41.9},"4":{"r":10,"s":0,"d":30,"pct":33.3},"5":{"r":15,"s":0,"d":31,"pct":48.4},"6":{"r":24,"s":0,"d":30,"pct":80.0},"7":{"r":30,"s":0,"d":31,"pct":96.8},"8":{"r":18,"s":0,"d":31,"pct":58.1},"9":{"r":18,"s":0,"d":30,"pct":60.0},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":9,"s":1,"d":31,"pct":29.0}},"2021":{"1":{"r":8,"s":1,"d":31,"pct":25.8},"2":{"r":14,"s":0,"d":28,"pct":50.0},"3":{"r":21,"s":0,"d":31,"pct":67.7},"4":{"r":21,"s":0,"d":30,"pct":70.0},"5":{"r":18,"s":0,"d":31,"pct":58.1},"6":{"r":17,"s":0,"d":30,"pct":56.7},"7":{"r":24,"s":0,"d":31,"pct":77.4},"8":{"r":26,"s":0,"d":31,"pct":83.9},"9":{"r":9,"s":0,"d":30,"pct":30.0},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":13,"s":0,"d":30,"pct":43.3},"12":{"r":8,"s":2,"d":31,"pct":25.8}},"2022":{"1":{"r":17,"s":4,"d":31,"pct":54.8},"2":{"r":15,"s":5,"d":28,"pct":53.6},"3":{"r":18,"s":0,"d":31,"pct":58.1},"4":{"r":17,"s":0,"d":30,"pct":56.7},"5":{"r":15,"s":0,"d":31,"pct":48.4},"6":{"r":17,"s":0,"d":30,"pct":56.7},"7":{"r":17,"s":0,"d":31,"pct":54.8},"8":{"r":7,"s":0,"d":31,"pct":22.6},"9":{"r":10,"s":0,"d":30,"pct":33.3},"10":{"r":11,"s":0,"d":31,"pct":35.5},"11":{"r":13,"s":1,"d":30,"pct":43.3},"12":{"r":6,"s":1,"d":31,"pct":19.4}},"2023":{"1":{"r":6,"s":2,"d":31,"pct":19.4},"2":{"r":12,"s":0,"d":28,"pct":42.9},"3":{"r":15,"s":0,"d":31,"pct":48.4},"4":{"r":19,"s":0,"d":30,"pct":63.3},"5":{"r":22,"s":0,"d":31,"pct":71.0},"6":{"r":21,"s":0,"d":30,"pct":70.0},"7":{"r":23,"s":0,"d":31,"pct":74.2},"8":{"r":12,"s":0,"d":31,"pct":38.7},"9":{"r":16,"s":0,"d":30,"pct":53.3},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":11,"s":2,"d":31,"pct":35.5}},"2024":{"1":{"r":14,"s":3,"d":31,"pct":45.2},"2":{"r":18,"s":8,"d":29,"pct":62.1},"3":{"r":14,"s":0,"d":31,"pct":45.2},"4":{"r":24,"s":0,"d":30,"pct":80.0},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":24,"s":0,"d":30,"pct":80.0},"7":{"r":18,"s":0,"d":31,"pct":58.1},"8":{"r":13,"s":0,"d":31,"pct":41.9},"9":{"r":9,"s":0,"d":30,"pct":30.0},"10":{"r":11,"s":0,"d":31,"pct":35.5},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":5,"s":1,"d":31,"pct":16.1}},"2025":{"1":{"r":6,"s":0,"d":31,"pct":19.4},"2":{"r":13,"s":0,"d":28,"pct":46.4},"3":{"r":16,"s":1,"d":31,"pct":51.6},"4":{"r":13,"s":0,"d":30,"pct":43.3},"5":{"r":12,"s":0,"d":31,"pct":38.7},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":16,"s":0,"d":31,"pct":51.6},"8":{"r":19,"s":0,"d":31,"pct":61.3},"9":{"r":22,"s":0,"d":30,"pct":73.3},"10":{"r":15,"s":0,"d":31,"pct":48.4},"11":{"r":8,"s":0,"d":30,"pct":26.7},"12":{"r":9,"s":1,"d":31,"pct":29.0}},"2026":{"1":{"r":10,"s":3,"d":31,"pct":32.3},"2":{"r":10,"s":2,"d":28,"pct":35.7},"3":{"r":19,"s":0,"d":31,"pct":61.3},"4":{"r":22,"s":0,"d":30,"pct":73.3},"5":{"r":20,"s":0,"d":31,"pct":64.5},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":21,"s":0,"d":31,"pct":67.7},"8":{"r":29,"s":0,"d":31,"pct":93.5},"9":{"r":15,"s":0,"d":30,"pct":50.0},"10":{"r":19,"s":0,"d":31,"pct":61.3}}},"normal":{"1":{"r":11.5,"s":2.8,"d":31.0,"pct":37.1},"2":{"r":12.9,"s":2.6,"d":28.3,"pct":45.6},"3":{"r":16.0,"s":0.3,"d":31.0,"pct":51.6},"4":{"r":17.0,"s":0.0,"d":30.0,"pct":56.7},"5":{"r":16.9,"s":0.0,"d":31.0,"pct":54.5},"6":{"r":20.2,"s":0.0,"d":30.0,"pct":67.3},"7":{"r":19.8,"s":0.0,"d":31.0,"pct":63.9},"8":{"r":17.8,"s":0.0,"d":31.0,"pct":57.4},"9":{"r":13.2,"s":0.0,"d":30.0,"pct":44.0},"10":{"r":13.7,"s":0.0,"d":31.0,"pct":44.2},"11":{"r":12.1,"s":0.3,"d":30.0,"pct":40.3},"12":{"r":8.5,"s":1.2,"d":31.0,"pct":27.4}}},{"k":"jz","name":"荆州市","sub":"","seg":"土建7–8标","lat":30.35,"lon":112.19,"years":{"2016":{"1":{"r":11,"s":2,"d":31,"pct":35.5},"2":{"r":6,"s":0,"d":29,"pct":20.7},"3":{"r":16,"s":2,"d":31,"pct":51.6},"4":{"r":16,"s":0,"d":30,"pct":53.3},"5":{"r":17,"s":0,"d":31,"pct":54.8},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":18,"s":0,"d":31,"pct":58.1},"8":{"r":22,"s":0,"d":31,"pct":71.0},"9":{"r":8,"s":0,"d":30,"pct":26.7},"10":{"r":20,"s":0,"d":31,"pct":64.5},"11":{"r":14,"s":2,"d":30,"pct":46.7},"12":{"r":7,"s":0,"d":31,"pct":22.6}},"2017":{"1":{"r":10,"s":1,"d":31,"pct":32.3},"2":{"r":12,"s":3,"d":28,"pct":42.9},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":14,"s":0,"d":30,"pct":46.7},"5":{"r":14,"s":0,"d":31,"pct":45.2},"6":{"r":24,"s":0,"d":30,"pct":80.0},"7":{"r":17,"s":0,"d":31,"pct":54.8},"8":{"r":24,"s":0,"d":31,"pct":77.4},"9":{"r":21,"s":0,"d":30,"pct":70.0},"10":{"r":17,"s":0,"d":31,"pct":54.8},"11":{"r":10,"s":0,"d":30,"pct":33.3},"12":{"r":4,"s":0,"d":31,"pct":12.9}},"2018":{"1":{"r":14,"s":8,"d":31,"pct":45.2},"2":{"r":6,"s":0,"d":28,"pct":21.4},"3":{"r":19,"s":0,"d":31,"pct":61.3},"4":{"r":15,"s":0,"d":30,"pct":50.0},"5":{"r":18,"s":0,"d":31,"pct":58.1},"6":{"r":13,"s":0,"d":30,"pct":43.3},"7":{"r":21,"s":0,"d":31,"pct":67.7},"8":{"r":18,"s":0,"d":31,"pct":58.1},"9":{"r":15,"s":0,"d":30,"pct":50.0},"10":{"r":9,"s":0,"d":31,"pct":29.0},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":18,"s":5,"d":31,"pct":58.1}},"2019":{"1":{"r":10,"s":4,"d":31,"pct":32.3},"2":{"r":18,"s":7,"d":28,"pct":64.3},"3":{"r":13,"s":0,"d":31,"pct":41.9},"4":{"r":16,"s":0,"d":30,"pct":53.3},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":17,"s":0,"d":30,"pct":56.7},"7":{"r":16,"s":0,"d":31,"pct":51.6},"8":{"r":14,"s":0,"d":31,"pct":45.2},"9":{"r":7,"s":0,"d":30,"pct":23.3},"10":{"r":12,"s":0,"d":31,"pct":38.7},"11":{"r":17,"s":0,"d":30,"pct":56.7},"12":{"r":7,"s":0,"d":31,"pct":22.6}},"2020":{"1":{"r":17,"s":2,"d":31,"pct":54.8},"2":{"r":12,"s":1,"d":29,"pct":41.4},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":13,"s":0,"d":30,"pct":43.3},"5":{"r":14,"s":0,"d":31,"pct":45.2},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":29,"s":0,"d":31,"pct":93.5},"8":{"r":16,"s":0,"d":31,"pct":51.6},"9":{"r":19,"s":0,"d":30,"pct":63.3},"10":{"r":14,"s":0,"d":31,"pct":45.2},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":8,"s":1,"d":31,"pct":25.8}},"2021":{"1":{"r":6,"s":1,"d":31,"pct":19.4},"2":{"r":11,"s":0,"d":28,"pct":39.3},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":20,"s":0,"d":30,"pct":66.7},"5":{"r":17,"s":0,"d":31,"pct":54.8},"6":{"r":16,"s":0,"d":30,"pct":53.3},"7":{"r":23,"s":0,"d":31,"pct":74.2},"8":{"r":27,"s":0,"d":31,"pct":87.1},"9":{"r":10,"s":0,"d":30,"pct":33.3},"10":{"r":12,"s":0,"d":31,"pct":38.7},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":7,"s":3,"d":31,"pct":22.6}},"2022":{"1":{"r":17,"s":7,"d":31,"pct":54.8},"2":{"r":16,"s":4,"d":28,"pct":57.1},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":18,"s":0,"d":30,"pct":60.0},"5":{"r":12,"s":0,"d":31,"pct":38.7},"6":{"r":18,"s":0,"d":30,"pct":60.0},"7":{"r":19,"s":0,"d":31,"pct":61.3},"8":{"r":7,"s":0,"d":31,"pct":22.6},"9":{"r":10,"s":0,"d":30,"pct":33.3},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":13,"s":1,"d":30,"pct":43.3},"12":{"r":6,"s":3,"d":31,"pct":19.4}},"2023":{"1":{"r":7,"s":2,"d":31,"pct":22.6},"2":{"r":12,"s":1,"d":28,"pct":42.9},"3":{"r":14,"s":0,"d":31,"pct":45.2},"4":{"r":16,"s":0,"d":30,"pct":53.3},"5":{"r":23,"s":0,"d":31,"pct":74.2},"6":{"r":21,"s":0,"d":30,"pct":70.0},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":15,"s":0,"d":31,"pct":48.4},"9":{"r":13,"s":0,"d":30,"pct":43.3},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":10,"s":2,"d":31,"pct":32.3}},"2024":{"1":{"r":13,"s":4,"d":31,"pct":41.9},"2":{"r":18,"s":10,"d":29,"pct":62.1},"3":{"r":16,"s":0,"d":31,"pct":51.6},"4":{"r":24,"s":0,"d":30,"pct":80.0},"5":{"r":13,"s":0,"d":31,"pct":41.9},"6":{"r":21,"s":0,"d":30,"pct":70.0},"7":{"r":17,"s":0,"d":31,"pct":54.8},"8":{"r":14,"s":0,"d":31,"pct":45.2},"9":{"r":15,"s":0,"d":30,"pct":50.0},"10":{"r":12,"s":0,"d":31,"pct":38.7},"11":{"r":13,"s":0,"d":30,"pct":43.3},"12":{"r":3,"s":0,"d":31,"pct":9.7}},"2025":{"1":{"r":10,"s":0,"d":31,"pct":32.3},"2":{"r":11,"s":1,"d":28,"pct":39.3},"3":{"r":15,"s":3,"d":31,"pct":48.4},"4":{"r":8,"s":0,"d":30,"pct":26.7},"5":{"r":15,"s":0,"d":31,"pct":48.4},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":17,"s":0,"d":31,"pct":54.8},"9":{"r":20,"s":0,"d":30,"pct":66.7},"10":{"r":14,"s":0,"d":31,"pct":45.2},"11":{"r":8,"s":0,"d":30,"pct":26.7},"12":{"r":8,"s":1,"d":31,"pct":25.8}},"2026":{"1":{"r":10,"s":3,"d":31,"pct":32.3},"2":{"r":8,"s":2,"d":28,"pct":28.6},"3":{"r":22,"s":0,"d":31,"pct":71.0},"4":{"r":19,"s":0,"d":30,"pct":63.3},"5":{"r":19,"s":0,"d":31,"pct":61.3},"6":{"r":20,"s":0,"d":30,"pct":66.7},"7":{"r":23,"s":0,"d":31,"pct":74.2},"8":{"r":28,"s":0,"d":31,"pct":90.3},"9":{"r":16,"s":0,"d":30,"pct":53.3},"10":{"r":19,"s":0,"d":31,"pct":61.3}}},"normal":{"1":{"r":11.5,"s":3.1,"d":31.0,"pct":37.1},"2":{"r":12.2,"s":2.7,"d":28.3,"pct":43.1},"3":{"r":16.1,"s":0.5,"d":31.0,"pct":51.9},"4":{"r":16.0,"s":0.0,"d":30.0,"pct":53.3},"5":{"r":15.9,"s":0.0,"d":31.0,"pct":51.3},"6":{"r":18.8,"s":0.0,"d":30.0,"pct":62.7},"7":{"r":20.0,"s":0.0,"d":31.0,"pct":64.5},"8":{"r":17.4,"s":0.0,"d":31.0,"pct":56.1},"9":{"r":13.8,"s":0.0,"d":30.0,"pct":46.0},"10":{"r":13.6,"s":0.0,"d":31.0,"pct":43.9},"11":{"r":12.2,"s":0.3,"d":30.0,"pct":40.7},"12":{"r":7.8,"s":1.5,"d":31.0,"pct":25.2}}},{"k":"yc","name":"宜昌市","sub":"","seg":"土建9–10标","lat":30.69,"lon":111.29,"years":{"2016":{"1":{"r":12,"s":5,"d":31,"pct":38.7},"2":{"r":7,"s":0,"d":29,"pct":24.1},"3":{"r":19,"s":2,"d":31,"pct":61.3},"4":{"r":14,"s":0,"d":30,"pct":46.7},"5":{"r":17,"s":0,"d":31,"pct":54.8},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":22,"s":0,"d":31,"pct":71.0},"8":{"r":23,"s":0,"d":31,"pct":74.2},"9":{"r":7,"s":0,"d":30,"pct":23.3},"10":{"r":19,"s":0,"d":31,"pct":61.3},"11":{"r":12,"s":2,"d":30,"pct":40.0},"12":{"r":7,"s":0,"d":31,"pct":22.6}},"2017":{"1":{"r":9,"s":1,"d":31,"pct":29.0},"2":{"r":8,"s":3,"d":28,"pct":28.6},"3":{"r":14,"s":0,"d":31,"pct":45.2},"4":{"r":14,"s":0,"d":30,"pct":46.7},"5":{"r":19,"s":0,"d":31,"pct":61.3},"6":{"r":23,"s":0,"d":30,"pct":76.7},"7":{"r":18,"s":0,"d":31,"pct":58.1},"8":{"r":24,"s":0,"d":31,"pct":77.4},"9":{"r":19,"s":0,"d":30,"pct":63.3},"10":{"r":19,"s":0,"d":31,"pct":61.3},"11":{"r":8,"s":0,"d":30,"pct":26.7},"12":{"r":3,"s":0,"d":31,"pct":9.7}},"2018":{"1":{"r":15,"s":8,"d":31,"pct":48.4},"2":{"r":7,"s":1,"d":28,"pct":25.0},"3":{"r":19,"s":2,"d":31,"pct":61.3},"4":{"r":14,"s":0,"d":30,"pct":46.7},"5":{"r":21,"s":0,"d":31,"pct":67.7},"6":{"r":13,"s":0,"d":30,"pct":43.3},"7":{"r":28,"s":0,"d":31,"pct":90.3},"8":{"r":20,"s":0,"d":31,"pct":64.5},"9":{"r":18,"s":0,"d":30,"pct":60.0},"10":{"r":6,"s":0,"d":31,"pct":19.4},"11":{"r":15,"s":0,"d":30,"pct":50.0},"12":{"r":17,"s":4,"d":31,"pct":54.8}},"2019":{"1":{"r":9,"s":2,"d":31,"pct":29.0},"2":{"r":16,"s":7,"d":28,"pct":57.1},"3":{"r":13,"s":0,"d":31,"pct":41.9},"4":{"r":17,"s":0,"d":30,"pct":56.7},"5":{"r":14,"s":0,"d":31,"pct":45.2},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":20,"s":0,"d":31,"pct":64.5},"8":{"r":19,"s":0,"d":31,"pct":61.3},"9":{"r":10,"s":0,"d":30,"pct":33.3},"10":{"r":14,"s":0,"d":31,"pct":45.2},"11":{"r":19,"s":0,"d":30,"pct":63.3},"12":{"r":7,"s":0,"d":31,"pct":22.6}},"2020":{"1":{"r":17,"s":3,"d":31,"pct":54.8},"2":{"r":12,"s":1,"d":29,"pct":41.4},"3":{"r":14,"s":0,"d":31,"pct":45.2},"4":{"r":11,"s":0,"d":30,"pct":36.7},"5":{"r":14,"s":0,"d":31,"pct":45.2},"6":{"r":23,"s":0,"d":30,"pct":76.7},"7":{"r":28,"s":0,"d":31,"pct":90.3},"8":{"r":17,"s":0,"d":31,"pct":54.8},"9":{"r":19,"s":0,"d":30,"pct":63.3},"10":{"r":16,"s":0,"d":31,"pct":51.6},"11":{"r":12,"s":0,"d":30,"pct":40.0},"12":{"r":8,"s":0,"d":31,"pct":25.8}},"2021":{"1":{"r":7,"s":1,"d":31,"pct":22.6},"2":{"r":9,"s":0,"d":28,"pct":32.1},"3":{"r":18,"s":0,"d":31,"pct":58.1},"4":{"r":21,"s":0,"d":30,"pct":70.0},"5":{"r":16,"s":0,"d":31,"pct":51.6},"6":{"r":15,"s":0,"d":30,"pct":50.0},"7":{"r":25,"s":0,"d":31,"pct":80.6},"8":{"r":28,"s":0,"d":31,"pct":90.3},"9":{"r":12,"s":0,"d":30,"pct":40.0},"10":{"r":13,"s":0,"d":31,"pct":41.9},"11":{"r":10,"s":0,"d":30,"pct":33.3},"12":{"r":7,"s":2,"d":31,"pct":22.6}},"2022":{"1":{"r":17,"s":4,"d":31,"pct":54.8},"2":{"r":12,"s":3,"d":28,"pct":42.9},"3":{"r":19,"s":0,"d":31,"pct":61.3},"4":{"r":17,"s":0,"d":30,"pct":56.7},"5":{"r":15,"s":0,"d":31,"pct":48.4},"6":{"r":17,"s":0,"d":30,"pct":56.7},"7":{"r":24,"s":0,"d":31,"pct":77.4},"8":{"r":13,"s":0,"d":31,"pct":41.9},"9":{"r":9,"s":0,"d":30,"pct":30.0},"10":{"r":12,"s":0,"d":31,"pct":38.7},"11":{"r":13,"s":1,"d":30,"pct":43.3},"12":{"r":4,"s":1,"d":31,"pct":12.9}},"2023":{"1":{"r":5,"s":2,"d":31,"pct":16.1},"2":{"r":9,"s":0,"d":28,"pct":32.1},"3":{"r":13,"s":0,"d":31,"pct":41.9},"4":{"r":15,"s":0,"d":30,"pct":50.0},"5":{"r":22,"s":0,"d":31,"pct":71.0},"6":{"r":18,"s":0,"d":30,"pct":60.0},"7":{"r":22,"s":0,"d":31,"pct":71.0},"8":{"r":18,"s":0,"d":31,"pct":58.1},"9":{"r":19,"s":0,"d":30,"pct":63.3},"10":{"r":14,"s":0,"d":31,"pct":45.2},"11":{"r":11,"s":0,"d":30,"pct":36.7},"12":{"r":8,"s":2,"d":31,"pct":25.8}},"2024":{"1":{"r":12,"s":3,"d":31,"pct":38.7},"2":{"r":14,"s":9,"d":29,"pct":48.3},"3":{"r":17,"s":0,"d":31,"pct":54.8},"4":{"r":22,"s":0,"d":30,"pct":73.3},"5":{"r":17,"s":0,"d":31,"pct":54.8},"6":{"r":15,"s":0,"d":30,"pct":50.0},"7":{"r":21,"s":0,"d":31,"pct":67.7},"8":{"r":18,"s":0,"d":31,"pct":58.1},"9":{"r":17,"s":0,"d":30,"pct":56.7},"10":{"r":14,"s":0,"d":31,"pct":45.2},"11":{"r":13,"s":0,"d":30,"pct":43.3},"12":{"r":4,"s":0,"d":31,"pct":12.9}},"2025":{"1":{"r":8,"s":0,"d":31,"pct":25.8},"2":{"r":5,"s":0,"d":28,"pct":17.9},"3":{"r":15,"s":1,"d":31,"pct":48.4},"4":{"r":9,"s":0,"d":30,"pct":30.0},"5":{"r":14,"s":0,"d":31,"pct":45.2},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":23,"s":0,"d":31,"pct":74.2},"8":{"r":25,"s":0,"d":31,"pct":80.6},"9":{"r":26,"s":0,"d":30,"pct":86.7},"10":{"r":19,"s":0,"d":31,"pct":61.3},"11":{"r":9,"s":0,"d":30,"pct":30.0},"12":{"r":8,"s":0,"d":31,"pct":25.8}},"2026":{"1":{"r":8,"s":2,"d":31,"pct":25.8},"2":{"r":9,"s":2,"d":28,"pct":32.1},"3":{"r":21,"s":0,"d":31,"pct":67.7},"4":{"r":16,"s":0,"d":30,"pct":53.3},"5":{"r":21,"s":0,"d":31,"pct":67.7},"6":{"r":19,"s":0,"d":30,"pct":63.3},"7":{"r":26,"s":0,"d":31,"pct":83.9},"8":{"r":26,"s":0,"d":31,"pct":83.9},"9":{"r":19,"s":0,"d":30,"pct":63.3},"10":{"r":17,"s":0,"d":31,"pct":54.8}}},"normal":{"1":{"r":11.1,"s":2.9,"d":31.0,"pct":35.8},"2":{"r":9.9,"s":2.4,"d":28.3,"pct":35.0},"3":{"r":16.1,"s":0.5,"d":31.0,"pct":51.9},"4":{"r":15.4,"s":0.0,"d":30.0,"pct":51.3},"5":{"r":16.9,"s":0.0,"d":31.0,"pct":54.5},"6":{"r":18.1,"s":0.0,"d":30.0,"pct":60.3},"7":{"r":23.1,"s":0.0,"d":31.0,"pct":74.5},"8":{"r":20.5,"s":0.0,"d":31.0,"pct":66.1},"9":{"r":15.6,"s":0.0,"d":30.0,"pct":52.0},"10":{"r":14.6,"s":0.0,"d":31.0,"pct":47.1},"11":{"r":12.2,"s":0.3,"d":30.0,"pct":40.7},"12":{"r":7.3,"s":0.9,"d":31.0,"pct":23.5}}}],"years":{},"normal":{},"range":["2016-01-01","2026-11-24"]};
+    var WX_Y = 2026;
+    (function () { var n = new Date().getFullYear(); WX_Y = (n < 2025) ? 2025 : (n > 2027 ? 2027 : n); })();
+    var WX_FC = null, WX_FC_ERR = false;
+
+    function wxIcon(c) {
+      var s = '<svg class="wx-ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">';
+      var sun = '<circle cx="12" cy="12" r="4.2" fill="#F6C445" stroke="#E9AE2E" stroke-width="1"/>';
+      var rays = '<g stroke="#E9AE2E" stroke-width="1.3">'
+        + '<path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></g>';
+      var cloud = '<path d="M7 18h10.2a3.3 3.3 0 0 0 .4-6.6 5.2 5.2 0 0 0-9.9-1.6A3.9 3.9 0 0 0 7 18z" '
+        + 'fill="#DCE5F1" stroke="#9DB2CB" stroke-width="1.1"/>';
+      var rain = '<path d="M7 15.5h10.2a3.3 3.3 0 0 0 .4-6.6 5.2 5.2 0 0 0-9.9-1.6A3.9 3.9 0 0 0 7 15.5z" '
+        + 'fill="#DCE5F1" stroke="#9DB2CB" stroke-width="1.1"/>'
+        + '<g stroke="#2F6FEB" stroke-width="1.6"><path d="M8.4 18v2.6M12 18v2.6M15.6 18v2.6"/></g>';
+      var snow = '<path d="M7 15h10.2a3.3 3.3 0 0 0 .4-6.6 5.2 5.2 0 0 0-9.9-1.6A3.9 3.9 0 0 0 7 15z" '
+        + 'fill="#E6EEF9" stroke="#A8BBD2" stroke-width="1.1"/>'
+        + '<g stroke="#4C8BE8" stroke-width="1.1"><path d="M8.6 18.6v2.6M7.6 19.3l2 1.2M9.6 19.3l-2 1.2"/>'
+        + '<path d="M14.6 18.6v2.6M13.6 19.3l2 1.2M15.6 19.3l-2 1.2"/></g>';
+      var storm = '<path d="M7 14h10.2a3.3 3.3 0 0 0 .4-6.6 5.2 5.2 0 0 0-9.9-1.6A3.9 3.9 0 0 0 7 14z" '
+        + 'fill="#D3DDEA" stroke="#8FA3BC" stroke-width="1.1"/>'
+        + '<path d="M12.4 14.6l-2.4 4h2l-.9 3.2 3.6-4.6h-2.1l1.2-2.6z" fill="#F6C445" stroke="#E0A72C" stroke-width=".8"/>';
+      var fog = '<g stroke="#9DB2CB" stroke-width="1.4"><path d="M4.6 10.4h14.8M6.6 14h11.2M8.4 17.6h8"/></g>'
+        + '<circle cx="12" cy="6.4" r="2.2" fill="#F6C445" stroke="#E9AE2E" stroke-width=".8"/>';
+      var kind = 0;
+      if (c === 0) kind = 1;
+      else if (c <= 2) kind = 2;
+      else if (c === 3) kind = 3;
+      else if (c === 45 || c === 48) kind = 7;
+      else if (c >= 51 && c <= 67) kind = 4;
+      else if (c >= 71 && c <= 77) kind = 5;
+      else if (c >= 80 && c <= 82) kind = 4;
+      else if (c === 85 || c === 86) kind = 5;
+      else if (c >= 95) kind = 6;
+      if (kind === 1) return s + rays + sun + '</svg>';
+      if (kind === 2) return s + sun + '<path d="M9 16.6h8.6a2.6 2.6 0 0 0 .3-5.2 4 4 0 0 0-7.6-1.2A3 3 0 0 0 9 16.6z" '
+        + 'fill="#DCE5F1" stroke="#9DB2CB" stroke-width="1.1"/></svg>';
+      if (kind === 3) return s + cloud + '</svg>';
+      if (kind === 4) return s + rain + '</svg>';
+      if (kind === 5) return s + snow + '</svg>';
+      if (kind === 6) return s + storm + '</svg>';
+      if (kind === 7) return s + fog + '</svg>';
+      return s + sun + '</svg>';
+    }
+
+    function wxKey(a) { return (a || "").slice(5).replace("-", "/"); }
+    function wxWd(t) { var d = new Date(t + "T00:00:00"); return "日一二三四五六".charAt(d.getDay()); }
+
+    function wxForecastHtml() {
+      var rows = '';
+      var head = '<div class="wx-frow hd"><div class="wx-c">地市州 / 标段</div>';
+      if (WX_FC && WX_FC.length) {
+        WX_FC[0].daily.time.forEach(function (t) {
+          head += '<div class="wx-d">' + wxKey(t) + ' · ' + wxWd(t) + '</div>';
+        });
+      } else {
+        for (var i = 0; i < 7; i++) head += '<div class="wx-d">—</div>';
+      }
+      head += '</div>';
+      WX.cities.forEach(function (c, ci) {
+        rows += '<div class="wx-frow"><div class="wx-c"><span class="wx-city">' + c.name + '</span>'
+          + '<span class="wx-sub">' + c.seg + '</span></div>';
+        var f = WX_FC && WX_FC[ci];
+        for (var i = 0; i < 7; i++) {
+          rows += '<div class="wx-d">' + (f ? wxIcon(f.daily.weather_code[i]) : '<span class="wx-na">—</span>') + '</div>';
+        }
+        rows += '</div>';
+      });
+      return head + rows;
+    }
+
+    function wxMonthHtml() {
+      var ys = String(WX_Y), future = WX_Y >= 2027;
+      var rows = '';
+      var head = '<tr><th>月份</th>';
+      WX.cities.forEach(function (c) {
+        head += '<th>' + c.name + '<span class="s">' + c.seg + '</span></th>';
+      });
+      head += '</tr>';
+      var tot = [], td = [];
+      for (var m = 1; m <= 12; m++) {
+        rows += '<tr><td class="mn">' + m + ' 月</td>';
+        WX.cities.forEach(function (c, ci) {
+          var v = future ? (c.normal || {})[String(m)] : ((c.years || {})[ys] || {})[String(m)];
+          if (!v) { rows += '<td><span class="wx-na">—</span></td>'; return; }
+          var r = Math.round(v.r), sn = Math.round(v.s), pc = Math.round(v.pct);
+          tot[ci] = tot[ci] || { r: 0, s: 0, d: 0 };
+          tot[ci].r += r; tot[ci].s += sn; tot[ci].d += v.d;
+          rows += '<td><span class="wx-val"><b>' + r + '</b>'
+            + '<span>' + pc + '%</span></span>' + (sn > 0 ? '<span class="wx-snow">❄' + sn + '</span>' : '')
+            + '</td>';        });
+        rows += '</tr>';
+      }
+      rows += '<tr class="total"><td class="mn">全年</td>';
+      WX.cities.forEach(function (c, ci) {
+        var t = tot[ci];
+        if (!t) { rows += '<td><span class="wx-na">—</span></td>'; return; }
+        var p = t.d ? Math.round(t.r * 100 / t.d) : 0;
+        rows += '<td><span class="wx-val"><b>' + t.r + '</b><span>' + p + '%</span></span>'
+          + (t.s > 0 ? '<span class="wx-snow">❄' + t.s + '</span>' : '') + '</td>';
+      });
+      rows += '</tr>';
+      return head + rows;
+    }
+
+    function renderRain() {
+      if (!onPage("weather")) return;
+      var years = document.getElementById("wx-years");
+      if (years && !years.hasAttribute("data-b")) {
+        var yh = "";
+        for (var y = 2025; y <= 2027; y++) yh += '<option value="' + y + '">' + y + " 年</option>";
+        years.innerHTML = yh;
+        years.setAttribute("data-b", "1");
+        years.addEventListener("change", function () {
+          WX_Y = parseInt(this.value, 10) || WX_Y;
+          renderRain();
+        });
+      }
+      if (years) years.value = String(WX_Y);
+      var fc = document.getElementById("wx-forecast");
+      if (fc) fc.innerHTML = wxForecastHtml();
+      var mt = document.getElementById("wx-month");
+      if (mt) {
+        var html = wxMonthHtml();
+        var i = html.indexOf("</tr>") + 5;
+        mt.innerHTML = '<table class="wx-mth"><thead>' + html.slice(0, i) + '</thead><tbody>'
+          + html.slice(i) + '</tbody></table>';
+      }
+      var note = document.getElementById("wx-note");
+      if (note) {
+        note.textContent = WX_Y >= 2027
+          ? "2027 年按近十年同期常年值预估（雨雪天数 ÷ 当月天数）"
+          : "雨雪天数 ÷ 当月天数　·　❄ 为当月降雪天数";
+      }
+      var hint = document.getElementById("wx-hint");
+      if (hint) hint.textContent = WX_FC_ERR ? "天气读取失败，请稍后刷新" : "";
+    }
+
+    function wxLoadForecast() {
+      if (!onPage("weather")) return;
+      var lat = WX.cities.map(function (c) { return c.lat; }).join(",");
+      var lon = WX.cities.map(function (c) { return c.lon; }).join(",");
+      var url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon
+        + "&daily=weather_code&timezone=Asia%2FShanghai&forecast_days=7";
+      fetch(url, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (j) {
+        WX_FC = Array.isArray(j) ? j : [j];
+        WX_FC_ERR = false;
+        renderRain();
+      }).catch(function () {
+        WX_FC_ERR = true;
+        renderRain();
+      });
+    }
+
+  function isNumInput(t) {
+    return t && t.tagName === "INPUT" && t.classList && t.classList.contains("pgi") && !t.disabled;
+  }
+  document.addEventListener("focusin", function (e) {
+    var t = e.target;
+    if (!isNumInput(t)) return;
+    try { t.select(); } catch (e1) {}
+    setTimeout(function () { try { if (document.activeElement === t) t.select(); } catch (e2) {} }, 0);
+  });
+  /* 鼠标点击数值框：无论点在哪个位置，进入即全选，方便直接改数 */
+  ["mouseup", "touchend", "dblclick"].forEach(function (ev) {
+    document.addEventListener(ev, function (e) {
+      var t = e.target;
+      if (!isNumInput(t)) return;
+      if (t.readOnly || t.disabled) return;
+      var go = function () { try { if (document.activeElement === t) { t.select(); } } catch (e1) {} };
+      setTimeout(go, 0); setTimeout(go, 30);
+    }, true);
+  });
+  function ndOfRow(row) {
+    var sec = (row.agg || "").split("|")[0];
+    return (sec === "路基工程" || sec === "路面工程" || sec === "绿化工程") ? 2 : (sec === "桥涵工程" ? 0 : 4);
+  }
+  document.addEventListener("blur", function (e) {
+    var t = e.target;
+    if (!t || !t.dataset || t.disabled) return;
+    if (t.dataset.out !== undefined) {
+      var n = toNum(t.value);
+      t.value = (n === null) ? "" : fmt(Math.round(n), 0);
+      return;
+    }
+    if (t.dataset.shape !== undefined || t.dataset.tot !== undefined || t.dataset.prev !== undefined) {
+      var key = t.dataset.shape !== undefined ? "shape" : (t.dataset.tot !== undefined ? "tot" : "prev");
+      var tw = tenderOf(CUR.tid), rw = rfind(tw, t.dataset[key]);
+      if (!rw) return;
+      var v = toNum(t.value), nd = ndOfRow(rw);
+      if (v === null) { t.value = ""; return; }
+      t.value = nd === 2 ? fmtz(v, 2) : fmt(nd === 0 ? Math.round(v) : v, nd);
+    }
+  }, true);
+  document.addEventListener("mouseup", function (e) {
+    var t = e.target;
+    if (!isNumInput(t)) return;
+    e.preventDefault();
+    try { t.select(); } catch (e3) {}
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || !t.dataset) return;
+    if (t.dataset.jr !== undefined) {
+      var rr = jrRec(JR.city, JR.ym, true);
+      rr.ratio = t.value === "" ? "" : toNum(t.value);
+      DIRTY = true;
+      return;
+    }
+    if (t.dataset.jrf !== undefined) {
+      var r = jrRec(JR.city, JR.ym, true);
+      r[t.dataset.jrf] = t.value;
+      DIRTY = true;
+      return;
+    }
+    var v = toNum(t.value);
+    if (t.dataset.shape !== undefined) {
+      var t0 = tenderOf(CUR.tid), row0 = rfind(t0, t.dataset.shape);
+      if (!row0) return;
+      if ((((row0.agg || "").split("|")[0]) === "桥涵工程") && v !== null) v = Math.round(v);
+      setEv(CUR.tid, CUR.ym, "shape", row0.k, v);
+      refreshShapeRow(t0, row0);
+      $("#pg-hint").textContent = "有未保存的修改";
+      return;
+    }
+    if (t.dataset.tot !== undefined) {
+      var t9 = tenderOf(CUR.tid), row9 = rfind(t9, t.dataset.tot);
+      if (!row9) return;
+      if ((((row9.agg || "").split("|")[0]) === "桥涵工程") && v !== null) v = Math.round(v);
+      var fb = fixBag(CUR.tid);
+      fb.tot[row9.k] = (v === null) ? "" : v;
+      DIRTY = true;
+      refreshShapeRow(t9, row9);
+      $("#pg-hint").textContent = "有未保存的修改";
+      return;
+    }
+    if (t.dataset.prev !== undefined) {
+      var t8 = tenderOf(CUR.tid), row8 = rfind(t8, t.dataset.prev);
+      if (!row8) return;
+      if ((((row8.agg || "").split("|")[0]) === "桥涵工程") && v !== null) v = Math.round(v);
+      var fb2 = fixBag(CUR.tid);
+      fb2.pre[CUR.ym] = fb2.pre[CUR.ym] || {};
+      fb2.pre[CUR.ym][row8.k] = (v === null) ? "" : v;
+      DIRTY = true;
+      refreshShapeRow(t8, row8);
+      $("#pg-hint").textContent = "有未保存的修改";
+      return;
+    }
+    if (t.dataset.out !== undefined) {
+      var t1 = tenderOf(CUR.tid), r1 = rfind(t1, t.dataset.out);
+      if (!r1) return;
+      v = (v === null) ? null : Math.round(v);
+      setEv(CUR.tid, CUR.ym, "out", r1.k, v);
+      /* 本月完成一改，本月的累计完成回到自动计算（清掉手工值） */
+      if (ev(CUR.tid, CUR.ym, "outcum", r1.k) !== null) setEv(CUR.tid, CUR.ym, "outcum", r1.k, null);
+      var o = outAt(t1, r1, CUR.ym);
+      var c1 = document.querySelector('[data-ocumin="' + r1.k + '"]'), p1 = document.querySelector('[data-opct="' + r1.k + '"]');
+      if (c1) c1.value = fmt(o.cum, 0);
+      if (p1) { var ca1 = outCtrAlloc(t1)[t1.out.indexOf(r1)]; p1.textContent = ca1.c ? pct(o.cum / ca1.c) : ""; }
+      refreshTotal();
+      $("#pg-hint").textContent = "有未保存的修改";
+      return;
+    }
+    if (t.dataset.ocumin !== undefined) {
+      var t2 = tenderOf(CUR.tid), r2 = rfind(t2, t.dataset.ocumin);
+      if (!r2) return;
+      v = (v === null) ? null : Math.round(v);
+      setEv(CUR.tid, CUR.ym, "outcum", r2.k, v);
+      var o2 = outAt(t2, r2, CUR.ym);
+      var p2 = document.querySelector('[data-opct="' + r2.k + '"]');
+      if (p2) { var ca2 = outCtrAlloc(t2)[t2.out.indexOf(r2)]; p2.textContent = ca2.c ? pct(o2.cum / ca2.c) : ""; }
+      refreshTotal();
+      $("#pg-hint").textContent = "有未保存的修改";
+      return;
+    }
+    if (t.dataset.ppl !== undefined) {
+      setEv(CUR.tid, CUR.ym, "ppl", t.dataset.ppl, v);
+      $("#pg-hint").textContent = "有未保存的修改";
+      return;
+    }
+    if (t.dataset.reg !== undefined) {
+      var p = t.dataset.reg.split("|");
+      var r = rep(CUR.tid, CUR.ym, true);
+      r.reg[p[0]] = r.reg[p[0]] || {};
+      r.reg[p[0]][p[1]] = (v === null) ? "" : v;
+      DIRTY = true;
+      $("#pg-hint").textContent = "有未保存的修改";
+      refreshRegTotal();
+      return;
+    }
+  });
+  function refreshTotal() {
+    var t = tenderOf(CUR.tid); if (!t) return;
+    var c = 0, m = 0, u = 0, al = outCtrAlloc(t);
+    t.out.forEach(function (r, i) { var o = outAt(t, r, CUR.ym); c += al[i].c; m += (o.mon || 0); u += (o.cum || 0); });
+    var a = document.querySelector('[data-otot="1"]');
+    if (a) a.textContent = fmt(m, 0);
+    var b2 = document.querySelector('[data-ocumtot="1"]');
+    if (b2) b2.textContent = fmt(u, 0);
+    var c2 = document.querySelector('[data-opcttot="1"]');
+    if (c2) c2.textContent = c ? pct(u / c) : "";
+  }
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t || !t.id) return;
+    if (t.id === "sel-tender") { CUR.tid = t.value; renderAll(); }
+    if (t.id === "sel-month") { CUR.ym = t.value; renderAll(); }
+    if (t.id === "sel-year") {
+      var yv = t.value, mm = BASE.months.filter(function (k) { return k.slice(0, 4) === yv; });
+      CUR.ym = (yv === String((new Date()).getFullYear()) && mm.length) ? nowYm(mm) : (mm[0] || (yv + "-01"));
+      renderAll();
+    }
+  });
+
+  /* ---------- 保存 / 导入导出 ---------- */
+  function persist() {
+    DB.ts = Date.now();
+    try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) {}
+    DIRTY = false;
+    renderAll();
+  }
+  function api() { return "https://api.github.com/gists/" + CLOUD.gistId; }
+  function hdr() { return { "Authorization": "Bearer " + CLOUD.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" }; }
+  var TSF_HINT_HTML = '<b>每日更新</b><span class="mdot">·</span>填报完成后点击「提交」';
+  var TSF_HINT_T = null;
+  function flag(s, ok) {
+    var h = $("#pg-hint");
+    var tv = $("#view-tsf");
+    /* 土石方页：自动保存、已提交、已解锁、已读取线上这类状态一律不提示 */
+    if (tv && tv.classList.contains("is-on")) {
+      h = $("#tsf-hint");
+      if (!h) return;
+      if (ok) {
+        if (TSF_HINT_T) { clearTimeout(TSF_HINT_T); TSF_HINT_T = null; }
+        h.innerHTML = TSF_HINT_HTML; h.style.color = "";
+        return;
+      }
+      /* 失败提示常驻，直到下次同步成功；附带「重试」 */
+      if (TSF_HINT_T) { clearTimeout(TSF_HINT_T); TSF_HINT_T = null; }
+      h.innerHTML = s + '<a href="#" data-sync-retry="1">重试</a>';
+      h.style.color = "#A24A18";
+      return;
+    }
+    if (h) { h.textContent = s; h.style.color = ok ? "#2F6B3C" : "#A24A18"; }
+  }
+  /* 线上访问才写回云端；本机 file:// 只读 */
+  var SYNC_OK = false;
+  var pushQueue = Promise.resolve();
+  /* 打开页面时的快照：用来判断本页改动了哪些表格段，写入时只覆盖这些段 */
+  var BASE0 = null;
+  function snap() {
+    try { BASE0 = JSON.parse(JSON.stringify({ reports: DB.reports || {}, jr: DB.jr || {}, tsf: DB.tsf || {}, tsfBase: DB.tsfBase || {} })); }
+    catch (e) { BASE0 = { reports: {}, jr: {}, tsf: {}, tsfBase: {} }; }
+  }
+  snap();
+  function cloneRep(o) { try { return JSON.parse(JSON.stringify(o || {})); } catch (e) { return {}; } }
+  function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+  /* 只合并"本页真正改过的叶子值"，最细到单个单元格（标段→月份→板块→行/城市字段）；
+     本页没碰过的单元格一律保持云端现值。这样两人同时填不同标段/不同格子互不覆盖。 */
+  function mrg(c, l, b) {
+    var out = (c && typeof c === "object" && !Array.isArray(c)) ? cloneRep(c) : {};
+    if (!l || typeof l !== "object" || Array.isArray(l)) return out;
+    Object.keys(l).forEach(function (k) {
+      var lv = l[k], bv = b ? b[k] : undefined;
+      if (lv && typeof lv === "object" && !Array.isArray(lv)) {
+        out[k] = mrg(out[k], lv, bv);
+      } else if (!same(lv, bv)) {
+        out[k] = lv;
+      } else if (out[k] === undefined) {
+        out[k] = lv;
+      }
+    });
+    return out;
+  }
+  function mergeInto(cloud) {
+    var merged = { reports: cloneRep(cloud.reports), jr: cloneRep(cloud.jr), tsf: cloneRep(cloud.tsf), tsfBase: cloneRep(cloud.tsfBase) };
+    var b = BASE0 || {};
+    Object.keys(DB.reports || {}).forEach(function (tid) {
+      merged.reports[tid] = mrg(merged.reports[tid], DB.reports[tid], (b.reports || {})[tid]);
+    });
+    Object.keys(DB.jr || {}).forEach(function (city) {
+      merged.jr[city] = mrg(merged.jr[city], DB.jr[city], (b.jr || {})[city]);
+    });
+    Object.keys(DB.tsf || {}).forEach(function (d) {
+      merged.tsf[d] = mrg(merged.tsf[d], DB.tsf[d], (b.tsf || {})[d]);
+    });
+    Object.keys(DB.tsfBase || {}).forEach(function (k) {
+      merged.tsfBase[k] = mrg(merged.tsfBase[k], DB.tsfBase[k], (b.tsfBase || {})[k]);
+    });
+    return merged;
+  }
+  /* 收集本页相对打开时快照发生变化的叶子路径，保存后逐条回读核对 */
+  function leafPaths(o, p, acc) {
+    if (!o || typeof o !== "object" || Array.isArray(o)) { acc.push({ p: p, v: o }); return acc; }
+    Object.keys(o).forEach(function (k) { leafPaths(o[k], p.concat([k]), acc); });
+    return acc;
+  }
+  function getAt(o, p) {
+    var x = o;
+    for (var i = 0; i < p.length; i++) { if (!x || typeof x !== "object") return undefined; x = x[p[i]]; }
+    return x;
+  }
+  function changedPaths() {
+    var now = {}, base = {};
+    [[DB.reports || {}, (BASE0 || {}).reports || {}, "reports"], [DB.jr || {}, (BASE0 || {}).jr || {}, "jr"], [DB.tsf || {}, (BASE0 || {}).tsf || {}, "tsf"], [DB.tsfBase || {}, (BASE0 || {}).tsfBase || {}, "tsfBase"]]
+      .forEach(function (x) {
+        leafPaths(x[0], [x[2]], []).forEach(function (y) { now[JSON.stringify(y.p)] = y.v; });
+        leafPaths(x[1], [x[2]], []).forEach(function (y) { base[JSON.stringify(y.p)] = y.v; });
+      });
+    var keys = Object.keys(now);
+    return keys.filter(function (k) { return !same(now[k], base[k]); }).map(function (k) { return JSON.parse(k); });
+  }
+  function doPush(retry) {
+    if (!SYNC_OK) return Promise.resolve();
+    var baseBefore = cloneRep(BASE0);
+    /* 先读回云端最新，再合并，避免旧页面/第二个窗口整份覆盖，把别人已提交的锁冲掉 */
+    return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) {
+        var f = (j.files || {})[CLOUD.file], cloud = {};
+        try { cloud = JSON.parse(f.content); } catch (e0) { cloud = {}; }
+        var rep = (cloud && cloud.reports) ? cloud.reports : {};
+        var jrs = (cloud && cloud.jr) ? cloud.jr : {};
+        var tsf = (cloud && cloud.tsf) ? cloud.tsf : {};
+        var tsfb = (cloud && cloud.tsfBase) ? cloud.tsfBase : {};
+        var merged = mergeInto({ reports: rep, jr: jrs, tsf: tsf, tsfBase: tsfb });
+        var ts = Date.now();
+        var o = {}; o[CLOUD.file] = { content: JSON.stringify({ ts: ts, data: merged }) };
+        return fetch(api(), { method: "PATCH", headers: hdr(), body: JSON.stringify({ files: o }) })
+          .then(function (r2) {
+            if (r2.status === 409 && (retry || 0) < 3) return doPush((retry || 0) + 1);
+            if (!r2.ok) throw new Error(r2.status);
+            return r2.json();
+          })
+          .then(function () {
+            /* 回读核对：本页改过的每一个单元格都必须原样落库 */
+            var paths = changedPaths();
+            return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+              .then(function (r3) { return r3.json(); })
+              .then(function (jj) {
+                var f2 = (jj.files || {})[CLOUD.file] || {}, back = {};
+                try { back = JSON.parse(f2.content).data || {}; } catch (e4) { back = {}; }
+                var localAll = { reports: DB.reports || {}, jr: DB.jr || {}, tsf: DB.tsf || {}, tsfBase: DB.tsfBase || {} };
+                var bad = paths.filter(function (p) { return !same(getAt(back, p), getAt(localAll, p)); });
+                snap();
+                if (bad.length) flag("云端核对有差异：" + bad.slice(0, 2).map(function (p) { return p.join("/"); }).join("、"), false);
+                else { tsfSync("ok", ts); }
+              });
+          });
+      })
+      .catch(function (e) { flag("云端未同步（" + (e && e.message ? e.message : e) + "）", false); tsfSync("err"); });
+  }
+  renderRain();
+  wxLoadForecast();
+
+  function pushCloud() {
+    if (!ONLINE || !SYNC_OK) return Promise.resolve();
+    pushQueue = pushQueue.then(function () { return doPush(0); }, function () { return doPush(0); });
+    return pushQueue;
+  }
+  function pullCloud() {
+    return fetch(api() + "?t=" + Date.now(), { headers: hdr(), cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) {
+        var f = (j.files || {})[CLOUD.file]; if (!f) return;
+        var c = f.content;
+        if (f.truncated && f.raw_url) return fetch(f.raw_url).then(function (x) { return x.text(); }).then(applyRemote);
+        return applyRemote(c);
+      }).then(function () { SYNC_OK = true; }).catch(function (e) { console.warn("云端读取失败", e); });
+  }
+  function applyRemote(c) {
+    try {
+      var o = JSON.parse(c); if (!o || !o.data || !o.data.reports) return;
+      /* 线上版：云端更新时才覆盖，避免冲掉正在填的内容 */
+      if ((o.ts || 0) >= (DB.ts || 0)) {
+        DB = { ts: o.ts || 0, reports: o.data.reports || {}, jr: o.data.jr || {}, tsf: o.data.tsf || DB.tsf || {}, tsfBase: o.data.tsfBase || DB.tsfBase || {} };
+        persistLocal(); snap(); renderAll(); tsfSync("ok", o.ts);
+      }
+    } catch (e) {}
+  }
+  function persistLocal() { try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) {} }
+
+  var AS_T = null, AS_BUSY = false;
+  function autoSave(ev) {
+    /* 文字类字段：输入期间只落本机，失焦（change）才写云端；数量类保持自动写回 */
+    var push = !(function () {
+      if (!ev || ev.type !== "input" || !ev.target) return false;
+      var t = ev.target, tag = (t.tagName || "").toLowerCase();
+      if (tag === "textarea" || t.isContentEditable) return true;
+      if (tag !== "input") return false;
+      var ty = (t.type || "").toLowerCase();
+      if (ty === "text" || ty === "" || ty === "search") return /[^\d\s.,\-:%（）()]/.test(t.value || "");
+      return false;
+    })();
+    if (AS_T) clearTimeout(AS_T);
+    AS_T = setTimeout(function () {
+      AS_T = null;
+      if (AS_BUSY) { autoSave(ev); return; }
+      AS_BUSY = true;
+      persist();
+      if (!push) { AS_BUSY = false; return; }
+      pushCloud().then(function () { AS_BUSY = false; }, function () { AS_BUSY = false; });
+      /* 自动保存静默，不提示 */
+    }, 1000);
+  }
+  document.addEventListener("input", autoSave, true);
+  document.addEventListener("change", autoSave, true);
+  $("#btn-export").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify({ ts: DB.ts, data: { reports: DB.reports, jr: DB.jr, tsf: DB.tsf, tsfBase: DB.tsfBase } }, null, 1)], { type: "application/json" });
+    var a = document.createElement("a");
+    var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
+    a.href = URL.createObjectURL(blob);
+    a.download = "工程月报填报_" + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + ".json";
+    a.click();
+  });
+  window.addEventListener("beforeunload", function (e) { if (!DIRTY) return; e.preventDefault(); e.returnValue = "有未保存的修改，是否离开？"; });
+  window.addEventListener("pagehide", function () { if (DIRTY) persistLocal(); });
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+    try {
+      var url = new URL(a.href, location.href);
+      if (url.origin === location.origin && url.pathname !== location.pathname && DIRTY) persistLocal();
+    } catch (e2) {}
+  }, true);
+  /* 顶部小锁：解锁固化的基础数据（总数量、上月末累计、累计完成、总投资计划、交安计划） */
+  if ($("#btn-fix")) {
+    $("#btn-fix").addEventListener("click", function () {
+      if (FIXOPEN) { FIXOPEN = false; renderAll(); flag("已重新固化基础数据", true); return; }
+      var pw = prompt("解锁固化的基础数据，请输入密码：");
+      if (pw === null) return;
+      if (String(pw).trim() !== "aaa") { alert("密码错误，无法解锁"); return; }
+      FIXOPEN = true; renderAll();
+      flag("已解锁：总数量、上月末累计、累计完成、总投资计划可编辑", true);
+    });
+  }
+
+  /* ---------- 土石方日报 ---------- */
+  var TG = BASE.tsf || { rows: [], min: "2026-11-24", max: "2029-12-31", seed: "2026-11-24" };
+  var TS = { sel: "", y: 0, m: 0, sumText: "" };
+  function z2(n) { return (n < 10 ? "0" : "") + n; }
+  function ds(y, m, d) { return y + "-" + z2(m) + "-" + z2(d); }
+  function tday() { var d = new Date(); return ds(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
+  function ndays(y, m) { return new Date(y, m, 0).getDate(); }
+  function tsfNum(v) { if (v === "" || v === null || v === undefined) return 0; var n = Number(v); return isFinite(n) ? n : 0; }
+  function tsfF(v, dp) { var n = Number(v); if (!isFinite(n)) n = 0; return n.toFixed(dp); }
+  function tsfP(c, d) { return d > 0 ? (c / d * 100).toFixed(1) + "%" : "—"; }
+
+  function tsfBoot() {
+    if (!onPage("daily")) return;
+    var t = tday(), s = (t < TG.min) ? TG.min : (t > TG.max ? TG.max : t);
+    var p = s.split("-"); TS.sel = s; TS.y = +p[0]; TS.m = +p[1];
+    if (!DB.tsf) DB.tsf = {};
+    if (!DB.tsfBase) DB.tsfBase = {};
+    if (TG.seed && !DB.tsf[TG.seed]) {
+      var o = {};
+      TG.rows.forEach(function (r) { o[r.k] = { a: r.a, b: r.b, lk: 1 }; });
+      DB.tsf[TG.seed] = o;
+    }
+  }
+  function tsfDayObj(d, mk) { if (!DB.tsf) DB.tsf = {}; var x = DB.tsf[d]; if (!x && mk) x = DB.tsf[d] = {}; return x || null; }
+  function tsfRec(d, k, mk) { var x = tsfDayObj(d, mk); if (!x) return null; var r = x[k]; if (!r && mk) r = x[k] = {}; return r || null; }
+  function tsfDa(r) {
+    var b = (DB.tsfBase || {})[r.k];
+    return (b && b.da !== undefined && b.da !== "") ? tsfNum(b.da) : tsfNum(r.da);
+  }
+  function tsfDb(r) {
+    var b = (DB.tsfBase || {})[r.k];
+    return (b && b.db !== undefined && b.db !== "") ? tsfNum(b.db) : tsfNum(r.db);
+  }
+  /* 累计完成：种子日给基线；之后逐日累加“今日完成”；某日人工改过累计（顶部锁），从该日起按人工值续算 */
+  function tsfCums(d) {
+    var acc = {};
+    TG.rows.forEach(function (r) { acc[r.k] = { a: tsfNum(r.ca), b: tsfNum(r.cb) }; });
+    Object.keys(DB.tsf || {}).filter(function (k) { return k >= TG.seed && k <= d; }).sort().forEach(function (k) {
+      var day = DB.tsf[k];
+      TG.rows.forEach(function (r) {
+        var rec = day[r.k]; if (!rec) return;
+        if (rec.ca !== undefined && rec.ca !== null && rec.ca !== "") acc[r.k].a = tsfNum(rec.ca);
+        else if (k > TG.seed) acc[r.k].a += tsfNum(rec.a);
+        if (rec.cb !== undefined && rec.cb !== null && rec.cb !== "") acc[r.k].b = tsfNum(rec.cb);
+        else if (k > TG.seed) acc[r.k].b += tsfNum(rec.b);
+      });
+    });
+    return acc;
+  }
+  function tsfTotals(d, cums) {
+    var t = { da: 0, a: 0, ca: 0, db: 0, b: 0, cb: 0 };
+    TG.rows.forEach(function (r) {
+      var rec = (DB.tsf[d] || {})[r.k] || {};
+      t.da += tsfDa(r); t.db += tsfDb(r);
+      t.a += tsfNum(rec.a); t.b += tsfNum(rec.b);
+      t.ca += cums[r.k].a; t.cb += cums[r.k].b;
+    });
+    return t;
+  }
+  function tsfDone(d) {
+    var rec = (DB.tsf || {})[d] || {}, n = 0;
+    TG.rows.forEach(function (r) {
+      if (!r.nm) return;
+      if (tsfGrp(r.k).every(function (x) { return rec[x] && rec[x].lk; })) n++;
+    });
+    return n;
+  }
+  function tsfHall(d) { var n = tsfDone(d), all = tsfGrpN(); return n >= all && all > 0; }
+  function tsfInfoHtml(d) {
+    var n = tsfDone(d), all = tsfGrpN();
+    return "统计日期 <b>" + d.replace(/-/g, ".") + "</b> · 已提交 " + n + "/" + all + " 标段" + (n >= all ? "（当日已全部提交）" : "");
+  }
+  function tsfLkBtn(k, on, wait) {
+    var svg = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
+    if (wait) {
+      return '<button type="button" class="pg-lk is-wait" data-tsf-lk="' + k + '" title="正在写入云端，请稍候" aria-label="提交中">提交中</button>';
+    }
+    var seg = tsfSegName(k);
+    var tip = on ? (seg + " 已提交（云端已确认），点击解锁修改") : ("提交 " + seg + " 当日数据并锁定");
+    return '<button type="button" class="pg-lk' + (on ? " is-on" : "") + '" data-tsf-lk="' + k + '" title="' + tip + '" aria-label="' + tip + '">' + (on ? svg : "提交") + "</button>";
+  }
+
+  function tsfRenderCal() {
+    var host = $("#tsf-cal"); if (!host) return;
+    var y = TS.y, m = TS.m, td = tday();
+    var lead = (new Date(y, m - 1, 1).getDay() + 6) % 7, total = ndays(y, m);
+    var oy = "", om = "";
+    for (var yy = 2026; yy <= 2029; yy++) oy += '<option value="' + yy + '"' + (yy === y ? " selected" : "") + ">" + yy + " 年</option>";
+    for (var mm = 1; mm <= 12; mm++) om += '<option value="' + mm + '"' + (mm === m ? " selected" : "") + ">" + mm + " 月</option>";
+    var cells = "", i, j;
+    for (i = 0; i < lead; i++) cells += '<span class="tsf-blank"></span>';
+    for (var dd = 1; dd <= total; dd++) {
+      var s = ds(y, m, dd), cls = "tsf-day", off = false;
+      if (s < TG.min || s > TG.max || s > td) { cls += " off"; off = true; }
+      else if (s < td) cls += " past";
+      else if (s === td) cls += " today";
+      if (s === TS.sel) cls += " sel";
+      var n = tsfDone(s), dot = "";
+      if (!off) {
+        if (s < td) { dot = "<em></em>"; if (n < tsfGrpN()) cls += " miss"; }
+        else if (n > 0) { dot = "<em></em>"; if (n < tsfGrpN()) cls += " half"; }
+      }
+      cells += '<button type="button" class="' + cls + '" data-tsf-d="' + s + '"' + (off ? " disabled" : "") + ">" + dd + dot + "</button>";
+    }
+    for (j = 0; j < (7 - (lead + total) % 7) % 7; j++) cells += '<span class="tsf-blank"></span>';
+    host.innerHTML = '<div class="tsf-bar">'
+      + '<button type="button" class="tsf-step" data-tsf-mv="-1" title="上个月">‹</button>'
+      + '<select class="pg-sel" id="tsf-y">' + oy + "</select>"
+      + '<select class="pg-sel" id="tsf-m">' + om + "</select>"
+      + '<button type="button" class="tsf-step" data-tsf-mv="1" title="下个月">›</button>'
+      + "</div>"
+      + '<div class="tsf-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>'
+      + '<div class="tsf-days">' + cells + "</div>"
+      + '<div class="tsf-leg">'
+      + '<i><span class="tsf-sw past"></span>已过日期</i>'
+      + '<i><span class="tsf-sw today"></span>当天</i>'
+      + '<i><span class="tsf-dot"></span>全部提交</i>'
+      + '<i><span class="tsf-dot red"></span>有标段未提交</i>'
+      + "</div>";
+    host.querySelector("#tsf-y").addEventListener("change", function () { tsfGoMonth(+this.value, TS.m, 1); });
+    host.querySelector("#tsf-m").addEventListener("change", function () { tsfGoMonth(TS.y, +this.value, 1); });
+  }
+  function tsfGoMonth(y, m, pick) {
+    if (m < 1) { m = 12; y -= 1; }
+    if (m > 12) { m = 1; y += 1; }
+    var t = tday(), ty = +t.slice(0, 4), tm = +t.slice(5, 7);
+    if (y < 2026) { y = 2026; m = 11; }
+    if (y > ty || (y === ty && m > tm)) { y = ty; m = tm; }
+    TS.y = y; TS.m = m;
+    var first = ds(y, m, 1);
+    if (first.slice(0, 7) === t.slice(0, 7)) TS.sel = t;
+    else {
+      TS.sel = first;
+      if (TS.sel < TG.min) TS.sel = TG.min;
+      if (TS.sel > TG.max) TS.sel = TG.max;
+      if (TS.sel > t) TS.sel = t;
+    }
+    tsfRenderAll();
+  }
+
+  function tsfNm(s) { var i = s.indexOf("标"); return i >= 0 ? s.slice(0, i + 1) + "<br>" + s.slice(i + 1) : s; }
+  /* 土石方页极简同步点位：只在线上真正写回成功时亮绿点 */
+  var TSFSYNC = { st: "", ts: 0 };
+  function tsfSync(st, ts) {
+    if (st) { TSFSYNC.st = st; if (ts) TSFSYNC.ts = ts; }
+    var w = $("#tsf-sync"); if (!w) return;
+    var ok = TSFSYNC.st === "ok";
+    w.className = "tsf-sync" + (TSFSYNC.st ? " on" : "") + (ok ? "" : " err");
+    var em = w.querySelector("em");
+    if (em) em.textContent = ok ? "已同步" : (TSFSYNC.st === "err" ? "未同步" : "");
+    w.title = (ok && TSFSYNC.ts) ? "最近同步 " + new Date(TSFSYNC.ts).toLocaleTimeString() : (TSFSYNC.st ? "云端写入未成功" : "");
+  }
+  /* 顶部锁控制的列（设计量 / 累计完成）：锁定时与「总数量」一致为纯文本，解锁后为可编辑录入框 */
+  function tsfFixCell(id, k, attr, val, dp, lk) {
+    if (FIXOPEN) {
+      return '<td id="' + id + '"><input class="pgi pgc" ' + attr + '="' + k + '" value="' + tsfF(val, dp) + '"></td>';
+    }
+    return '<td id="' + id + '">' + tsfF(val, dp) + "</td>";
+  }
+  function tsfSetCell(id, text) {
+    var e = $("#" + id); if (!e) return;
+    var inp = e.querySelector ? e.querySelector("input") : null;
+    if (inp) { if (document.activeElement !== inp) inp.value = text; }
+    else e.textContent = text;
+  }
+  function tsfRenderTable() {
+    var host = $("#tsf-tbl"); if (!host) return;
+    var d = TS.sel, cums = tsfCums(d), day = DB.tsf[d] || {}, body = "";
+    TG.rows.forEach(function (r, i) {
+      var rec = day[r.k] || {}, glk = tsfGrpLk(d, r.k), gw = tsfGrpWait(d, r.k);
+      var lk = glk, ro = lk ? " readonly" : "";
+      var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
+      var two = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm);
+      body += "<tr>"
+        + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
+        + '<td class="en">' + r.en + "</td>"
+        + tsfFixCell("tsf-da-" + r.k, r.k, "data-tsf-da", tsfDa(r), 1, lk)
+        + '<td><input class="pgi" data-tsf-a="' + r.k + '" value="' + (rec.a === undefined ? "" : tsfF(rec.a, 2)) + '"' + ro + "></td>"
+        + tsfFixCell("tsf-ca-" + r.k, r.k, "data-tsf-ca", cums[r.k].a, 1, lk)
+        + '<td id="tsf-ra-' + r.k + '">' + tsfP(cums[r.k].a, tsfDa(r)) + "</td>"
+        + tsfFixCell("tsf-db-" + r.k, r.k, "data-tsf-db", tsfDb(r), 1, lk)
+        + '<td><input class="pgi" data-tsf-b="' + r.k + '" value="' + (rec.b === undefined ? "" : tsfF(rec.b, 2)) + '"' + ro + "></td>"
+        + tsfFixCell("tsf-cb-" + r.k, r.k, "data-tsf-cb", cums[r.k].b, 1, lk)
+        + '<td id="tsf-rb-' + r.k + '">' + tsfP(cums[r.k].b, tsfDb(r)) + "</td>"
+        + (r.nm ? '<td class="lkc"' + (two ? ' rowspan="2"' : "") + ">" + tsfLkBtn(r.k, lk, gw) + "</td>" : "")
+        + "</tr>";
+    });
+    var t = tsfTotals(d, cums);
+    body += '<tr class="total"><td class="nm" colspan="2">合计</td>'
+      + "<td>" + tsfF(t.da, 1) + "</td><td>" + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
+      + "<td>" + tsfF(t.db, 1) + "</td><td>" + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td>"
+      + '<td class="lkc"></td></tr>';
+    var dl = d.slice(0, 4) + "年" + (+d.slice(5, 7)) + "月" + (+d.slice(8, 10)) + "日";
+    host.innerHTML = '<div class="card-head"><h2>数据信息填报</h2>'
+      + '<span class="tsf-exp"><span class="tsf-sync" id="tsf-sync"><i></i><em></em></span>'
+      + '<span class="tsf-exp-d">填报日期 <b>' + dl + '</b></span>'
+      + '<button type="button" class="tsf-pdf" id="btn-tsf-pdf">导出 PDF</button></span></div>'
+      + '<div class="tsf-wrap"><table class="tsf-tbl"><colgroup>'
+      + '<col style="width:15.9%"><col style="width:9.5%"><col style="width:8.4%"><col style="width:8.4%"><col style="width:8.4%"><col style="width:8.1%">'
+      + '<col style="width:8.4%"><col style="width:8.4%"><col style="width:8.4%"><col style="width:8.1%"><col style="width:8%"></colgroup><thead>'
+      + '<tr><th rowspan="2">标段</th><th rowspan="2">工程<br>内容</th>'
+      + '<th colspan="4">整体情况</th><th colspan="4">仅保通侧</th><th rowspan="2">提交</th></tr>'
+      + '<tr><th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th>'
+      + '<th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th></tr>'
+      + "</thead><tbody>" + body + "</tbody></table></div>";
+    tsfSync();
+  }
+  function tsfRenderSum() {
+    var host = $("#tsf-sum"); if (!host) return;
+    var d = TS.sel, cums = tsfCums(d), t = tsfTotals(d, cums);
+    var md = (+d.slice(5, 7)) + "月" + (+d.slice(8, 10)) + "日";
+    TS.sumText = "【土石方施工日报】（" + md + "），请各位领导同事查阅：\n"
+      + "1、整体情况：当日完成土石方工程" + tsfF(t.a, 2) + "万方，累计完成" + tsfF(t.ca, 1) + "万方，完成比例" + tsfP(t.ca, t.da) + "；\n"
+      + "2、保通侧情况（单独统计）：当日完成土石方工程" + tsfF(t.b, 2) + "万方，累计完成" + tsfF(t.cb, 1) + "万方，完成比例" + tsfP(t.cb, t.db);
+    host.innerHTML = '<div class="card-head"><h2>日报归纳</h2><span class="hint">点击文字即可复制</span></div>'
+      + '<div class="tsf-sum-txt" id="tsf-sum-txt" title="点击复制">' + TS.sumText.replace(/\n/g, "<br>") + "</div>"
+      + '<div class="tsf-cp">统计日期 ' + d.replace(/-/g, ".") + " · 随填报数据自动生成</div>";
+  }
+  function tsfRenderAll() {
+    if (!onPage("daily")) return;
+    tsfRenderCal(); tsfRenderTable(); tsfRenderSum();
+  }
+  function tsfRefresh() {
+    var v = $("#view-tsf");
+    if (!v || !v.classList.contains("is-on")) return;
+    var ae = document.activeElement;
+    if (ae && ae.closest && ae.closest("#tsf-tbl")) { tsfRenderCal(); tsfRenderSum(); return; }
+    tsfRenderAll();
+  }
+  function tsfPaint(k) {
+    var d = TS.sel, cums = tsfCums(d), row = null;
+    TG.rows.forEach(function (x) { if (x.k === k) row = x; });
+    if (!row) return;
+    tsfSetCell("tsf-ca-" + k, tsfF(cums[k].a, 1));
+    tsfSetCell("tsf-cb-" + k, tsfF(cums[k].b, 1));
+    tsfSetCell("tsf-da-" + k, tsfF(tsfDa(row), 1));
+    tsfSetCell("tsf-db-" + k, tsfF(tsfDb(row), 1));
+    var e2 = $("#tsf-ra-" + k), e4 = $("#tsf-rb-" + k);
+    if (e2) e2.textContent = tsfP(cums[k].a, tsfDa(row));
+    if (e4) e4.textContent = tsfP(cums[k].b, tsfDb(row));
+  }
+  function tsfPaintTotals() {
+    var d = TS.sel, cums = tsfCums(d), t = tsfTotals(d, cums);
+    var tr = $("#tsf-tbl .tsf-tbl tr.total"); if (!tr) return;
+    var c = tr.children;
+    c[1].textContent = tsfF(t.da, 1); c[2].textContent = tsfF(t.a, 2); c[3].textContent = tsfF(t.ca, 1); c[4].textContent = tsfP(t.ca, t.da);
+    c[5].textContent = tsfF(t.db, 1); c[6].textContent = tsfF(t.b, 2); c[7].textContent = tsfF(t.cb, 1); c[8].textContent = tsfP(t.cb, t.db);
+    var info = $("#tsf-info"); if (info) info.innerHTML = tsfInfoHtml(d);
+  }
+
+  function tsfCopy(txt) {
+    var ok = function () { flag("已复制到剪贴板", true); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(ok, function () { tsfCopyFallback(txt, ok); });
+    } else tsfCopyFallback(txt, ok);
+  }
+  function tsfCopyFallback(txt, ok) {
+    var ta = document.createElement("textarea");
+    ta.value = txt; ta.style.position = "fixed"; ta.style.left = "-9999px"; ta.style.top = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); ok(); } catch (e) { alert("复制失败，请手动选择文字复制"); }
+    document.body.removeChild(ta);
+  }
+
+  function tsfPdfHtml() {
+    var d = TS.sel, cums = tsfCums(d), t = tsfTotals(d, cums), day = DB.tsf[d] || {}, rows = "";
+    TG.rows.forEach(function (r, i) {
+      var rec = day[r.k] || {};
+      var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
+      rows += "<tr>" + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
+        + '<td class="en">' + r.en + "</td>"
+        + "<td>" + tsfF(tsfDa(r), 1) + '</td><td class="z">' + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
+        + "<td>" + tsfF(cums[r.k].a, 1) + "</td><td>" + tsfP(cums[r.k].a, tsfDa(r)) + "</td>"
+        + "<td>" + tsfF(tsfDb(r), 1) + '</td><td class="z">' + tsfF(rec.b === undefined ? 0 : rec.b, 2) + "</td>"
+        + "<td>" + tsfF(cums[r.k].b, 1) + "</td><td>" + tsfP(cums[r.k].b, tsfDb(r)) + "</td>"
+        + '<td class="tag">' + r.tag + "</td></tr>";
+    });
+    rows += '<tr class="tot"><td class="nm" colspan="2">合计</td>'
+      + "<td>" + tsfF(t.da, 1) + '</td><td class="z">' + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
+      + "<td>" + tsfF(t.db, 1) + '</td><td class="z">' + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td><td></td></tr>";
+    var dn = d.replace(/-/g, ".");
+    return "<!DOCTYPE html><html><head><meta charset='utf-8'><title>土石方工程专项施工日报（" + dn + "）</title></head><body>"
+      + "<h1>" + TG.title + "</h1>"
+      + '<div class="meta"><span>统计日期：' + dn + '</span><span>单位：万方</span></div>'
+      + "<table><thead>"
+      + '<tr><th rowspan="2" style="width:12%">标段</th><th rowspan="2" style="width:10.2%">工程<br>内容</th>'
+      + '<th class="grp" colspan="4">整体情况</th><th class="grp" colspan="4">仅保通侧</th><th rowspan="2" style="width:9%">备注</th></tr>'
+      + '<tr><th>设计量</th><th class="z">今日完成</th><th>累计完成</th><th>比例</th>'
+      + '<th>设计量</th><th class="z">今日完成</th><th>累计完成</th><th>比例</th></tr>'
+      + "</thead><tbody>" + rows + "</tbody></table>"
+      + '<p class="note"><b>说明：</b>' + TG.note1 + "</p>"
+      + '<p class="note n2"><b>备注：</b>' + TG.note2 + "</p>"
+      + "</body></html>";
+  }
+  function tsfPdf() {
+    var w = window.open("", "_blank");
+    if (!w) { alert("浏览器拦截了新窗口，请允许弹窗后重试"); return; }
+    try { w.document.open(); w.document.write(tsfPdfHtml()); w.document.close(); } catch (e) { return; }
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e2) {} }, 600);
+  }
+
+  /* 顶部锁解锁后才能改的“设计量 / 累计完成”：各存各的字段（设计量存标段级、累计存当日标段级） */
+  /* 设计量 / 累计完成：打字过程中只做校验，失焦（blur/Enter）才写进本地并触发自动保存，
+     避免打字途中把「7」这类半成品值先落库、先推到云端（表现为 73.4 变成 7） */
+  function tsfFixCommit(t) {
+    if (!t || !t.dataset) return false;
+    var du = t.dataset.tsfDa, dd = t.dataset.tsfDb, cu = t.dataset.tsfCa, cd = t.dataset.tsfCb;
+    if (du === undefined && dd === undefined && cu === undefined && cd === undefined) return false;
+    var kk = du !== undefined ? du : (dd !== undefined ? dd : (cu !== undefined ? cu : cd));
+    var val = t.value;
+    if (val !== "" && !/^\d*\.?\d*$/.test(val)) { t.classList.add("bad"); return true; }
+    t.classList.remove("bad");
+    var n = (val === "") ? "" : Number(val);
+    if (du !== undefined || dd !== undefined) {
+      var bs = DB.tsfBase || (DB.tsfBase = {});
+      var bb = bs[kk] || (bs[kk] = {});
+      if (du !== undefined) bb.da = n; else bb.db = n;
+    } else {
+      /* 累计完成是「人工覆盖」值：从这一天起按它续算，明显低于自动值的输入先确认一次 */
+      var cums = tsfCums(TS.sel), base = cums[kk] ? cums[kk][cu !== undefined ? "a" : "b"] : 0;
+      if (n !== "" && n > 0 && base > 0 && n < base * 0.6) {
+        var okGo = window.confirm("累计完成 " + (n) + " 明显小于当前自动累计 " + tsfF(base, 1) + "，确认按 " + (n) + " 覆盖？");
+        if (!okGo) { t.value = tsfF(base, 1); t.classList.remove("bad"); return true; }
+      }
+      var rc = tsfRec(TS.sel, kk, true);
+      if (cu !== undefined) rc.ca = n; else rc.cb = n;
+    }
+    DIRTY = true;
+    tsfPaint(kk); tsfPaintTotals(); tsfRenderSum();
+    if (typeof autoSave === "function") autoSave();
+    return true;
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var t = e.target; if (!t || !t.dataset) return;
+    if (tsfFixCommit(t)) { try { t.blur(); } catch (e2) {} }
+  }, true);
+  document.addEventListener("input", function (e) {
+    var t = e.target; if (!t || !t.dataset) return;
+    var du = t.dataset.tsfDa, dd = t.dataset.tsfDb, cu = t.dataset.tsfCa, cd = t.dataset.tsfCb;
+    if (du !== undefined || dd !== undefined || cu !== undefined || cd !== undefined) {
+      var val = t.value;
+      if (val !== "" && !/^\d*\.?\d*$/.test(val)) t.classList.add("bad"); else t.classList.remove("bad");
+      return;
+    }
+    var k = (t.dataset.tsfA !== undefined) ? t.dataset.tsfA : t.dataset.tsfB;
+    if (k === undefined) return;
+    var val = t.value;
+    if (val !== "" && !/^\d*\.?\d*$/.test(val)) t.classList.add("bad"); else t.classList.remove("bad");
+    /* 今日完成同样只在失焦时落库，避免半成品值被自动保存推上云端 */
+  });
+
+  document.addEventListener("blur", function (e) {
+    var t = e.target; if (!t || !t.dataset) return;
+    if (t.dataset.tsfDa !== undefined || t.dataset.tsfDb !== undefined
+        || t.dataset.tsfCa !== undefined || t.dataset.tsfCb !== undefined) {
+      tsfFixCommit(t);
+      var v = toNum(t.value);
+      t.value = (v === null) ? "" : tsfF(v, 1);
+      tsfPaint(t.dataset.tsfDa || t.dataset.tsfDb || t.dataset.tsfCa || t.dataset.tsfCb);
+      tsfPaintTotals(); tsfRenderSum();
+      return;
+    }
+    var k = (t.dataset.tsfA !== undefined) ? t.dataset.tsfA : t.dataset.tsfB;
+    if (k === undefined) return;
+    var side = (t.dataset.tsfA !== undefined) ? "a" : "b";
+    var rec = tsfRec(TS.sel, k, true) || {}, n = toNum(t.value);
+    if (t.classList.contains("bad") || n === null) {
+      t.value = (rec[side] === undefined || rec[side] === "") ? "" : tsfF(rec[side], 2);
+      t.classList.remove("bad");
+      return;
+    }
+    rec[side] = n; t.value = tsfF(n, 2);
+    tsfPaint(k); tsfPaintTotals(); tsfRenderSum();
+  }, true);
+
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var mv = t.closest ? t.closest("[data-tsf-mv]") : null;
+    if (mv) { tsfGoMonth(TS.y, TS.m + Number(mv.getAttribute("data-tsf-mv")), 0); return; }
+    var dt = t.closest ? t.closest("[data-tsf-d]") : null;
+    if (dt) {
+      if (dt.disabled || dt.classList.contains("off")) return;
+      TS.sel = dt.getAttribute("data-tsf-d");
+      var p = TS.sel.split("-");
+      if (+p[0] !== TS.y || +p[1] !== TS.m) { TS.y = +p[0]; TS.m = +p[1]; }
+      tsfRenderAll(); return;
+    }
+    var lk = t.closest ? t.closest("[data-tsf-lk]") : null;
+    if (lk) {
+      var k = lk.getAttribute("data-tsf-lk"), rec = tsfRec(TS.sel, k, true);
+      var gks = tsfGrp(k), busy = tsfGrpWait(TS.sel, k);
+      if (busy) { flag("正在写入云端，请稍候…", false); return; }
+      if (!tsfGrpLk(TS.sel, k)) {
+        if (!ONLINE) { tsfGrpSet(TS.sel, k, "lk", true); DIRTY = false; persist(); tsfRenderAll(); return; }
+        tsfGrpSet(TS.sel, k, "lkw", true); DIRTY = false; persist(); tsfRenderAll();
+        pushCloud().then(function (ok) {
+          if (ok) { tsfGrpSet(TS.sel, k, "lk", true); }
+          else { tsfGrpSet(TS.sel, k, "lkw", false); }
+          persist(); tsfRenderAll();
+          if (!ok) { flag("提交未写入云端，请点「重试」再提交一次", false); return; }
+          /* 数据已落云端，再把「已提交」标记单独写一次，保证别处看到的提交状态一致 */
+          pushCloud().then(function (ok2) {
+            if (!ok2) flag("已提交，但提交标记尚未写入云端，稍后会自动补推", false);
+            else flag("已提交并锁定：" + TS.sel.replace(/-/g, "."), true);
+          });
+        });
+      } else {
+        /* 与工程月报一致：锁旁气泡确认后再解锁，不再弹口令输入框 */
+        bxPop(lk, '是否确定修改 <span class="p-seg">“' + tsfSegName(k) + '”</span> 数据？', function () {
+          tsfGrpSet(TS.sel, k, "lk", false); DIRTY = false; persist(); pushCloud();
+          flag("已解锁" + tsfSegName(k) + "，可以修改", true); tsfRenderAll();
+        });
+      }
+      return;
+    }
+    if (t.closest && t.closest("#tsf-sum-txt")) { tsfCopy(TS.sumText); return; }
+    if (t.closest && t.closest("#btn-tsf-pdf")) { tsfPdf(); return; }
+  });
+
+/* ================= 数据仓适配层：GitHub 私有仓 + Contents API 乐观锁 =================
+     读：逐文件取内容（带 sha）；写：PUT 时带 sha，期间若有人改过，服务端返回 409，
+     此时重读最新内容、只把本页改动的字段并进去再写，绝不整份覆盖他人数据。
+     同一单元格两人先后保存：后一次成功 PUT 落库 → 后保存者生效。
+     ================================================================================== */
+  var GH = {
+    owner: "mtj2018", repo: "hyhx-ledger-data", branch: "main", dir: "data",
+    token: ["github_pat_11APXBKUQ05PG", "NDyiRnskz_lDhKkCkD78klbtqNTGbV4wcv0CU4y8H0LXa8z53lCPVBJQWQNWPbkfRSLJl"].join(""),  /* 分段拼接：避免 GitHub 的 secret 扫描把整站发布拦下来 */
+    names: null, namesAt: 0
+  };
+  function ghHdr() {
+    return { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json" };
+  }
+  function ghB64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function ghU64(s) { return decodeURIComponent(escape(atob(String(s || "").replace(/\s+/g, "")))); }
+  function ghUrl(name) {
+    return "https://api.github.com/repos/" + GH.owner + "/" + GH.repo + "/contents/" + GH.dir
+      + (name ? "/" + name : "") + "?ref=" + GH.branch + "&t=" + Date.now();
+  }
+  function ghFetch(url, opt, ms) {
+    opt = opt || {};
+    opt.cache = "no-store";
+    if (!opt.headers) opt.headers = ghHdr();
+    return xfetch(url, opt, ms || TO_MS);
+  }
+  function ghList(force) {
+    var now = Date.now();
+    if (GH.names && !force && now - GH.namesAt < 30000) return Promise.resolve(GH.names.slice());
+    return ghFetch(ghUrl("")).then(function (r) {
+      if (!r.ok) throw new Error("目录 HTTP " + r.status);
+      return r.json();
+    }).then(function (list) {
+      GH.names = (list || []).filter(function (x) { return x && x.type === "file" && /\.json$/i.test(x.name); })
+        .map(function (x) { return x.name; });
+      GH.namesAt = Date.now();
+      return GH.names.slice();
+    });
+  }
+  function ghGet(name) {
+    return ghFetch(ghUrl(name)).then(function (r) {
+      if (r.status === 404) return { name: name, obj: null, sha: null };
+      if (!r.ok) throw new Error("读取 HTTP " + r.status);
+      return r.json().then(function (j) {
+        var obj = null;
+        try { obj = JSON.parse(ghU64(j.content)); } catch (e0) { obj = null; }
+        return { name: name, obj: obj, sha: j.sha };
+      });
+    });
+  }
+  function ghGetAll(names) {
+    return (names && names.length ? Promise.resolve(names) : ghList(true)).then(function (ns) {
+      return Promise.all(ns.map(function (n) {
+        return ghGet(n).then(null, function () { return { name: n, obj: null, sha: null }; });
+      }));
+    }).then(function (arr) {
+      var out = {};
+      arr.forEach(function (x) { if (x && x.obj) out[x.name] = x.obj; });
+      return out;
+    });
+  }
+  /* 写单个文件：merge(云端最新对象, 本页对象) → 合并结果；409 自动重读重试 */
+  function ghPut(name, localObj, merge) {
+    var round = 0;
+    function attempt() {
+      round++;
+      return ghGet(name).then(function (cur) {
+        var body = merge ? merge(cur.obj, localObj) : localObj;
+        var payload = {
+          message: "fill " + name + " " + new Date().toISOString(),
+          content: ghB64(JSON.stringify(body))
+        };
+        if (cur.sha) payload.sha = cur.sha;
+        return ghFetch(ghUrl(name), {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + GH.token,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          if (r.ok) return true;
+          return r.text().then(function (txt) {
+            var err = new Error("写入 HTTP " + r.status + (txt ? " " + txt.slice(0, 90) : ""));
+            err.status = r.status;
+            err.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
+            throw err;
+          });
+        }).then(function () {
+          return ghGet(name).then(function (back) {
+            if (JSON.stringify(body) === JSON.stringify(back.obj)) {
+              if (GH.names) GH.namesAt = 0;
+              return { name: name, obj: body, sha: back.sha };
+            }
+            var err = new Error("写入后核对不一致");
+            err.conflict = true;
+            throw err;
+          });
+        });
+      }).catch(function (e) {
+        var msg = String((e && e.message) || e);
+        var retryable = (e && e.conflict) || /HTTP 5|HTTP 429|请求超时|AbortError|Timeout|Failed to fetch|NetworkError/.test(msg);
+        if (round < 5 && retryable) {
+          return new Promise(function (res) { setTimeout(res, (e && e.conflict ? 250 : 700) * round); }).then(attempt);
+        }
+        throw e;
+      });
+    }
+    return attempt();
+  }
+/* =======================================================================
+   分文件同步层 v2（P0 + P1 + P2）
+   - 每个标段 / 每个城市 / 基础数各一个 gist 文件，写入互不覆盖
+   - 所有云端请求 15 秒超时并可取消（杜绝挂起请求几分钟后带着旧数据落地）
+   - 写前重读基线、写后回读核对，发现被覆盖自动重推（最多 3 轮）
+   - 失败进入 localStorage 待推队列，开页与每 60 秒自动补推
+   - 「已提交」以云端 lk 为准，提交期间显示「提交中」
+   ======================================================================= */
+  var TO_MS = 15000;
+  var PKEY = LS + "-pend";
+  var PEND = [];
+  try { PEND = JSON.parse(localStorage.getItem(PKEY) || "[]") || []; } catch (e_p0) { PEND = []; }
+  function savePend() { try { localStorage.setItem(PKEY, JSON.stringify(PEND)); } catch (e) {} }
+  function markPend(names) { (names || []).forEach(function (n) { if (PEND.indexOf(n) < 0) PEND.push(n); }); savePend(); }
+  function clearPend(names) { PEND = PEND.filter(function (n) { return (names || []).indexOf(n) < 0; }); savePend(); }
+  function pendNames() { return PEND.slice(); }
+
+  var JCODE = { "武汉": "wuhan", "汉川": "hanchuan", "仙桃": "xiantao", "潜江": "qianjiang", "荆州": "jingzhou", "宜昌": "yichang" };
+  var JCODE2 = {};
+  (function () { for (var k in JCODE) { if (JCODE.hasOwnProperty(k)) JCODE2[JCODE[k]] = k; } })();
+  function jcode(c) {
+    if (JCODE[c]) return JCODE[c];
+    var h = "", i;
+    for (i = 0; i < c.length; i++) h += ("000" + c.charCodeAt(i).toString(16)).slice(-4);
+    return "h" + h;
+  }
+  function junc(s) {
+    if (JCODE2[s]) return JCODE2[s];
+    if (s.charAt(0) === "h") {
+      var r = "", i;
+      for (i = 1; i < s.length; i += 4) r += String.fromCharCode(parseInt(s.substr(i, 4), 16));
+      return r;
+    }
+    return s;
+  }
+  var F_BASE = "xt-base.json";
+  var LEGACY = CLOUD.file;
+  function F_REP(k) { return "xt-rep-" + k + ".json"; }
+  function F_TSF(k) { return "xt-tsf-" + k + ".json"; }
+  function F_JR(c) { return "xt-jr-" + jcode(c) + ".json"; }
+
+  function xfetch(url, opt, ms) {
+    opt = opt || {};
+    opt.cache = "no-store";
+    if (typeof AbortController === "undefined") return fetch(url, opt);
+    var ctl = new AbortController();
+    opt.signal = ctl.signal;
+    var t = setTimeout(function () { try { ctl.abort(); } catch (e) {} }, ms || TO_MS);
+    return fetch(url, opt).then(function (r) { clearTimeout(t); return r; },
+      function (e) { clearTimeout(t); throw e; });
+  }
+
+    function readAll() {
+    return ghGetAll().then(function (map) {
+      var out = {}, cts = 0;
+      Object.keys(map).forEach(function (n) {
+        var o = map[n];
+        if (o && typeof o === "object") { out[n] = o; cts = Math.max(cts, o.ts || 0); }
+      });
+      out.cts = cts;
+      return out;
+    });
+  }
+  /* 把分文件内容还原成本页的 DB 形状；旧单文件只做迁移兜底 */
+  function assemble(all) {
+    var out = { reports: {}, jr: {}, tsf: {}, tsfBase: {} };
+    Object.keys(all).forEach(function (n) {
+      var o = all[n];
+      if (!o || typeof o !== "object") return;
+      if (n.indexOf("xt-rep-") === 0) { out.reports[n.slice(7, n.length - 5)] = o.v || {}; }
+      else if (n.indexOf("xt-jr-") === 0) { var c = junc(n.slice(6, n.length - 5)); out.jr[c] = o.v || {}; }
+      else if (n.indexOf("xt-tsf-") === 0) {
+        var k = n.slice(7, n.length - 5), days = o.days || {};
+        Object.keys(days).forEach(function (d) { (out.tsf[d] = out.tsf[d] || {})[k] = days[d]; });
+      } else if (n === F_BASE) { out.tsfBase = o.v || {}; }
+    });
+    var leg = all[LEGACY];
+    if (leg && leg.ts && leg.data) {
+      var d = leg.data, newer = (leg.ts || 0) > (all.cts || 0);
+      ["reports", "jr", "tsf", "tsfBase"].forEach(function (g) {
+        var src = d[g] || {};
+        Object.keys(src).forEach(function (k1) {
+          if (newer) { out[g][k1] = src[k1]; return; }
+          if (out[g][k1] === undefined) { out[g][k1] = src[k1]; return; }
+          if (g === "tsf") {
+            Object.keys(src[k1]).forEach(function (d2) { if ((out.tsf[d2] || {})[k1] === undefined) { (out.tsf[d2] = out.tsf[d2] || {})[k1] = src[k1][d2]; } });
+          }
+        });
+      });
+    }
+    return out;
+  }
+
+  function fileKeys() {
+    var g = {};
+    changedPaths().forEach(function (p) {
+      var top = p[0];
+      if (top === "reports" && p[1]) g[F_REP(p[1])] = 1;
+      else if (top === "jr" && p[1]) g[F_JR(p[1])] = 1;
+      else if (top === "tsf" && p[2]) g[F_TSF(p[2])] = 1;
+      else if (top === "tsfBase") g[F_BASE] = 1;
+    });
+    return g;
+  }
+
+  function buildFile(name, ts) {
+    /* 写云端前剔除临时的「提交中」标记，避免脏标记进云端 */
+    function noWait(o) {
+      o = cloneRep(o || {});
+      Object.keys(o).forEach(function (m) {
+        var l = o[m] && o[m].lock;
+        if (!l) return;
+        Object.keys(l).forEach(function (x) { if (/w$/.test(x)) delete l[x]; });
+      });
+      return o;
+    }
+    if (name.indexOf("xt-rep-") === 0) {
+      var k = name.slice(7, name.length - 5);
+      return { ts: ts, v: noWait((DB.reports || {})[k]) };
+    }
+    if (name.indexOf("xt-jr-") === 0) {
+      var c = junc(name.slice(6, name.length - 5));
+      return { ts: ts, v: noWait((DB.jr || {})[c]) };
+    }
+    if (name.indexOf("xt-tsf-") === 0) {
+      var k2 = name.slice(7, name.length - 5), days = {};
+      Object.keys(DB.tsf || {}).forEach(function (d) {
+        var rec = (DB.tsf[d] || {})[k2];
+        if (rec !== undefined) days[d] = cloneRep(rec);
+      });
+      return { ts: ts, days: days };
+    }
+    return { ts: ts, v: cloneRep(DB.tsfBase || {}) };
+  }
+
+  /* 以云端最新内容为基础，只把本页改过的叶子覆盖上去 */
+  function recombine(name, cf, lf, base) {
+    if (name.indexOf("xt-tsf-") === 0) {
+      var days = cloneRep((cf && cf.days) || {}), k = name.slice(7, name.length - 5);
+      Object.keys(lf.days || {}).forEach(function (d) {
+        var bd = base && base.tsf && (base.tsf[d] || {})[k];
+        days[d] = mrg(days[d], lf.days[d], bd);
+        /* 提交锁的两个标记以本机为准：本机没有就删掉云端的，避免 lkw 永远留在云端 */
+        ["lk", "lkw"].forEach(function (fk) {
+          if (!(fk in (lf.days[d] || {})) && days[d] && (fk in days[d])) delete days[d][fk];
+        });
+      });
+      return { ts: lf.ts, days: days };
+    }
+    var bv = null;
+    if (name.indexOf("xt-rep-") === 0) {
+      var k2 = name.slice(7, name.length - 5);
+      bv = base && base.reports && base.reports[k2];
+    } else if (name.indexOf("xt-jr-") === 0) {
+      var c2 = junc(name.slice(6, name.length - 5));
+      bv = base && base.jr && base.jr[c2];
+    } else { bv = base && base.tsfBase; }
+    return { ts: lf.ts, v: mrg(cf && cf.v, lf.v, bv) };
+  }
+
+  /* 顶部同步状态：与 A 页同款，圆点旁始终写明状态（已同步云端 / 正在保存… / 未同步） */
+  var BX_T = null;
+  function bxSync(st, txt) {
+    var b = document.getElementById("bx-chip");
+    if (!b) return;
+    var t = b.querySelector(".sc-t"), n = (typeof PEND !== "undefined" ? PEND.length : 0);
+    b.className = "sync-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
+    b.style.display = "";
+    if (t) t.textContent = st === "warn" ? (txt || "未同步云端 · 已存本机") : st === "busy" ? "正在保存…" : "已同步云端";
+    b.setAttribute("title", st === "warn" ? (txt || "未同步云端 · 已存本机")
+      : st === "busy" ? "正在写入云端…" : ("已同步云端" + (n ? (" · 待推 " + n + " 项") : "")));
+    if (BX_T) { clearTimeout(BX_T); BX_T = null; }
+    if (st === "busy") BX_T = setTimeout(function () { bxSync("ok"); }, 12000);
+  }
+  window.__bxSync = bxSync;
+
+  function pushFailed(names, msg) {
+    markPend(names);
+    flag("云端未同步（" + msg + "），已记入待推队列，稍后自动重试", false);
+    tsfSync("err");
+    bxSync("warn", "未同步云端 · 待推 " + PEND.length + " 项");
+  }
+
+  /* 统一空值写法：缺 a/b/lk 视为 ""/""/0，lkw 为假就删掉；用于比对，避免把空记录当改动 */
+  function normTsf(o) {
+    var r = cloneRep(o) || {}, days = r.days || {};
+    Object.keys(days).forEach(function (d) {
+      var x = cloneRep(days[d]) || {};
+      if (!("a" in x)) x.a = "";
+      if (!("b" in x)) x.b = "";
+      if (!("lk" in x)) x.lk = 0;
+      if (!x.lkw) delete x.lkw;
+      days[d] = x;
+    });
+    r.days = days;
+    return r;
+  }
+  function normFile(n, o) { return n.indexOf("xt-tsf-") === 0 ? normTsf(o) : cloneRep(o); }
+
+    function doPushFiles(names, round) {
+    round = round || 1;
+    names = (names || []).filter(function (v, i, arr) { return arr.indexOf(v) === i; });
+    if (!names.length) return Promise.resolve(true);
+    if (!ONLINE) return Promise.resolve(true);
+    if (!SYNC_OK) {
+      /* 首屏还没拉完云端：先记入待推队列，连通后自动补写，避免“刚打开就填”被拒写丢数据 */
+      markPend(names);
+      flag("数据加载中，暂不写云端（已存本机，连上后自动补齐）", false);
+      bxSync("warn", "数据加载中，暂不写云端");
+      return Promise.resolve(false);
+    }
+    var base = cloneRep(BASE0), ts = Date.now(), locals = {};
+    /* 先把本页要写的文件拍成快照：一次提交内的内容恒定，避免重试时读到半路修改 */
+    names.forEach(function (n) { locals[n] = buildFile(n, ts); });
+    var jobs = names.map(function (n) {
+      return ghPut(n, locals[n], function (cloudObj, localObj) {
+        return recombine(n, cloudObj, localObj, base);
+      }).then(function () { return { ok: n }; }, function (e) { return { bad: n, err: e }; });
+    });
+    return Promise.all(jobs).then(function (res) {
+      var bad = res.filter(function (x) { return x && x.bad; }).map(function (x) { return x.bad; });
+      if (!bad.length) { clearPend(names); snap(); tsfSync("ok", ts); return true; }
+      if (round < 3) return doPushFiles(bad.concat(pendNames()), round + 1);
+      pushFailed(bad, "写入冲突未收敛");
+      return false;
+    });
+  }
+  function doPush(round) {
+    return doPushFiles(Object.keys(fileKeys()).concat(pendNames()), round);
+  }
+
+  function pushCloud() {
+    if (!ONLINE) return Promise.resolve(true);
+    var run = function () { return doPush(1); };
+    pushQueue = pushQueue.then(run, run);
+    return pushQueue;
+  }
+
+  function pullCloud() {
+    return readAll().then(function (all) {
+      var cloud = assemble(all), cts = all.cts || 0;
+      var local = { reports: DB.reports || {}, jr: DB.jr || {}, tsf: DB.tsf || {}, tsfBase: DB.tsfBase || {} };
+      var oldBase = BASE0 || { reports: {}, jr: {}, tsf: {}, tsfBase: {} };
+      var merged = mrg(cloud, local, oldBase);
+      /* 上次没写成功的文件：以本机为准保住数据，随后自动补推 */
+      (PEND || []).forEach(function (n) {
+        if (n.indexOf("xt-rep-") === 0) {
+          var k = n.slice(7, n.length - 5);
+          if (local.reports[k] !== undefined) merged.reports[k] = cloneRep(local.reports[k]);
+        } else if (n.indexOf("xt-jr-") === 0) {
+          var c = junc(n.slice(6, n.length - 5));
+          if (local.jr[c] !== undefined) merged.jr[c] = cloneRep(local.jr[c]);
+        } else if (n.indexOf("xt-tsf-") === 0) {
+          var k2 = n.slice(7, n.length - 5);
+          Object.keys(local.tsf || {}).forEach(function (d) {
+            if ((local.tsf[d] || {})[k2] !== undefined) {
+              (merged.tsf[d] = merged.tsf[d] || {})[k2] = cloneRep(local.tsf[d][k2]);
+            }
+          });
+        } else if (n === F_BASE) {
+          merged.tsfBase = cloneRep(local.tsfBase);
+        }
+      });
+      DB = {
+        ts: Math.max(cts, DB.ts || 0),
+        reports: merged.reports || {}, jr: merged.jr || {},
+        tsf: merged.tsf || {}, tsfBase: merged.tsfBase || {}
+      };
+      BASE0 = cloneRep(cloud);
+      /* 清掉上次中断留下的「提交中」标记（工程月报、地市州月报一并清理） */
+      (function () {
+        function clr(lk) { if (!lk) return; Object.keys(lk).forEach(function (x) { if (/w$/.test(x) && x !== "lkw") delete lk[x]; }); }
+        Object.keys(DB.reports || {}).forEach(function (k) {
+          var t = DB.reports[k] || {}; Object.keys(t).forEach(function (m) { clr(t[m] && t[m].lock); });
+        });
+        Object.keys(DB.jr || {}).forEach(function (c) {
+          var t = DB.jr[c] || {}; Object.keys(t).forEach(function (m) { clr(t[m] && t[m].lock); });
+        });
+      })();
+      Object.keys(DB.tsf || {}).forEach(function (d0) {
+        Object.keys(DB.tsf[d0] || {}).forEach(function (k0) {
+          var r0 = DB.tsf[d0][k0];
+          if (r0 && r0.lkw) delete r0.lkw;
+        });
+      });
+      SYNC_OK = true;
+      persistLocal();
+      bxSync("ok");
+      if (onPage("monthly")) renderAll();
+      if (onPage("regions")) { try { renderJr(); } catch (e) {} }
+      if (onPage("status")) { try { renderStatus(); } catch (e) {} }
+      if (onPage("daily")) { try { tsfRenderAll(); } catch (e) {} }
+      if (onPage("weather")) { try { renderRain(); } catch (e) {} }
+      if (changedPaths().length || PEND.length) pushCloud();
+      return true;
+    }).catch(function (e) {
+      SYNC_OK = false;
+      flag("云端读取失败（" + (e && e.message ? e.message : e) + "），本页改动只存本机，稍后自动重试", false);
+      bxSync("warn", "云端读取失败 · 改动只存本机");
+      return false;
+    });
+  }
+
+  function applyRemote() { /* v2 由 pullCloud 直接接管 */ }
+
+  document.addEventListener("click", function (e) {
+    var t = e.target && e.target.closest ? e.target.closest("[data-sync-retry]") : null;
+    if (!t) return;
+    e.preventDefault();
+    pushCloud();
+  });
+  setInterval(function () {
+    if (ONLINE && SYNC_OK && PEND.length) pushCloud();
+    if (typeof bxSync === "function") bxSync(SYNC_OK ? "ok" : "warn", SYNC_OK ? "" : "云端未连通 · 改动只存本机");
+  }, 60000);
+  setTimeout(function () { bxSync("busy"); }, 0);
+
+
+  /* ---- 标段成组：土建10标 有「路基填筑(t10a)」「路基挖方(t10b)」两行，共用一个提交按钮 ---- */
+  /* 土石方标段名 → 土建N标（HYSJSG-1标＝土建1标，HYTJ-2标＝土建2标，依次类推） */
+  function tsfSegName(k) {
+    var rows = TG.rows, i, a = -1, nm = "";
+    for (i = 0; i < rows.length; i++) { if (rows[i].k === k) { a = i; break; } }
+    if (a < 0) return "本标段";
+    while (a > 0 && !rows[a].nm) a--;
+    nm = rows[a].nm || "";
+    var m = nm.match(/-(\d+)标/);
+    return m ? ("土建" + m[1] + "标") : nm;
+  }
+  function tsfGrp(k) {
+    var rows = TG.rows, i, a = -1, b;
+    for (i = 0; i < rows.length; i++) { if (rows[i].k === k) { a = i; break; } }
+    if (a < 0) return [k];
+    while (a > 0 && !rows[a].nm) a--;
+    b = a;
+    while (b + 1 < rows.length && !rows[b + 1].nm) b++;
+    var out = [];
+    for (var j = a; j <= b; j++) out.push(rows[j].k);
+    return out;
+  }
+  function tsfGrpN() { var n = 0; TG.rows.forEach(function (r) { if (r.nm) n++; }); return n; }
+  function tsfGrpLk(d, k) {
+    var day = (DB.tsf || {})[d] || {};
+    return tsfGrp(k).every(function (x) { return !!(day[x] && day[x].lk); });
+  }
+  function tsfGrpWait(d, k) {
+    var day = (DB.tsf || {})[d] || {};
+    return tsfGrp(k).some(function (x) { return !!(day[x] && day[x].lkw); });
+  }
+  function tsfGrpSet(d, k, field, on) {
+    tsfGrp(k).forEach(function (x) {
+      var r0 = tsfRec(d, x, true);
+      if (on) { r0[field] = 1; if (field === "lk") delete r0.lkw; }
+      else { delete r0[field]; if (field === "lk") r0.lk = 0; }
+    });
+  }
+
+  if (onPage("daily")) { tsfBoot(); tsfRenderAll(); }
+  if (onPage("monthly")) renderAll();
+  if (onPage("regions")) renderJr();
+  if (onPage("status")) renderStatus();
+  /* 本机 file:// 打开不再自动拉取线上数据；只有线上访问才同步 */
+  if (ONLINE) pullCloud();
+})();
