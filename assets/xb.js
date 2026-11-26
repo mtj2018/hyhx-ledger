@@ -151,7 +151,8 @@
       h += '<div class="xb-csec"><div class="xb-ct">土建1标 分区累计完成（蔡甸 / 汉川 / 仙桃）<span>按属地拆分填报，累计口径，不随本旬自动累加</span></div>' +
         '<table class="xb-tbl xb-ctbl"><thead><tr><th>项目</th><th>单位</th><th>蔡甸（武汉）</th><th>汉川（孝感）</th><th>仙桃</th></tr></thead><tbody>';
       CITEMS.forEach(function (n, i) {
-        h += '<tr><td class="xb-it">' + n + '</td><td class="xb-u">' + (i === 0 || i === 4 ? "万方/万米" : "") + "</td>";
+        var uu = ["万方", "万米", "万米", "根", "套", "个", "个", "片", "片"][i];
+        h += '<tr><td class="xb-it">' + n + '</td><td class="xb-u">' + uu + "</td>";
         ["蔡甸", "汉川", "仙桃"].forEach(function (a) {
           var v = (ck[a] && ck[a][i] !== undefined) ? ck[a][i] : "";
           h += '<td class="xb-q">' + (canEdit ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + v + '" placeholder="0">' : (v === "" ? "—" : v)) + "</td>";
@@ -177,6 +178,10 @@
         var i = +inp.getAttribute("data-xbq"), v = parseFloat(inp.value);
         var rr = rec(CUR.tid, CUR.xun || todayKey());
         rr.q[i] = isFinite(v) ? v : 0; rr.edited = 1;
+        var tr = inp.closest("tr"), pc0 = prevCum(CUR.tid, CUR.xun || todayKey());
+        var tt = DATA[CUR.tid] && DATA[CUR.tid].tot ? DATA[CUR.tid].tot[i] : 0;
+        var cv = (pc0 ? (+pc0[i] || 0) : 0) + (rr.q[i] || 0);
+        if (tr && tr.children[5]) { tr.children[5].textContent = fmt(cv, ITEMS[i].u); tr.children[6].textContent = pct(cv, tt); }
         save();
       };
       inp.onblur = function () { render(); };
@@ -236,6 +241,7 @@
         var blank = !cur || (!cur.edited && !cur.sub && !cur.sup && !(cur.red || []).length &&
           !(cur.q || []).some(function (v) { return +v; }));
         if (blank) { res(true); return; }
+        if (location.protocol === "file:") { flagMsg("本机打开为只读预览，改动不上传云端"); res(false); return; }
         /* 手工改过的旬：累计 = 上旬累计 + 本旬，写回前重算，保证 A 页读到正确的累计 */
         Object.keys(obj.x || {}).forEach(function (k) {
           var d = obj.x[k]; if (!d || !d.edited) return;
