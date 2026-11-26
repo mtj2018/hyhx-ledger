@@ -219,7 +219,7 @@
     var k = CUR.xun || todayKey(), z = zbOf(CUR.zb);
     var h = '<div class="xb-head"><div class="xb-t"><b>' + z.nm + "</b>"
       + '<span class="xb-xun">' + z.sub + " · " + k.replace(/-/g, ".") + " 旬</span></div>"
-      + '<div class="xb-zbs">' + z.tids.map(function (tid) { return '<span class="xb-zc">' + tid + "标</span>"; }).join("") + "</div></div>";
+      + '<div class="xb-zbs">' + (z.tids.length > 1 ? z.tids.map(function (tid) { return '<span class="xb-zc">' + tid + "标</span>"; }).join("") : "") + "</div></div>";
 
     if (z.tids.length === 1 && z.tids[0] === 1) {
       var t1 = 1, s1 = stateOf(t1, k);
