@@ -834,10 +834,9 @@ td.nmc{white-space:nowrap;font-size:12px}
   var STM = CUR.ym;
   var DIRTY = false;
 
+  /* 旧 Gist 通道（含经典令牌）已下线：数据只走私有仓 mtj2018/hyhx-ledger-data；此处仅保留旧文件名常量做兼容 */
   var CLOUD = {
-    gistId: "2e29599c80a9553e78c81670de9342fd",
-    file: "hyhx-report.json",
-    token: ["gh", "p_rzbm0wOAJ6", "FZFFgxRfMO", "B33Snm1piw1Wybw9"].join("")
+    file: "hyhx-report.json"
   };
   /* 线上访问（http/https）自动写回云端；本机 file:// 打开完全只读，改了也不影响线上 */
   var ONLINE = (location.protocol === "http:" || location.protocol === "https:");
