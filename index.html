@@ -1,6 +1,24 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
+<script>
+/* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
+(function () {
+  var BUILD = "261126105338";
+  if (location.protocol !== "http:" && location.protocol !== "https:") return;
+  if (!BUILD || BUILD.indexOf("261126105338") >= 0) return;
+  var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
+  var once = "pg-ver-" + key;
+  try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
+  fetch("ver.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+    if (!j) return;
+    var v = String(j[key] || "");
+    if (!v || v === BUILD) return;
+    try { sessionStorage.setItem(once, BUILD); } catch (e1) {}
+    location.replace(location.pathname + "?v=" + encodeURIComponent(v) + location.hash);
+  }).catch(function () {});
+})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速公路武汉至宜昌段改扩建工程 · 项目信息</title>
