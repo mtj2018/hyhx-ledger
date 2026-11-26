@@ -31,7 +31,7 @@
 .xb-ct2 tr.gs th.it{background:#F7FAFF}
 .xb-ct2 tr.unit th{background:#FBFCFE;color:var(--muted);font-weight:400;font-size:10.5px}
 .xb-ct2 tbody tr.rd td{padding:2px 2px;text-align:center}
-.xb-ct2 tbody tr.rd td.lb{text-align:left}
+.xb-ct2 tbody tr.rd td.lb{text-align:center;padding-left:0}
 .xb-ct2 tbody tr.is-red td{background:#FDEEEE}
 .xb-cc{min-width:760px}
 /* 悬停高亮整列（列级，不影响整行） */

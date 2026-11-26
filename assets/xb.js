@@ -189,12 +189,12 @@
     }
     var need = !((rec(tid, k).red || []).length);
     var passCls = need ? "pg-lk ok warn" : "pg-lk ok";
-    var passTxt = (need && CONFIRM[tid]) ? "确认无标红，提交完成" : (need ? "复核通过（需确认）" : "复核通过并提交");
+    var passTxt = (need && CONFIRM[tid]) ? "确认无滞后项，提交完成" : (need ? "复核通过（需确认）" : "复核通过并提交");
     return '<button type="button" class="pg-lk ghost" data-xb-back="' + tid + '">退回施工单位</button>'
       + '<button type="button" class="' + passCls + '" data-xb-pass="' + tid + '">' + passTxt + "</button>"
       + '<span class="xb-tip">' + (need
-        ? (CONFIRM[tid] ? "本旬该标段未标红任何滞后项，请再点一次确认提交。" : "本旬该标段尚无标红项；复核通过时需二次确认。")
-        : "本旬已标红滞后项，可直接提交。") + "</span>";
+        ? (CONFIRM[tid] ? "本旬该标段滞后项均为「否」，请再点一次确认提交。" : "本旬该标段滞后项均为「否」；复核通过时需二次确认。")
+        : "本旬已标记滞后项（「是」），可直接提交。") + "</span>";
   }
 
   /* ---------------- 表：项目横排 ---------------- */
@@ -238,7 +238,7 @@
     rows += '<tr class="rd"><td class="lb">滞后</td>' + ITEMS.map(function (it, i) {
       if (!hasTot(tid, i)) return '<td class="xb-gray">—</td>';
       var red = (r.red || []).indexOf(i) >= 0;
-      return '<td class="xb-rdc"><button type="button" data-red="' + tid + "|" + i + '" class="xb-rd' + (red ? " on" : "") + '"' + (redOn ? "" : " disabled") + ">" + (red ? "滞后" : "标红") + "</button></td>";
+      return '<td class="xb-rdc"><button type="button" data-red="' + tid + "|" + i + '" class="xb-rd' + (red ? " on" : "") + '"' + (redOn ? "" : " disabled") + ">" + (red ? "是" : "否") + "</button></td>";
     }).join("") + "</tr>";
 
     return '<div class="xb-wrap"><table class="xb-ct2" data-xbtab="' + tid + '"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table></div>";
