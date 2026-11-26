@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/b.cfg.js?v=261126145802"></script>
+<script src="assets/b.cfg.js?v=261126151452"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126145802";
+  var BUILD = "261126151452";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126145802") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126151452") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,14 +25,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速改扩建工程 · 基础数据填报</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/b.css?v=261126145802">
+<link rel="stylesheet" href="assets/b.css?v=261126151452">
 
 
 
 
 
 
-<link rel="stylesheet" href="assets/xb.css?v=261126145802">
+<link rel="stylesheet" href="assets/xb.css?v=261126151452">
 </head>
 
 <body>
@@ -44,10 +44,6 @@
         <div class="top-name" style="width:auto">沪渝高速公路武汉至宜昌段改扩建工程</div>
       </div>
       <div class="top-sub">建设单位 湖北汉宜高速公路有限公司　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
-      <div class="bx-guide">
-        <i><span class="g-dot"></span><span><b class="g-k">绿点＝同步状态</b>：绿色「已同步云端」、闪烁「正在保存…」、灰色「未同步·已存本机」；改动即自动保存并写回云端，无需手动存盘。</span></i>
-        <i><span><b class="g-k">提交按钮</b>：各表右上的「提交」把本标段本表数据写回云端并锁定，锁定后需解锁才能修改；未提交的改动只存在本机。</span></i>
-      </div>
     </div>
     <div class="top-meta">
       <div class="sync-chip" id="bx-chip" style="display:none" title="本页改动会自动保存并写回云端"><span class="sc-dot"></span><span class="sc-t"></span></div>
@@ -121,7 +117,7 @@
     </section>
     <section class="view" id="view-xb">
       <div class="card">
-        <div class="card-head"><h2>工程旬报填报</h2><span class="hint pg-flag"><b>每月 10 / 20 / 月末</b><i>·</i>施工单位填报 → 监理复核 → 完成</span><span class="pg-money">单位：万方 / 万米 / 根 / 套 / 个 / 片 / 座 / 道</span></div>
+        <div class="card-head"><h2>工程旬报填报</h2><span class="xb-pdfbar"><span class="xb-date" id="xb-date"></span><button type="button" class="xb-pdfbtn" id="btn-xb-pdf">导出 PDF</button></span></div>
         <div class="xb-bar" id="xb-bar"></div>
         <div id="xb-tid"></div>
       </div>
@@ -2693,7 +2689,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (ONLINE) pullCloud();
 })();
 </script>
-<script src="assets/xb.js?v=261126145802"></script>
-<script src="assets/wk.js?v=261126145802"></script>
+<script src="assets/xb.js?v=261126151452"></script>
+<script src="assets/wk.js?v=261126151452"></script>
 </body>
 </html>

@@ -30,15 +30,25 @@
 .xb-ct2 th.grp{background:#E9F0FA;color:#16407F;font-size:11px;letter-spacing:.05em}
 .xb-ct2 tr.gs th.it{background:#F7FAFF}
 .xb-ct2 tr.unit th{background:#FBFCFE;color:var(--muted);font-weight:400;font-size:10.5px}
-.xb-ct2 tbody tr:hover td{background:#F5F9FF}
-.xb-ct2 tbody tr:hover td.lb{background:#EDF4FF}
-.xb-ct2 tbody tr.rd td{padding:2px 2px}
+.xb-ct2 tbody tr.rd td{padding:2px 2px;text-align:center}
+.xb-ct2 tbody tr.rd td.lb{text-align:left}
 .xb-ct2 tbody tr.is-red td{background:#FDEEEE}
 .xb-cc{min-width:760px}
+/* 悬停高亮整列（列级，不影响整行） */
+.xb-ct2 .colhl{background:#DBEAFF!important}
+.xb-ct2 .colhl.lb{background:#E2EDFF!important}
+/* 设计量为空的列：灰度且不可编辑 */
+.xb-ct2 td.xb-gray{color:#A7AEBA;background:#F7F8FA}
+.xb-ct2 td.xb-gray.xb-q input{color:#A7AEBB;background:#F2F3F5;border-color:#E6E8EC;cursor:not-allowed}
+/* 导出 PDF 与期次日期 */
+.xb-pdfbar{margin-left:auto;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
+.xb-date{font-size:12px;color:#5F7086;letter-spacing:.3px}
+.xb-pdfbtn{font-family:inherit;font-size:12px;line-height:1;padding:7px 12px;border:1px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer;border-radius:3px}
+.xb-pdfbtn:hover{background:var(--navy);color:#fff}
 /* 本旬完成输入框 */
 .xb-ct2 td.xb-q{padding:2px 3px}
-.xb-ct2 .q td.xb-q input{width:100%;min-width:52px;font-family:inherit;font-size:11.5px;line-height:1.5;color:var(--ink);text-align:center;padding:3px 2px;border:1px solid #E3D9A8;background:#FFFDF0;border-radius:3px;box-sizing:border-box}
-.xb-ct2 .q td.xb-q input:focus{outline:none;border-color:#C9B061;background:#FFFBE2}
+.xb-ct2 td.xb-q input{width:100%;min-width:52px;font-family:inherit;font-size:11.5px;line-height:1.5;color:var(--ink);text-align:center;padding:3px 2px;border:1px solid #E3D9A8;background:#FFFDF0;border-radius:3px;box-sizing:border-box}
+.xb-ct2 td.xb-q input:focus{outline:none;border-color:#C9B061;background:#FFFBE2}
 .xb-rd{font-family:inherit;font-size:11px;line-height:1;padding:4px 6px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
 .xb-rd:hover{border-color:#E0A8A8;color:#C62828}
 .xb-rd.on{background:#FDECEC;border-color:#E7B4B4;color:#C62828;font-weight:600}
@@ -126,3 +136,4 @@
 .wk-card.wk-wide .wk-body{flex-direction:column}
 .wk-card.wk-wide .wk-txt{width:100%;min-width:0}
 .wk-card.wk-wide .wk-txt textarea{min-height:52px}
+

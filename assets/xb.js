@@ -1,14 +1,15 @@
 /* 工程旬报模块（B 页） —— 自包含：独立读写 xt-xb-<标段>.json，不干扰月报数据链
    2026-11-26 改版：按五个驻地办分标签；表内项目横排（一行项目、一行单位）压缩高度；
-   一驻地办分 B 区（土建1标本旬）/ C 区（三地累计）；取消身份切换，改为按钮式工作流：
-   待施工单位填报 →（提交）→ 待监理单位复核 →（退回 / 复核通过）→ 完成 */
+   1 标增加「地市州统计」小卡片（设计量 / 累计完成 / 完成比例）；
+   取消身份切换，改为按钮式工作流：待施工单位填报 →（提交）→ 待监理单位复核 →（退回 / 复核通过）→ 完成；
+   支持按旬报 Excel 版式导出 PDF。 */
 (function () {
   "use strict";
   var OWNER = "mtj2018", REPO = "hyhx-ledger-data", DIR = "data", BR = "main";
   var TOKEN = ["github_pat_11APXBKUQ05PG", "NDyiRnskz_lDhKkCkD78klbtqNTGbV4wcv0CU4y8H0LXa8z53lCPVBJQWQNWPbkfRSLJl"].join("");
   var ITEMS = [
-    { n: "挖方·主线", u: "万方", g: 0 }, { n: "挖方·匝道", u: "万方", g: 0 },
-    { n: "填方·主线", u: "万方", g: 0 }, { n: "填方·匝道", u: "万方", g: 0 },
+    { n: "主线挖方", u: "万方", g: 0 }, { n: "匝道挖方", u: "万方", g: 0 },
+    { n: "主线填方", u: "万方", g: 0 }, { n: "匝道填方", u: "万方", g: 0 },
     { n: "路基管桩", u: "万米", g: 1 }, { n: "水泥搅拌桩", u: "万米", g: 1 },
     { n: "高压旋喷桩", u: "万米", g: 1 }, { n: "固化土桩", u: "万米", g: 1 },
     { n: "换填类", u: "万方", g: 1 }, { n: "桩基", u: "根", g: 2 },
@@ -18,10 +19,20 @@
     { n: "小桥", u: "座", g: 2 }, { n: "小型构造物", u: "道", g: 2 }
   ];
   var GROUPS = ["土石方", "软基处理", "桥梁"];
-  var TENDERS = ["HYSJSG-1标", "HYTJ-2标", "HYTJ-3标", "HYTJ-4标", "HYTJ-5标",
-                 "HYTJ-6标", "HYTJ-7标", "HYTJ-8标", "HYTJ-9标", "HYTJ-10标"];
+  var TENDERS = ["土建1标", "土建2标", "土建3标", "土建4标", "土建5标",
+                 "土建6标", "土建7标", "土建8标", "土建9标", "土建10标"];
+  var OWNS = ["HYSJSG-1标建设集团", "HYTJ-2标中铁十九局", "HYTJ-3标中铁二十五局", "HYTJ-4标中铁十七局",
+              "HYTJ-5标葛洲坝路桥", "HYTJ-6标中建八局", "HYTJ-7标中交一公局", "HYTJ-8标中交路建",
+              "HYTJ-9标中铁五局", "HYTJ-10标中电建路桥"];
   var CITEMS = ["土石方", "路基管桩", "水泥搅拌桩", "桩基", "桥梁管桩", "墩柱", "盖梁", "梁板预制", "梁板安装"];
   var CU = ["万方", "万米", "万米", "根", "套", "个", "个", "片", "片"];
+  /* 地市州（土建1标）设计量：取自旬报 Excel「1标（蔡甸/汉川/仙桃）」块，空值为无此设计量 */
+  var DMAP = {
+    "蔡甸": [276.7, 55.1, 4.5, 2105, null, 870, 429, 3194, 3194],
+    "汉川": [43.2, 49.6, null, 479, 824, 238, 328, 2258, 2258],
+    "仙桃": [57.8, 35.7, 38.9, 1976, 1392, 1423, 973, 7186, 7186]
+  };
+  var CITIES = ["蔡甸", "汉川", "仙桃"];
   var ZB = [
     { id: "z1", nm: "一驻地办", sub: "土建1标", tids: [1] },
     { id: "z2", nm: "二驻地办", sub: "土建2、3、4标", tids: [2, 3, 4] },
@@ -37,18 +48,21 @@
   function lastDay(y, m) { return new Date(y, m, 0).getDate(); }
   function xunOf(y, m) { return [10, 20, lastDay(y, m)]; }
   function keyOf(y, m, d) { return y + "-" + pad(m) + "-" + pad(d); }
+  function cnDate(k) { var a = k.split("-"); return a[0] + "年" + (+a[1]) + "月" + (+a[2]) + "日"; }
   function todayKey() {
     var t = new Date();
     var ds = xunOf(t.getFullYear(), t.getMonth() + 1), pick = ds[2];
     if (t.getDate() <= 10) pick = 10; else if (t.getDate() <= 20) pick = 20;
     return keyOf(t.getFullYear(), t.getMonth() + 1, pick);
   }
+  /* 万方 / 万米 统一保留 1 位小数；根/套/个/片/座/道 取整 */
   function fmt(v, u) {
     if (v === null || v === undefined || v === "" || !isFinite(v)) return "—";
-    if (u === "万方" || u === "万米") return (Math.abs(v) < 1e-9 ? "0" : v.toFixed(2));
+    if (u === "万方" || u === "万米") return (Math.abs(v) < 1e-9 ? "0.0" : (+v).toFixed(1));
     return Math.round(v).toLocaleString();
   }
-  function pct(a, b) { return b > 0 ? (a / b * 100).toFixed(1) + "%" : "—"; }
+  /* 比例不要小数 */
+  function pct(a, b) { return b > 0 ? Math.round(a / b * 100) + "%" : "—"; }
 
   /* ---------------- 云端读写 ---------------- */
   function hdr() { return { "Authorization": "Bearer " + TOKEN, "Accept": "application/vnd.github+json" }; }
@@ -105,6 +119,10 @@
     return null;
   }
   function stateOf(tid, k) { var r = rec(tid, k); return r.sup ? 3 : (r.sub ? 2 : 1); }
+  function hasTot(tid, i) {
+    var tot = DATA[tid] && DATA[tid].tot ? DATA[tid].tot : null;
+    return !!(tot && tot[i] !== null && tot[i] !== undefined && isFinite(+tot[i]) && +tot[i] > 0);
+  }
 
   /* ---------------- 期次选择 ---------------- */
   function options() {
@@ -117,9 +135,10 @@
       ys.map(function (v) { return '<option value="' + v + '"' + (v === ky ? " selected" : "") + ">" + v + " 年</option>"; }).join("") + "</select>" +
       '<select class="pg-sel" id="xb-m">' + Array.from({ length: 12 }, function (_, i) { return i + 1; }).map(function (v) { return '<option value="' + v + '"' + (v === km ? " selected" : "") + ">" + v + " 月</option>"; }).join("") + "</select>" +
       '<select class="pg-sel" id="xb-d">' + xunOf(ky, km).map(function (d) {
-        return '<option value="' + d + '"' + (d === kd ? " selected" : "") + ">" + (d === lastDay(ky, km) ? "月末 " : "") + d + " 日旬报</option>";
-      }).join("") + "</select>" +
-      '<span class="xb-note">每月 10 日、20 日、月末为填报日 · 流程：施工单位填报 → 监理复核 → 完成</span>';
+        return '<option value="' + d + '"' + (d === kd ? " selected" : "") + ">" + d + " 日旬报</option>";
+      }).join("") + "</select>";
+    var dEl = $("#xb-date");
+    if (dEl) dEl.textContent = cnDate(k);
     $("#xb-y").onchange = chg; $("#xb-m").onchange = chg; $("#xb-d").onchange = chg;
   }
   function chg() {
@@ -130,6 +149,8 @@
 
   /* ---------------- 横幅：驻地办 / 期次 / 流程状态 ---------------- */
   function zbOf(id) { for (var i = 0; i < ZB.length; i++) if (ZB[i].id === id) return ZB[i]; return ZB[0]; }
+  /* 承建单位：去掉「HYTJ-9标」式前缀，只显示单位名 */
+  function ownerOf(tid) { return String(OWNS[tid - 1] || "").replace(/^[^标]*标/, ""); }
 
   function statusChip(tid, k) {
     var st = stateOf(tid, k);
@@ -139,7 +160,7 @@
   function flowBtns(tid, k, st) {
     if (st === 3) return '<span class="xb-done">流程已完成</span>';
     if (st === 1) {
-      return '<button type="button" class="xb-btn" data-xb-sub="' + tid + '">提交本旬数据</' + "button>"
+      return '<button type="button" class="xb-btn" data-xb-sub="' + tid + '">提交本旬数据</button>'
         + '<span class="xb-tip">提交后本旬数字锁定，转监理复核。</span>';
     }
     var need = !((rec(tid, k).red || []).length);
@@ -170,46 +191,68 @@
     ITEMS.forEach(function (it) { head += "<th>" + it.u + "</th>"; });
     head += "</tr>";
 
-    var row = function (lb, cls, fn) {
-      var h = '<tr><td class="lb">' + lb + "</td>";
-      ITEMS.forEach(function (it, i) { h += "<td" + (cls ? ' class="' + cls + '"' : "") + ">" + fn(it, i) + "</td>"; });
-      return h + "</tr>";
-    };
+    var cls0 = function (i) { return hasTot(tid, i) ? "" : " xb-gray"; };
     var rows = "";
-    rows += '<tr><td class="lb">总设计量</td>' + ITEMS.map(function (it, i) { return "<td>" + (tot ? fmt(tot[i], it.u) : "—") + "</td>"; }).join("") + "</tr>";
-    rows += '<tr><td class="lb">截至上期完成</td>' + ITEMS.map(function (it, i) { return "<td>" + (pc ? fmt(pc[i], it.u) : "—") + "</td>"; }).join("") + "</tr>";
+    rows += '<tr><td class="lb">总设计量</td>' + ITEMS.map(function (it, i) {
+      return '<td class="' + (cls0(i) ? "xb-gray" : "") + '">' + (hasTot(tid, i) ? fmt(tot[i], it.u) : "—") + "</td>";
+    }).join("") + "</tr>";
+    rows += '<tr><td class="lb">截至上期完成</td>' + ITEMS.map(function (it, i) {
+      return '<td class="' + (cls0(i) ? "xb-gray" : "") + '">' + (hasTot(tid, i) ? (pc ? fmt(pc[i], it.u) : fmt(0, it.u)) : "—") + "</td>";
+    }).join("") + "</tr>";
     rows += '<tr class="q"><td class="lb">本旬完成</td>' + ITEMS.map(function (it, i) {
+      if (!hasTot(tid, i)) return '<td class="xb-gray">—</td>';
       return '<td class="xb-q">' + (open
         ? '<input type="text" inputmode="decimal" data-xbq="' + tid + "|" + i + '" value="' + (r.q[i] === 0 ? "" : r.q[i]) + '" placeholder="0">'
         : fmt(r.q[i], it.u)) + "</td>";
     }).join("") + "</tr>";
-    rows += '<tr><td class="lb">累计完成</td>' + ITEMS.map(function (it, i) { return '<td data-xbcum="' + tid + "|" + i + '">' + fmt(cur[i], it.u) + "</td>"; }).join("") + "</tr>";
-    rows += '<tr><td class="lb">完成比例</td>' + ITEMS.map(function (it, i) { return '<td data-xbpct="' + tid + "|" + i + '">' + pct(cur[i], tot ? tot[i] : 0) + "</td>"; }).join("") + "</tr>";
+    rows += '<tr><td class="lb">累计完成</td>' + ITEMS.map(function (it, i) {
+      return '<td class="' + (cls0(i) ? "xb-gray" : "") + '" data-xbcum="' + tid + "|" + i + '">' + (hasTot(tid, i) ? fmt(cur[i], it.u) : "—") + "</td>";
+    }).join("") + "</tr>";
+    rows += '<tr><td class="lb">完成比例</td>' + ITEMS.map(function (it, i) {
+      return '<td class="' + (cls0(i) ? "xb-gray" : "") + '" data-xbpct="' + tid + "|" + i + '">' + (hasTot(tid, i) ? pct(cur[i], tot[i]) : "—") + "</td>";
+    }).join("") + "</tr>";
     rows += '<tr class="rd"><td class="lb">滞后</td>' + ITEMS.map(function (it, i) {
+      if (!hasTot(tid, i)) return '<td class="xb-gray">—</td>';
       var red = (r.red || []).indexOf(i) >= 0;
-      return '<td><button type="button" data-red="' + tid + "|" + i + '" class="xb-rd' + (red ? " on" : "") + '"' + (redOn ? "" : " disabled") + ">" + (red ? "滞后" : "标红") + "</button></td>";
+      return '<td class="xb-rdc"><button type="button" data-red="' + tid + "|" + i + '" class="xb-rd' + (red ? " on" : "") + '"' + (redOn ? "" : " disabled") + ">" + (red ? "滞后" : "标红") + "</button></td>";
     }).join("") + "</tr>";
 
-    return '<div class="xb-wrap"><table class="xb-ct2"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table></div>";
+    return '<div class="xb-wrap"><table class="xb-ct2" data-xbtab="' + tid + '"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table></div>";
   }
 
-  /* C 区：三地累计（横排：一行项目、一行单位，三行地区） */
-  function cTable(tid, k, st) {
-    var c = DATA[1].c || (DATA[1].c = {}), ck = c[k] || (c[k] = {});
+  /* 地市州统计（土建1标）：行=9 项工程量，列=蔡甸/汉川/仙桃 的设计量 / 累计完成 / 完成比例 */
+  function cTable(k, st) {
+    var c = (DATA[1] && DATA[1].c) || ((DATA[1] = DATA[1] || { v: 1, tid: 1, x: {} }).c = {});
+    if (!c) { DATA[1].c = {}; c = DATA[1].c; }
+    var ck = c[k] || (c[k] = {});
     var open = (st === 1);
-    var head = '<tr class="gs"><th class="lb" rowspan="2">土建1标 分区累计</th>'
-      + CITEMS.map(function (n) { return '<th class="it">' + n + "</th>"; }).join("") + "</tr><tr class=\"unit\">"
-      + CU.map(function (u) { return "<th>" + u + "</th>"; }).join("") + "</tr>";
+
+    var h1 = '<tr class="gs"><th class="lb" rowspan="2">地市州 / 项目</th><th class="it" rowspan="2">单位</th>';
+    CITIES.forEach(function (a) { h1 += '<th colspan="3" class="grp">' + a + "</th>"; });
+    h1 += "</tr><tr>";
+    CITIES.forEach(function () { h1 += '<th class="it">设计量</th><th class="it">累计完成</th><th class="it">完成比例</th>'; });
+    h1 += "</tr>";
+
     var rows = "";
-    ["蔡甸", "汉川", "仙桃"].forEach(function (a) {
-      rows += '<tr><td class="lb">' + a + "</td>" + CITEMS.map(function (n, i) {
+    CITEMS.forEach(function (n, i) {
+      var row = '<tr><td class="lb">' + n + "</td><td>" + CU[i] + "</td>";
+      CITIES.forEach(function (a) {
+        var dv = DMAP[a][i];
+        if (dv === null || dv === undefined) {
+          row += '<td class="xb-gray">—</td><td class="xb-gray">—</td><td class="xb-gray">—</td>';
+          return;
+        }
         var v = (ck[a] && ck[a][i] !== undefined) ? ck[a][i] : "";
-        return '<td class="xb-q">' + (open
+        var pv = (v === "" || !isFinite(+v)) ? null : pct(+v, dv);
+        row += "<td>" + dv + "</td>";
+        row += '<td class="xb-q">' + (open
           ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + v + '" placeholder="">'
-          : (v === "" ? "—" : v)) + "</td>";
-      }).join("") + "</tr>";
+          : (v === "" ? "—" : fmt(+v, CU[i]))) + "</td>";
+        row += '<td data-xbcpct="' + a + "|" + i + '">' + (pv || "—") + "</td>";
+      });
+      rows += row + "</tr>";
     });
-    return '<div class="xb-wrap"><table class="xb-ct2 xb-cc"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table></div>";
+    return '<div class="xb-wrap"><table class="xb-ct2 xb-cc"><thead>' + h1 + "</thead><tbody>" + rows + "</tbody></table></div>";
   }
 
   /* ---------------- 渲染 ---------------- */
@@ -218,26 +261,54 @@
     if (!LOADED) { pane.innerHTML = '<div class="xb-loading">正在读取云端旬报数据…</div>'; return; }
     var k = CUR.xun || todayKey(), z = zbOf(CUR.zb);
     var h = '<div class="xb-head"><div class="xb-t"><b>' + z.nm + "</b>"
-      + '<span class="xb-xun">' + z.sub + " · " + k.replace(/-/g, ".") + " 旬</span></div>"
-      + '<div class="xb-zbs">' + (z.tids.length > 1 ? z.tids.map(function (tid) { return '<span class="xb-zc">' + tid + "标</span>"; }).join("") : "") + "</div></div>";
+      + '<span class="xb-xun">' + z.sub + " · " + k.replace(/-/g, ".") + " 旬</span></div></div>";
 
     if (z.tids.length === 1 && z.tids[0] === 1) {
       var t1 = 1, s1 = stateOf(t1, k);
-      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>B 区</b><span>土建1标 本旬完成</span>'
+      h += '<div class="xb-zone"><div class="xb-zone-hd"><span>' + TENDERS[0] + " 本旬完成</span>"
         + statusChip(t1, k) + '<div class="xb-flow">' + flowBtns(t1, k, s1) + "</div></div>"
         + segTable(t1, k, s1) + "</div>";
-      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>C 区</b><span>土建1标 分区累计（蔡甸 / 汉川 / 仙桃，按属地拆分填报，累计口径，不随本旬自动累加）</span></div>'
-        + cTable(t1, k, s1) + "</div>";
+      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>地市州统计</b><span>' + TENDERS[0] + " · 设计量 / 累计完成 / 完成比例（蔡甸 / 汉川 / 仙桃）</span></div>"
+        + cTable(k, s1) + "</div>";
     } else {
       z.tids.forEach(function (tid) {
         var st = stateOf(tid, k);
-        h += '<div class="xb-zone"><div class="xb-zone-hd"><b>' + tid + "标</b><span>" + TENDERS[tid - 1]
+        h += '<div class="xb-zone"><div class="xb-zone-hd"><b>' + TENDERS[tid - 1] + "</b><span>" + ownerOf(tid)
           + "</span>" + statusChip(tid, k) + '<div class="xb-flow">' + flowBtns(tid, k, st) + "</div></div>"
           + segTable(tid, k, st) + "</div>";
       });
     }
     pane.innerHTML = h;
     bind();
+    hoverCol();
+    if ($("#xb-date")) $("#xb-date").textContent = cnDate(k);
+  }
+
+  /* 鼠标所在列整列浅蓝，而不是整行（按几何位置对齐，兼容合并表头） */
+  function hoverCol() {
+    var pane = $("#xb-body"); if (!pane) return;
+    pane.querySelectorAll("table.xb-ct2").forEach(function (tb) {
+      tb.addEventListener("mouseover", function (e) {
+        var cell = e.target.closest ? e.target.closest("td,th") : null;
+        if (!cell || !tb.contains(cell)) return;
+        var rc = cell.getBoundingClientRect();
+        if (tb._hx === Math.round(rc.left) + ":" + Math.round(rc.width)) return;
+        clearCol(tb);
+        Array.prototype.forEach.call(tb.querySelectorAll("td,th"), function (c) {
+          var r2 = c.getBoundingClientRect();
+          if (Math.abs(r2.left - rc.left) < 4 && Math.abs(r2.width - rc.width) < 4) {
+            var ri = c.parentNode.rowIndex || 0;
+            if (c.tagName === "TD" || ri > 0) c.classList.add("colhl");
+          }
+        });
+        tb._hx = Math.round(rc.left) + ":" + Math.round(rc.width);
+      });
+      tb.addEventListener("mouseleave", function () { clearCol(tb); });
+    });
+  }
+  function clearCol(tb) {
+    Array.prototype.forEach.call(tb.querySelectorAll(".colhl"), function (c) { c.classList.remove("colhl"); });
+    tb._hx = "";
   }
 
   function bind() {
@@ -263,6 +334,9 @@
         var c = DATA[1].c || (DATA[1].c = {}), ck = c[k] || (c[k] = {});
         var ar = ck[a[0]] || (ck[a[0]] = []);
         var v = parseFloat(inp.value); ar[+a[1]] = isFinite(v) ? v : "";
+        var pcell = pane.querySelector('[data-xbcpct="' + a[0] + "|" + a[1] + '"]');
+        var dv = DMAP[a[0]][+a[1]];
+        if (pcell) pcell.textContent = (isFinite(v) && dv) ? pct(v, dv) : "—";
         save(1);
       };
       inp.onblur = function () { render(); };
@@ -282,22 +356,22 @@
       var tid = +sub.getAttribute("data-xb-sub"), k = CUR.xun || todayKey();
       var r = rec(tid, k); r.sub = 1; r.sup = 0; r.editTs = Date.now();
       CONFIRM[tid] = 0;
-      save(tid, true).then(function () { render(); flagMsg(tid + "标已提交，转监理单位复核"); });
+      save(tid, true).then(function () { render(); flagMsg(TENDERS[tid - 1] + "已提交，转监理单位复核"); });
     };
     var back = pane.querySelector("[data-xb-back]");
     if (back) back.onclick = function () {
       var tid = +back.getAttribute("data-xb-back"), k = CUR.xun || todayKey();
       var r = rec(tid, k); r.sub = 0; r.sup = 0;
       CONFIRM[tid] = 0;
-      save(tid, true).then(function () { render(); flagMsg(tid + "标已退回施工单位，可继续修改"); });
+      save(tid, true).then(function () { render(); flagMsg(TENDERS[tid - 1] + "已退回施工单位，可继续修改"); });
     };
     var pass = pane.querySelector("[data-xb-pass]");
     if (pass) pass.onclick = function () {
       var tid = +pass.getAttribute("data-xb-pass"), k = CUR.xun || todayKey();
       var r = rec(tid, k), noRed = !((r.red || []).length);
-      if (noRed && !CONFIRM[tid]) { CONFIRM[tid] = 1; render(); flagMsg(tid + "标本旬无标红项，请再点一次确认提交"); return; }
+      if (noRed && !CONFIRM[tid]) { CONFIRM[tid] = 1; render(); flagMsg(TENDERS[tid - 1] + "本旬无标红项，请再点一次确认提交"); return; }
       r.sup = 1; r.sub = 1; CONFIRM[tid] = 0;
-      save(tid, true).then(function () { render(); flagMsg(tid + "标复核通过，本旬流程已完成"); });
+      save(tid, true).then(function () { render(); flagMsg(TENDERS[tid - 1] + "复核通过，本旬流程已完成"); });
     };
     var tabs = $("#xb-tid");
     if (tabs) tabs.querySelectorAll("[data-zb]").forEach(function (b) {
@@ -331,6 +405,79 @@
     });
   }
 
+  /* ---------------- 导出 PDF（按旬报 Excel 版式：汇总 + 10 个标段，A3 横向） ---------------- */
+  function pdfData() {
+    var k = CUR.xun || todayKey();
+    var blocks = [];
+    for (var tid = 1; tid <= 10; tid++) {
+      var tot = (DATA[tid] && DATA[tid].tot) ? DATA[tid].tot : ITEMS.map(function () { return null; });
+      var pc = prevCum(tid, k);
+      var r = rec(tid, k);
+      var cur = ITEMS.map(function (it, i) { return (pc ? (+pc[i] || 0) : 0) + (+r.q[i] || 0); });
+      blocks.push({ nm: OWNS[tid - 1], tot: tot, pc: pc || ITEMS.map(function () { return 0; }), cur: cur, q: r.q || ITEMS.map(function () { return 0; }) });
+    }
+    return { k: k, blocks: blocks };
+  }
+  function exportPdf() {
+    var d = pdfData();
+    var sum = function (fn) { return ITEMS.map(function (it, i) { var s = 0; d.blocks.forEach(function (b) { s += (+fn(b, i) || 0); }); return s; }); };
+    var sumTot = sum(function (b, i) { return b.tot[i]; });
+    var sumCur = sum(function (b, i) { return b.cur[i]; });
+    var sumQ = sum(function (b, i) { return b.q[i]; });
+    var sumPc = sumCur.map(function (v, i) { return v - sumQ[i]; });
+
+    function cellRows(nm, tot, pc, cur, q, strong) {
+      var cls = strong ? ' class="sum"' : "";
+      var rr = "";
+      rr += '<tr' + cls + '><td class="blk" rowspan="5">' + nm + '</td><td class="lb">总设计量</td>'
+        + ITEMS.map(function (it, i) { return "<td>" + fmt(tot[i], it.u) + "</td>"; }).join("") + "</tr>";
+      rr += "<tr" + cls + '><td class="lb">截至上期完成</td>' + ITEMS.map(function (it, i) { return "<td>" + fmt(pc[i], it.u) + "</td>"; }).join("") + "</tr>";
+      rr += "<tr" + cls + '><td class="lb">累计完成</td>' + ITEMS.map(function (it, i) { return "<td>" + fmt(cur[i], it.u) + "</td>"; }).join("") + "</tr>";
+      rr += "<tr" + cls + '><td class="lb">累计完成比例</td>' + ITEMS.map(function (it, i) { return "<td>" + pct(cur[i], tot[i]) + "</td>"; }).join("") + "</tr>";
+      rr += "<tr" + cls + '><td class="lb">本旬完成</td>' + ITEMS.map(function (it, i) { return "<td>" + fmt(q[i], it.u) + "</td>"; }).join("") + "</tr>";
+      return rr;
+    }
+
+    var head = '<tr class="h1"><th rowspan="5">标段</th><th rowspan="5">项目</th>'
+      + '<th colspan="9">路基工程</th><th colspan="9">桥梁工程</th></tr>'
+      + '<tr class="h2"><th colspan="4">土石方工程</th><th colspan="5">软基处理</th>'
+      + '<th rowspan="3">桩基</th><th rowspan="3">预应力管桩</th><th rowspan="3">预应力管桩配套</th>'
+      + '<th rowspan="3">墩柱</th><th rowspan="3">盖梁</th><th rowspan="3">梁板预制</th><th rowspan="3">梁板安装</th>'
+      + '<th rowspan="3">小桥</th><th rowspan="3">小型构造物</th></tr>'
+      + '<tr class="h3"><th colspan="2" rowspan="2">挖方</th><th colspan="2" rowspan="2">填方</th>'
+      + '<th rowspan="2">路基管桩</th><th rowspan="2">水泥搅拌桩</th><th rowspan="2">高压旋喷桩</th>'
+      + '<th rowspan="2">固化土桩</th><th rowspan="2">换填类</th></tr>'
+      + '<tr class="h3"><th>主线</th><th>匝道</th><th>主线</th><th>匝道</th></tr>'
+      + '<tr class="h4">' + ITEMS.map(function (it) { return "<th>" + it.u + "</th>"; }).join("") + "</tr>";
+
+    var body = cellRows("汇总", sumTot, sumPc, sumCur, sumQ, true);
+    d.blocks.forEach(function (b) { body += cellRows(b.nm.replace("标", "标<br>"), b.tot, b.pc, b.cur, b.q, false); });
+
+    var title = "沪渝高速公路武汉至宜昌段改扩建工程施工旬报（" + d.k.replace(/-/g, ".") + "）";
+    var cols = '<colgroup><col style="width:5%"><col style="width:5%">'
+      + ITEMS.map(function () { return '<col style="width:5%">'; }).join("") + "</colgroup>";
+    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title><style>'
+      + '@page{size:A3 landscape;margin:8mm}'
+      + 'body{font-family:"Microsoft YaHei",SimHei,sans-serif;color:#000;margin:0}'
+      + 'h1{font-size:14pt;text-align:center;margin:0 0 6px;font-weight:600;letter-spacing:1px}'
+      + 'table{border-collapse:collapse;width:100%;table-layout:fixed}'
+      + 'th,td{border:1px solid #333;font-size:6.9pt;text-align:center;padding:1px 1px;line-height:1.22;overflow:hidden}'
+      + 'tr.h1 th,tr.h2 th{background:#F2F2F2;font-weight:600;font-size:7pt}'
+      + 'tr.h3 th,tr.h4 th{background:#F7F7F7;font-size:6.6pt}'
+      + 'td.lb{background:#FAFAFA;white-space:nowrap;font-size:6.6pt}'
+      + 'td.blk{font-weight:600;font-size:7pt;background:#FFF;line-height:1.35}'
+      + 'tr.sum td{font-weight:600;background:#F4F6FA}'
+      + 'thead{display:table-header-group}'
+      + '.note{font-size:7pt;margin-top:4px}'
+      + '</style></head><body><h1>' + title + '</h1><table>' + cols + '<thead>' + head + '</thead><tbody>' + body
+      + '</tbody></table><div class="note">备注：各标段标红数据为严重滞后项目。</div>'
+      + '<script>window.onload=function(){setTimeout(function(){window.print();},300)}<\/script></body></html>';
+
+    var w = window.open("", "_blank");
+    if (!w) { flagMsg("浏览器拦截了新窗口，请允许弹窗后重试"); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }
+
   /* ---------------- 启动 ---------------- */
   function boot() {
     if (!$("#view-xb")) return;
@@ -352,6 +499,8 @@
     };
     var oldRender = render;
     render = function () { oldRender(); mark(); };
+    var pdfBtn = $("#btn-xb-pdf");
+    if (pdfBtn) pdfBtn.onclick = exportPdf;
     options();
     load().then(function () { render(); mark(); });
     document.addEventListener("click", function (e) {
