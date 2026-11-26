@@ -3919,22 +3919,6 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     faSync();
     faApplyLock();
     showFA(c.k);
-
-  window.__pgFaRebuildAll = function () {
-
-    try {
-
-      if (!FA_READY) return;
-
-      var v = document.querySelector("#view-fixedasset");
-
-      if (v && document.activeElement && v.contains(document.activeElement)) return;
-
-      FA_CITIES.forEach(function (c) { try { faRebuild(c); } catch (e) {} });
-
-    } catch (e) {}
-
-  };
   }
   window.__faReload = function () {
     var act = null, onTab = document.querySelector("#fa-tabs .fa-tab.on");
@@ -5141,7 +5125,13 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         }
         render();
 
-        try { if (window.__pgFaRebuildAll) window.__pgFaRebuildAll(); } catch (eFA) {}
+        try {
+
+          var __fv = document.querySelector("#view-fixedasset");
+
+          if (window.__faReload && !(__fv && document.activeElement && __fv.contains(document.activeElement))) window.__faReload();
+
+        } catch (eFA) {}
 
         try { renderStatus(); } catch (e) {}
         try { if (typeof clPrime === "function") clPrime(); } catch (e) {}
