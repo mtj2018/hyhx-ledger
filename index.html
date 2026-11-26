@@ -4969,6 +4969,29 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       return out;
     });
   }
+  /* 新建分文件兜底：走 Git Data API（blob → tree → commit → ref），Contents API 建不出来时用 */
+  function ghGitCreate(name, body) {
+    var R = "https://api.github.com/repos/" + GH.owner + "/" + GH.repo;
+    function j(u, m, d) {
+      return ghFetch(u, {
+        method: m || "GET",
+        headers: { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+        body: d ? JSON.stringify(d) : null
+      }).then(function (r) { if (!r.ok) throw new Error("Git API HTTP " + r.status); return r.json(); });
+    }
+    return j(R + "/git/ref/heads/" + GH.branch).then(function (ref) {
+      var parent = ref.object.sha;
+      return j(R + "/git/commits/" + parent).then(function (cm) {
+        return j(R + "/git/blobs", "POST", { content: ghB64(JSON.stringify(body)), encoding: "base64" }).then(function (b) {
+          return j(R + "/git/trees", "POST", { base_tree: cm.tree.sha, tree: [{ path: GH.dir + "/" + name, mode: "100644", type: "blob", sha: b.sha }] });
+        }).then(function (t) {
+          return j(R + "/git/commits", "POST", { message: "create " + name + " " + new Date().toISOString(), tree: t.sha, parents: [parent] });
+        }).then(function (c) {
+          return j(R + "/git/refs/heads/" + GH.branch, "PATCH", { sha: c.sha, force: false });
+        });
+      });
+    });
+  }
   /* 写单个文件：merge(云端最新对象, 本页对象) → 合并结果；409 自动重读重试 */
   function ghPut(name, localObj, merge) {
     var round = 0;
@@ -4992,6 +5015,10 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         }).then(function (r) {
           if (r.ok) return true;
           return r.text().then(function (txt) {
+            /* 云端还没有这个分文件：有的令牌走 Contents API 建文件会返回 404，改用 Git Data API 建，避免改动只能存本机 */
+            if (r.status === 404 && !payload.sha) {
+              return ghGitCreate(name, body).then(function () { return true; });
+            }
             var err = new Error("写入 HTTP " + r.status + (txt ? " " + txt.slice(0, 90) : ""));
             err.status = r.status;
             err.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
