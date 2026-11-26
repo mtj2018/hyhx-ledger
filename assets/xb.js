@@ -337,9 +337,20 @@
     tb._hx = "";
   }
 
+  /* 点进单元格自动全选：点一下即选中全部，直接输入覆盖；拖选时保持用户选择 */
+  function autoSel(el) {
+    el.onfocus = function () {
+      setTimeout(function () { try { el.select(); } catch (e) {} }, 0);
+    };
+    el.onmouseup = function () {
+      setTimeout(function () { try { if (el.selectionStart === el.selectionEnd) el.select(); } catch (e) {} }, 0);
+    };
+  }
+
   function bind() {
     var pane = $("#xb-body"); if (!pane) return;
     pane.querySelectorAll("[data-xbq]").forEach(function (inp) {
+      autoSel(inp);
       inp.oninput = function () {
         var p = inp.getAttribute("data-xbq").split("|"), tid = +p[0], i = +p[1];
         var v = parseFloat(inp.value), rr = rec(tid, CUR.xun || todayKey());
@@ -352,9 +363,15 @@
         if (pctCell) pctCell.textContent = pct(cv, tt);
         save(tid);
       };
-      inp.onblur = function () { render(); };
+      inp.onblur = function () {
+        /* 只就地格式化当前格，不重建表格：否则鼠标点下一格时目标会被 render 冲掉 */
+        var p = inp.getAttribute("data-xbq").split("|"), tid = +p[0], i = +p[1];
+        var rr = rec(tid, CUR.xun || todayKey());
+        inp.value = fin(rr.q[i] === null || rr.q[i] === undefined ? 0 : rr.q[i], ITEMS[i].u);
+      };
     });
     pane.querySelectorAll("[data-xbc]").forEach(function (inp) {
+      autoSel(inp);
       inp.oninput = function () {
         var a = inp.getAttribute("data-xbc").split("|"), k = CUR.xun || todayKey();
         var c = DATA[1].c || (DATA[1].c = {}), ck = c[k] || (c[k] = {});
@@ -365,7 +382,12 @@
         if (pcell) pcell.textContent = (isFinite(v) && dv) ? pct(v, dv) : "—";
         save(1);
       };
-      inp.onblur = function () { render(); };
+      inp.onblur = function () {
+        var a = inp.getAttribute("data-xbc").split("|"), k = CUR.xun || todayKey();
+        var ck = (DATA[1].c || {})[k] || {}, ar = ck[a[0]];
+        var v = ar ? ar[+a[1]] : "";
+        inp.value = (v === "" || v === null || v === undefined) ? "" : fin(+v, CU[+a[1]]);
+      };
     });
     pane.querySelectorAll("[data-red]").forEach(function (b) {
       b.onclick = function () {
