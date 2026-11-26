@@ -607,7 +607,6 @@ td.nmc{white-space:nowrap;font-size:12px}
 td.r,.pg-tbl td.r{text-align:center!important}
 .pg-tbl td.r .pgi{text-align:center!important;margin-left:0!important}
 #view-investment .tbl td.c,#view-investment .tbl td.c input{text-align:center!important}
-#view-investment .tbl td.c input.numr{text-align:right!important;padding-right:2px}
 #view-fixedasset .fa-tbl td,#view-fixedasset .fa-tbl td input{text-align:center!important}
 #view-fixedasset .fa-tbl td.nm,#view-fixedasset .fa-tbl td.nm input,#view-fixedasset .fa-tbl td.nmc,#view-fixedasset .fa-tbl td.nmc input{text-align:left!important}
 #pg-out .pgi:read-only{border:0!important;background:transparent!important;box-shadow:none!important;padding:0 4px!important;color:inherit!important}
