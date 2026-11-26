@@ -4,9 +4,9 @@
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126105338";
+  var BUILD = "261126110503";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126105338") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126110503") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -5270,6 +5270,19 @@ var TO_MS = 15000;
       return pushQueue;
     }
     window.__pgPushKey = pushKey;
+    /* 云端数据到达后，把 execPref 同步到录入口径；有变化就重建概算录入表 */
+    function applyExecPrefPostPull() {
+      var pc = (S.execPref && typeof S.execPref === "object") ? S.execPref : null;
+      if (!pc || !Object.keys(pc).length) return;
+      var ch = false;
+      Object.keys(EXEC_PREF).forEach(function (k) { if (!pc.hasOwnProperty(k)) { delete EXEC_PREF[k]; ch = true; } });
+      Object.keys(pc).forEach(function (k) { if (EXEC_PREF[k] !== pc[k]) { EXEC_PREF[k] = pc[k]; ch = true; } });
+      if (!ch) return;
+      buildExec();
+      recalc();
+      try { markEditable(); } catch (e) {}
+      try { applyInvestLock(); } catch (e) {}
+    }
     /* 读取：云端为准，但本页改过的字段、待推字段一律以本机为准，且不再整页刷新 */
     function pullAll() {
       return readCloud().then(function (all) {
@@ -5280,6 +5293,8 @@ var TO_MS = 15000;
           if (pend.indexOf(k) >= 0) continue;
           S[k] = cloudS[k];
         }
+        /* 云端取回的「产值/完成比」口径要真正生效：偏好变了就重建录入表，否则明细会显示成 0 */
+        try { applyExecPrefPostPull(); } catch (eP) {}
         try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
         try { localStorage.setItem(CLOUD.ledgerTsKey, String(all.cts || 0)); } catch (e) {}
         var snap = {}, kk;
