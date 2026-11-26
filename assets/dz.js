@@ -4,7 +4,7 @@
   var OWNER = "mtj2018", REPO = "hyhx-ledger-data", DIR = "data", BR = "main";
   var TOKEN = ["github_pat_11APXBKUQ05PG", "NDyiRnskz_lDhKkCkD78klbtqNTGbV4wcv0CU4y8H0LXa8z53lCPVBJQWQNWPbkfRSLJl"].join("");
   var CITEMS = ["土石方", "路基管桩", "水泥搅拌桩", "桩基", "桥梁管桩", "墩柱", "盖梁", "梁板预制", "梁板安装"];
-  var CU = ["万方", "万米", "万米", "根", "万米", "个", "个", "片", "片"];
+  var CU = ["万方", "万米", "万米", "根", "套", "个", "个", "片", "片"];
   var DESIGN = {
     "武汉": [276.7, 55.1, 4.5, 2105, 0, 870, 429, 3194, 3194],
     "孝感": [43.2, 49.6, 0, 479, 824, 238, 328, 2258, 2258],
@@ -45,7 +45,7 @@
   }
   function m9(a18) {
     if (!a18) return null;
-    return [a18[0] + a18[1] + a18[2] + a18[3], a18[4], a18[5], a18[9], a18[10], a18[12], a18[13], a18[14], a18[15]];
+    return [a18[0] + a18[1] + a18[2] + a18[3], a18[4], a18[5], a18[9], a18[11], a18[12], a18[13], a18[14], a18[15]];
   }
   function cityCum(city, k) {
     var out = new Array(9).fill(0), has = false;

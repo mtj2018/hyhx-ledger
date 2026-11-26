@@ -175,7 +175,8 @@
     pane.querySelectorAll("[data-xbq]").forEach(function (inp) {
       inp.oninput = function () {
         var i = +inp.getAttribute("data-xbq"), v = parseFloat(inp.value);
-        rec(CUR.tid, CUR.xun || todayKey()).q[i] = isFinite(v) ? v : 0;
+        var rr = rec(CUR.tid, CUR.xun || todayKey());
+        rr.q[i] = isFinite(v) ? v : 0; rr.edited = 1;
         save();
       };
       inp.onblur = function () { render(); };
@@ -230,6 +231,12 @@
     return new Promise(function (res) {
       tm = setTimeout(function () {
         var tid = CUR.tid, obj = DATA[tid]; obj.ts = Date.now();
+        /* 手工改过的旬：累计 = 上旬累计 + 本旬，写回前重算，保证 A 页读到正确的累计 */
+        Object.keys(obj.x || {}).forEach(function (k) {
+          var d = obj.x[k]; if (!d || !d.edited) return;
+          var p = prevCum(tid, k);
+          d.cum = (d.q || []).map(function (v, i) { return (p ? (+p[i] || 0) : 0) + (+v || 0); });
+        });
         jput("xt-xb-" + tid + ".json", obj).then(function () { DIRTY[tid] = 0; res(true); },
           function (e) { flagMsg("保存失败：" + e.message); res(false); });
       }, now ? 0 : 900);
