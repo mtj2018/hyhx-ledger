@@ -3585,7 +3585,7 @@
       if (tp) tp.style.display = (PG_TAB === "tender") ? "none" : "";
       if (ct) ct.style.display = (PG_TAB === "tender") ? "" : "none";
       var src = q("#pg-src");
-      if (src) src.textContent = "数据来源：" + ((PG_TAB === "tender" && WK_SNAP) ? "产值周报填报页" : "工程月报填报页");
+      if (src) src.textContent = (PG_TAB === "tender" && WK_SNAP) ? "" : "数据来源：工程月报填报页";
       if (PG_TAB === "tender") renderSeg();
     }
     function pgTabBind() {
@@ -3630,7 +3630,7 @@
       });
       return '<div class="card seg-card seg-cmp">'
         + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
-        + '<span class="seg-sub">累计至 ' + (YM || "").replace("-", ".") + '</span></div>'
+        + '<span class="seg-sub">累计至 ' + ((WK_SNAP && WK_SNAP.key) ? WK_SNAP.key.replace(/-/g, ".") : (YM || "").replace("-", ".")) + '</span></div>'
         + '<div class="seg-opts" style="margin:8px 0 4px">'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).zlj) ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).lm) ? " on" : "") + '" data-copt="lm">含路面工程</button>'
@@ -4053,10 +4053,10 @@ var TO_MS = 15000;
       try { if (window.__syncChip) window.__syncChip(ok ? "ok" : "warn", ok ? "" : t); } catch (e_sc) {}
       var e = q("#pg-src");
       if (!e) return;
-      /* 成功不打扰：只把来源行写回当前页签对应的取数来源，失败才显示错误 */
+      /* 成功不打扰：完成率统计页签由描述行自带来源，失败才在这一行显示错误 */
       var wkSrc = false;
       try { var cutEl = q("#pg-cut"); wkSrc = !!(cutEl && /产值周报/.test(cutEl.textContent || "")); } catch (eT) {}
-      e.textContent = ok ? ("数据来源：" + (wkSrc ? "产值周报填报页" : "工程月报填报页")) : t;
+      e.textContent = ok ? (wkSrc ? "" : "数据来源：工程月报填报页") : t;
       e.style.color = ok ? "" : "#A24A18";
     }
     var pushQueue = Promise.resolve();
