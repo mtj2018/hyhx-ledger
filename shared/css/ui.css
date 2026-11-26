@@ -248,6 +248,26 @@ textarea:focus-visible,
   font-size: 13px;
 }
 
+.ov-status-link {
+  text-decoration: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.ov-status-link:hover {
+  background: rgba(255, 255, 255, .16);
+  border-color: rgba(177, 207, 255, .52);
+}
+
+.ov-status-link strong {
+  font-weight: 600;
+}
+
+.ov-status-arrow {
+  color: #C8D7ED;
+  font-size: 12px;
+  line-height: 1;
+}
+
 .ov-actions {
   position: relative;
   z-index: 1;
