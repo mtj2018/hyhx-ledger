@@ -653,7 +653,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .ctr-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
 .ctr-tbl th{font-size:12px;font-weight:600;color:#16407F;background:#F2F5FA;border:1px solid var(--line);padding:7px 6px;text-align:center;white-space:nowrap}
 .ctr-tbl td{border:1px solid var(--hair);padding:6px 10px;font-size:13.5px;color:#20303F;text-align:center;font-variant-numeric:tabular-nums}
-.ctr-tbl td.nm{text-align:left;color:#16407F;font-weight:600;letter-spacing:.02em}
+.ctr-tbl td.nm{text-align:center;color:#16407F;font-weight:600;letter-spacing:.02em}
 .ctr-tbl td.mut{color:#AEB8C6}
 .ctr-tbl tr.total td{background:#F7FAFF;font-weight:700;color:#16407F}
 .ctr-tbl td.is-off{color:#AEB8C6}
