@@ -3403,12 +3403,27 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   var FA_REG_CITY = { caidian: "蔡甸", hanchuan: "汉川", xiantao: "仙桃",
                       qianjiang: "潜江", jingzhou: "荆州", yichang: "宜昌" };
   function faRepDB() {
-    if (window.__REPDB) return window.__REPDB;
+
+    /* 月报数据：以 localStorage 为唯一真相（拉取会整体重写 DB，早期 window.__REPDB 快照会过期变空） */
+
     try {
+
       var raw = localStorage.getItem("hyhx-report-v1");
-      if (raw) window.__REPDB = JSON.parse(raw);
+
+      if (raw && raw !== window.__REPRAW) {
+
+        window.__REPRAW = raw;
+
+        window.__REPDB = JSON.parse(raw);
+
+      }
+
     } catch (e) {}
+
+    if (!window.__REPDB) window.__REPDB = { reports: {} };
+
     return window.__REPDB;
+
   }
   function faRegDone(tid, city, cm) {
     var db = faRepDB();
