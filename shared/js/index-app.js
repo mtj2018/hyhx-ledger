@@ -3585,7 +3585,7 @@
       if (tp) tp.style.display = (PG_TAB === "tender") ? "none" : "";
       if (ct) ct.style.display = (PG_TAB === "tender") ? "" : "none";
       var src = q("#pg-src");
-      if (src) src.textContent = (PG_TAB === "tender" && WK_SNAP) ? "" : "数据来源：工程月报填报页";
+      if (src) src.textContent = "数据来源：工程月报填报页";
       if (PG_TAB === "tender") renderSeg();
     }
     function pgTabBind() {
@@ -3735,6 +3735,7 @@
           + "</div>";
       });
       host.innerHTML = h;
+      try { paintSrcLabel(); } catch (eLB) {}
     }
 
 
@@ -4054,10 +4055,19 @@ var TO_MS = 15000;
       var e = q("#pg-src");
       if (!e) return;
       /* 成功不打扰：完成率统计页签由描述行自带来源，失败才在这一行显示错误 */
-      var wkSrc = false;
-      try { var cutEl = q("#pg-cut"); wkSrc = !!(cutEl && /产值周报/.test(cutEl.textContent || "")); } catch (eT) {}
-      e.textContent = ok ? (wkSrc ? "" : "数据来源：工程月报填报页") : t;
+      if (ok) { try { paintSrcLabel(); } catch (eP) {} }
+      else e.textContent = t;
       e.style.color = ok ? "" : "#A24A18";
+    }
+    /* 顶部右侧「数据来源」：完成率统计取到产值周报时不再重复，其他情况标明工程月报 */
+    function paintSrcLabel() {
+      var e = q("#pg-src"); if (!e) return;
+      var isWk = false;
+      try {
+        var c = q("#pg-cut");
+        isWk = (PG_TAB === "tender") && !!(WK_SNAP && WK_SNAP.key) && !!(c && /产值周报/.test(c.textContent || ""));
+      } catch (e0) {}
+      e.textContent = isWk ? "" : "数据来源：工程月报填报页";
     }
     var pushQueue = Promise.resolve();
     var SNAP = {};
