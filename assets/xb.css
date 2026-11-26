@@ -1,0 +1,81 @@
+/* ===== 工程旬报（B 页） ===== */
+.xb-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--hair)}
+.xb-lb{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.xb-note{font-size:11.5px;color:var(--muted)}
+#xb-tid{display:flex;flex-wrap:wrap;gap:6px;padding:12px 18px 0}
+.xb-tb{font-family:inherit;font-size:12.5px;line-height:1;padding:7px 11px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.xb-tb.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.xb-loading{padding:26px 18px;font-size:13px;color:var(--muted)}
+.xb-head{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 18px 12px}
+.xb-head .xb-t b{font-size:14px;color:var(--navy);letter-spacing:.03em}
+.xb-xun{margin-left:8px;font-size:12px;color:var(--muted)}
+.xb-state{font-size:11.5px;padding:4px 9px;border:1px solid var(--line);background:var(--mist);color:var(--muted)}
+.xb-state.s2{background:#FFF6E6;border-color:#F2D9A8;color:#8A6100}
+.xb-state.s3{background:#EAF4EC;border-color:#BFDCC6;color:#1D6B33}
+.xb-role{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.xb-rb{font-family:inherit;font-size:12px;line-height:1;padding:6px 10px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.xb-rb.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.xb-wrap{padding:0 18px;overflow-x:auto}
+.xb-tbl{width:100%;border-collapse:collapse;min-width:760px}
+.xb-tbl th{font-size:12px;font-weight:600;color:var(--navy);background:var(--mist);border-bottom:1px solid var(--line);padding:8px 8px;text-align:center;white-space:nowrap}
+.xb-tbl td{font-size:13px;color:var(--ink);border-bottom:1px solid var(--hair);padding:5px 8px;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.xb-tbl td.xb-it{text-align:left;color:var(--ink)}
+.xb-tbl td.xb-u{color:var(--muted);font-size:11.5px}
+.xb-tbl tbody tr:hover td{background:#F0F5FF}
+.xb-tbl tbody tr.is-red td{background:#FDEEEE}
+.xb-tbl tbody tr.is-red td.xb-it{color:#C62828;font-weight:600}
+.xb-tbl tfoot td{background:#F7FAFF;font-weight:700;color:var(--navy);border-top:1px solid var(--line)}
+.xb-q input{width:82px;font-family:inherit;font-size:13px;line-height:1.5;color:var(--ink);text-align:center;padding:4px 4px;border:1px solid #E3D9A8;background:#FFFDF0;border-radius:3px}
+.xb-q input:focus{outline:none;border-color:#C9B061;background:#FFFBE2}
+.xb-rd{font-family:inherit;font-size:11.5px;line-height:1;padding:5px 9px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
+.xb-rd:hover{border-color:#E0A8A8;color:#C62828}
+.xb-rd.on{background:#FDECEC;border-color:#E7B4B4;color:#C62828;font-weight:600}
+.xb-rd:disabled{cursor:default;opacity:.55}
+.xb-csec{margin:18px 18px 0;border-top:1px dashed var(--line);padding-top:14px}
+.xb-ct{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:9px}
+.xb-ct span{font-weight:400;font-size:11.5px;color:var(--muted);margin-left:8px}
+.xb-ctbl{min-width:0}
+.xb-foot{display:flex;align-items:center;gap:12px;padding:16px 18px 20px}
+.xb-btn{font-family:inherit;font-size:13px;line-height:1;padding:10px 18px;border:1px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;letter-spacing:.03em}
+.xb-btn:hover{background:var(--navy-2)}
+.xb-btn:disabled{background:#DDE4EF;border-color:#DDE4EF;color:#8A97A8;cursor:default}
+.xb-btn.ghost{background:#fff;color:var(--navy)}
+.xb-tip{font-size:11.5px;color:var(--muted)}
+#xb-msg{font-size:12px;color:#1D6B33;opacity:0;transition:.3s}
+#xb-msg.on{opacity:1}
+
+/* ===== B 页顶部说明条 ===== */
+.bx-guide{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:12px;color:#BFD0EA;letter-spacing:.02em}
+.bx-guide i{font-style:normal;display:inline-flex;align-items:center;gap:6px;color:#E4ECF8}
+.bx-guide .g-dot{width:8px;height:8px;border-radius:50%;background:#3DDC84;box-shadow:0 0 0 3px rgba(61,220,132,.18);display:inline-block}
+.bx-guide .g-k{color:#fff;font-weight:600}
+
+/* ===== 表锁确认气泡 ===== */
+.bx-pop{position:absolute;z-index:40;min-width:236px;background:#fff;border:1px solid var(--line);box-shadow:0 10px 30px rgba(16,24,39,.18);padding:14px 16px 12px;border-radius:4px;font-size:13px;color:var(--ink);line-height:1.7}
+.bx-pop:before{content:"";position:absolute;top:-6px;left:22px;width:10px;height:10px;background:#fff;border-left:1px solid var(--line);border-top:1px solid var(--line);transform:rotate(45deg)}
+.bx-pop .p-seg{color:#C62828;font-weight:700}
+.bx-pop .p-act{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.bx-pop button{font-family:inherit;font-size:12.5px;line-height:1;padding:7px 14px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.bx-pop button.ok{background:var(--navy);border-color:var(--navy);color:#fff}
+.bx-pop button:hover{opacity:.9}
+
+/* ===== A 页 地市州管理 ===== */
+.dz-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 18px}
+.dz-xun{font-size:12px;color:var(--muted)}
+.dz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;padding:0 18px 18px}
+.dz-card{border:1px solid var(--line);background:#fff}
+.dz-hd{display:flex;align-items:baseline;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--hair);background:var(--mist)}
+.dz-hd b{font-size:14px;color:var(--navy)}
+.dz-hd em{font-style:normal;font-size:11.5px;color:var(--muted)}
+.dz-tb{width:100%;border-collapse:collapse}
+.dz-tb th{font-size:11.5px;color:var(--navy);text-align:center;padding:7px 8px;border-bottom:1px solid var(--line);background:#FAFCFF;font-weight:600}
+.dz-tb td{font-size:12.5px;text-align:center;padding:6px 8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums;color:var(--ink)}
+.dz-tb td:first-child{text-align:left}
+.dz-tb tr:hover td{background:#F0F5FF}
+.dz-pct{color:var(--muted);font-size:11.5px}
+.dz-note{padding:4px 18px 16px;font-size:11.5px;color:var(--muted);line-height:1.8}
+@media (max-width:820px){
+  .xb-head{gap:8px}
+  .xb-role{margin-left:0}
+  .dz-grid{grid-template-columns:1fr}
+}

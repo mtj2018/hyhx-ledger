@@ -822,6 +822,9 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   #exec-rail-card{width:100%!important;margin-top:12px}
   .exec-pane table{min-width:640px}
 }
+#pg-shape .pg-tbl tbody tr:hover td{background:#EAF1FC}
+#pg-shape .pg-tbl tbody tr:hover td.sec{background:#DDE9FB}
+.ov-embed-sec{padding:0}
 .rail nav .nav-sec{display:flex;align-items:center;justify-content:space-between;padding:15px 14px;
   color:var(--navy);font-weight:700;font-size:15px;letter-spacing:.02em;cursor:pointer;user-select:none;
   background:transparent;border-bottom:1px solid var(--hair);transition:background .16s ease}

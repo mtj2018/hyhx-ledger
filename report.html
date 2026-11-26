@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/b.cfg.js?v=261126113356"></script>
+<script src="assets/b.cfg.js?v=261126114645"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126113356";
+  var BUILD = "261126114645";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126113356") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126114645") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -23,15 +23,16 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>沪渝高速改扩建工程 · 工程月报填报</title>
+<title>沪渝高速改扩建工程 · 基础数据填报</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/b.css?v=261126113356">
+<link rel="stylesheet" href="assets/b.css?v=261126114645">
 
 
 
 
 
 
+<link rel="stylesheet" href="assets/xb.css?v=261126114645">
 </head>
 
 <body>
@@ -42,7 +43,10 @@
       <div style="display:flex;align-items:center;gap:10px">
         <div class="top-name" style="width:auto">沪渝高速公路武汉至宜昌段改扩建工程</div>
       </div>
-      <div class="top-sub">工程月报填报　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
+      <div class="bx-guide">
+        <i><span class="g-dot"></span><span><b class="g-k">绿点＝同步状态</b>：绿色「已同步云端」、闪烁「正在保存…」、灰色「未同步·已存本机」；改动即自动保存并写回云端，无需手动存盘。</span></i>
+        <i><span><b class="g-k">提交按钮</b>：各表右上的「提交」把本标段本表数据写回云端并锁定，锁定后需解锁才能修改；未提交的改动只存在本机。</span></i>
+      </div>
     </div>
     <div class="top-meta">
       <div class="bx-chip" id="bx-chip" title="本页改动会自动保存并写回云端"><span class="bx-dot"></span><span class="bx-t"></span></div>
@@ -57,6 +61,7 @@
     <nav>
       <a class="nav-item is-on" href="#tsf" data-view="tsf"><span>土石方日报</span></a>
       <a class="nav-item" href="#report" data-view="report"><span>工程月报</span></a>
+      <a class="nav-item" href="#xb" data-view="xb"><span>工程旬报</span></a>
       <a class="nav-item" href="#jr" data-view="jr"><span>地市州月报</span></a>
       <a class="nav-item" href="#status" data-view="status"><span>数据填报情况</span></a>
       <a class="nav-item" href="#rain" data-view="rain"><span>晴雨表</span></a>
@@ -100,6 +105,15 @@
           <div class="card" id="card-ppl"></div>
         </div>
       </div>
+    </section>
+    <section class="view" id="view-xb">
+      <div class="card">
+        <div class="card-head"><h2>工程旬报填报</h2><span class="hint pg-flag"><b>每月 10 / 20 / 月末</b><i>·</i>施工单位填报 → 驻地办审核</span><span class="pg-money">单位：万方 / 万米 / 根 / 套 / 个 / 片 / 座 / 道</span></div>
+        <div class="xb-bar" id="xb-bar"></div>
+        <div id="xb-tid"></div>
+      </div>
+      <div class="card" id="xb-body"></div>
+      <div id="xb-msg"></div>
     </section>
     <section class="view" id="view-status">
       <div class="card">
@@ -1044,6 +1058,27 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     }
   }
 
+  /* ---------- 锁旁确认气泡：确认后才解锁（替代原「a」口令输入框） ---------- */
+  function bxPop(anchor, text, onOk) {
+    var old = document.getElementById("bx-pop"); if (old) old.remove();
+    var p = document.createElement("div");
+    p.id = "bx-pop"; p.className = "bx-pop";
+    p.innerHTML = '<div class="p-tx">' + text + '</div><div class="p-act"><button type="button" class="no">取消</button><button type="button" class="ok">确认</button></div>';
+    document.body.appendChild(p);
+    var r = anchor.getBoundingClientRect();
+    var top = r.bottom + window.scrollY + 8, left = r.left + window.scrollX - 8;
+    var w = p.offsetWidth || 240;
+    if (left + w > window.innerWidth - 12) left = Math.max(12, window.innerWidth - w - 12);
+    if (r.bottom + p.offsetHeight + 20 > window.innerHeight) top = r.top + window.scrollY - p.offsetHeight - 8;
+    p.style.top = top + "px"; p.style.left = left + "px";
+    function close() { p.remove(); document.removeEventListener("click", out, true); document.removeEventListener("keydown", esc); }
+    function out(ev) { if (!p.contains(ev.target)) close(); }
+    function esc(ev) { if (ev.key === "Escape") close(); }
+    p.querySelector(".no").onclick = close;
+    p.querySelector(".ok").onclick = function () { close(); onOk(); };
+    setTimeout(function () { document.addEventListener("click", out, true); document.addEventListener("keydown", esc); }, 0);
+  }
+
   /* ---------- 事件 ---------- */
   document.addEventListener("click", function (e) {
     var lk = e.target.closest ? e.target.closest("[data-lk]") : null;
@@ -1073,17 +1108,18 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
           });
         });
       } else {
-        var pw = prompt("该表格已锁定。请输入修改密码：");
-        if (pw === null) return;
-        if (pw.trim() !== "a") { alert("密码错误，无法解锁"); return; }
-        lockOf(CUR.tid, CUR.ym)[name] = 0;   /* 0＝已撤销提交，便于按字段合并时如实同步 */
-        DIRTY = false;        persist();
-        renderAll();
-        repWait(1);
-        pushCloud().then(function (ok) {
-          repWait(-1);
-          flag(ok ? ("已解锁：" + LKNAME[name] + "，可以修改") : "解锁未写入云端，请重试", !!ok);
+        /* 锁为「a」口令的表格：改为锁旁气泡确认，不再弹输入框 */
+        var segName = (tenderOf(CUR.tid) || {}).name || "本";
+        bxPop(lk, '是否确定修改 <span class="p-seg">“' + segName + '”</span> 数据？', function () {
+          lockOf(CUR.tid, CUR.ym)[name] = 0;   /* 0＝已撤销提交，便于按字段合并时如实同步 */
+          DIRTY = false;        persist();
           renderAll();
+          repWait(1);
+          pushCloud().then(function (ok) {
+            repWait(-1);
+            flag(ok ? ("已解锁：" + LKNAME[name] + "，可以修改") : "解锁未写入云端，请重试", !!ok);
+            renderAll();
+          });
         });
       }
       return;
@@ -2505,5 +2541,6 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (ONLINE) pullCloud();
 })();
 </script>
+<script src="assets/xb.js?v=261126114645"></script>
 </body>
 </html>

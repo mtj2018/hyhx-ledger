@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/a.cfg.js?v=261126113356"></script>
+<script src="assets/a.cfg.js?v=261126114645"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126113356";
+  var BUILD = "261126114645";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126113356") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126114645") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,7 +25,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速公路武汉至宜昌段改扩建工程 · 项目信息</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/a.css?v=261126113356">
+<link rel="stylesheet" href="assets/a.css?v=261126114645">
 
 
 
@@ -43,6 +43,7 @@
 
 
 
+<link rel="stylesheet" href="assets/xb.css?v=261126114645">
 </head>
 <body class="is-masked">
 
@@ -74,8 +75,7 @@
       <a class="nav-item" href="#investment" data-view="investment" data-exec="overview"><span>概算执行管理</span></a>
       <a class="nav-item" href="#fixedasset" data-view="fixedasset"><span>固定投资管理</span></a>
       <a class="nav-item" href="#progress" data-view="progress"><span>形象进度管理</span></a>
-      <a class="nav-item" href="#files" data-view="files"><span>重要文档管理</span></a>
-      <a class="nav-item" href="#other" data-view="other"><span>其他信息</span></a>
+      <a class="nav-item" href="#dz" data-view="dz"><span>地市州管理</span></a>
     </nav>
     <a class="nav-jump" target="_blank" rel="noopener" href="report.html" title="打开工程月报填报页（B 页）"><span>基础数据填报</span></a>
 
@@ -108,9 +108,18 @@
       <div id="pg-seg" class="seg-grid" style="display:none"></div>
     </section>
 
+    <!-- ===== 视图：地市州管理（按旬报自动汇总） ===== -->
+    <section class="view" id="view-dz">
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h2>地市州管理</h2><span class="hint">按最新旬报自动统计</span><span class="pg-money">单位随项目</span></div>
+        <div class="dz-bar" id="dz-bar"></div>
+      </div>
+      <div id="dz-body"></div>
+    </section>
+
     <!-- ===== 视图：项目总览 ===== -->
     <section class="view is-on" id="view-overview">
-      <div class="card" style="padding:12px 18px"><div class="ov-tabs"><button type="button" class="fa-tab on" data-ov="info">基本信息</button><button type="button" class="fa-tab" data-ov="ctr">合同清单</button></div></div>
+      <div class="card" style="padding:12px 18px"><div class="ov-tabs"><button type="button" class="fa-tab on" data-ov="info">基本信息</button><button type="button" class="fa-tab" data-ov="ctr">合同清单</button><button type="button" class="fa-tab" data-ov="files">文档管理</button><button type="button" class="fa-tab" data-ov="other">其他信息</button></div></div>
       <div id="ov-info">
       <div class="card">
         <div class="card-head"><h2>项目基本情况</h2></div>
@@ -185,8 +194,7 @@
         </div>
       </div>
       </div>
-      <div id="ov-ctr" class="ov-split" style="display:none">
-        <div class="ov-main">
+      <div id="ov-ctr" class="ov-split" style="display:none">        <div class="ov-main">
       <div class="card">
         <div class="card-head"><h2>各章节合同额合计</h2><span class="hint">单位：万元</span></div>
         <div class="ctr-chap"><div class="ctr-ci"><span class="k">临时工程与设施</span><span class="v">134,232</span></div><div class="ctr-ci"><span class="k">路基工程</span><span class="v">504,818</span></div><div class="ctr-ci"><span class="k">路面工程</span><span class="v">241,476</span></div><div class="ctr-ci"><span class="k">桥涵工程</span><span class="v">448,090</span></div><div class="ctr-ci"><span class="k">绿化工程</span><span class="v">27,150</span></div><div class="ctr-ci"><span class="k">改扩建工程</span><span class="v">174,747</span></div><div class="ctr-ci"><span class="k">集采材料到工地价</span><span class="v">616,468</span></div><div class="ctr-ci"><span class="k">交安工程</span><span class="v">75,299</span></div><div class="ctr-ci"><span class="k">机电工程</span><span class="v">98,982</span></div><div class="ctr-ci is-tot"><span class="k">章节合计</span><span class="v">2,321,262</span></div></div>
@@ -427,6 +435,9 @@
       </div>
 
     </section>
+
+    <div id="ov-embed-files" class="ov-embed" style="display:none"></div>
+    <div id="ov-embed-other" class="ov-embed" style="display:none"></div>
     <!-- ===== /视图：投资与进度 ===== -->
 
     <!-- ===== 视图：其他信息（用地与房建 + 融资与测算） ===== -->
@@ -4696,10 +4707,23 @@ var TO_MS = 15000;
     Array.prototype.forEach.call(document.querySelectorAll("[data-ov]"), function (b) {
       b.classList.toggle("on", b.getAttribute("data-ov") === k);
     });
-    var a = document.getElementById("ov-info"), b2 = document.getElementById("ov-ctr");
-    if (a) a.style.display = k === "info" ? "" : "none";
-    if (b2) b2.style.display = k === "ctr" ? "" : "none";
+    var map = { info: "ov-info", ctr: "ov-ctr", files: "ov-embed-files", other: "ov-embed-other" };
+    Object.keys(map).forEach(function (x) {
+      var el = document.getElementById(map[x]);
+      if (el) el.style.display = (x === k) ? "" : "none";
+    });
   }
+
+  /* 把「重要文档管理 / 其他信息」两个视图整体搬进项目基本情况做标签页（原 id 与渲染逻辑保持不变） */
+  (function embed() {
+    [["view-files", "ov-embed-files"], ["view-other", "ov-embed-other"]].forEach(function (p) {
+      var sec = document.getElementById(p[0]), host = document.getElementById(p[1]);
+      if (!sec || !host) return;
+      sec.classList.remove("view"); sec.classList.add("ov-embed-sec");
+      sec.style.display = ""; sec.removeAttribute("id_backup");
+      host.appendChild(sec);
+    });
+  })();
 
   var ON = { zlj: false, lm: true, zja: false, zjd: false };
   function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
@@ -4752,5 +4776,6 @@ var TO_MS = 15000;
 </script>
 
 </body>
+<script src="assets/dz.js?v=261126114645"></script>
 </html>
 <!-- （注：内容由AI生成） -->
