@@ -3394,10 +3394,14 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     return idx;
   }
 
-  /* 「实际投资」自动提取：
-     土建1标（武汉/孝感/仙桃）取 B 页「分地市州产值填报」同月同地市州的完成产值；
-     土建2标～土建10标取 B 页「产值完成情况（万元）」同标段同月的「累计完成 · 合计」 */
+  /* 「实际投资」自动提取（统一规则）：
+     ① 标段在 B 页「分地市州」有该城市数据 → 取该城市「完成产值」
+        （土建/机电取 done，交安取产值 outDone）；
+     ② 没有地市州数据 → 取 B 页「产值完成情况（万元）」同标段同月「累计完成 · 合计」；
+     ③ 两处都取不到 → 沿用本卡手填的 fak_ 值。 */
   var FA_T1CITY = { caidian: "蔡甸", hanchuan: "汉川", xiantao: "仙桃" };
+  var FA_REG_CITY = { caidian: "蔡甸", hanchuan: "汉川", xiantao: "仙桃",
+                      qianjiang: "潜江", jingzhou: "荆州", yichang: "宜昌" };
   function faRepDB() {
     if (window.__REPDB) return window.__REPDB;
     try {
@@ -3406,15 +3410,17 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     } catch (e) {}
     return window.__REPDB;
   }
-  function faRegDone(city, t) {
+  function faRegDone(tid, city, cm) {
     var db = faRepDB();
-    if (!db || !db.reports) return null;
-    if (t == null) return null;
-    var ym = "20" + String(t).slice(0, 2) + "-" + String(t).slice(2);
-    var r = (db.reports.t1 || {})[ym];
+    if (!db || !db.reports || !tid || !city) return null;
+    var ym = faYmOf(cm);
+    if (!ym) return null;
+    var r = (db.reports[tid] || {})[ym];
     if (!r || !r.reg) return null;
-    var o = r.reg[city] || {};
+    var o = r.reg[city];
+    if (!o || typeof o !== "object") return null;
     var v = o.done;
+    if (v === undefined || v === null || v === "") v = o.outDone;
     if (v === undefined || v === null || v === "") return null;
     v = Number(v);
     return isFinite(v) ? v : null;
@@ -3480,18 +3486,21 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   /* 该行是否需要固化为只读：土建N标（N=1 时限于武汉/孝感/仙桃）返回 B 页标段 tid */
   function faFixTid(c, i) {
     var nm = (c.jian && c.jian[i] && c.jian[i][0]) || "";
-    var m = nm.match(/^土建(\d+)标/);
+    var m = nm.match(/^(土建|机电|交安)(\d+)标/);
     if (!m) return null;
-    var n = parseInt(m[1], 10);
-    if (n === 1) return FA_T1CITY[c.k] ? "t1" : null;
-    return "t" + n;
+    var typ = m[1] === "土建" ? "t" : (m[1] === "机电" ? "m" : "j");
+    var n = parseInt(m[2], 10);
+    if (typ === "t" && n === 1 && !FA_T1CITY[c.k]) return null;
+    return typ + n;
   }
-  /* 实际投资：能取到 B 页数据的行用提取值，其余沿用卡片内填报的 fak_ 值 */
+  /* 实际投资：①该标段有地市州数据取该城市完成产值；②否则取产值累计；③都取不到用 fak_ */
   function faActVal(c, i, cm) {
     var tid = faFixTid(c, i);
     if (tid) {
-      var v0 = (tid === "t1") ? faRegDone(FA_T1CITY[c.k], cm) : faTenderOutCum(tid, cm);
-      if (v0 != null) return v0;
+      var v1 = faRegDone(tid, FA_REG_CITY[c.k], cm);
+      if (v1 != null) return v1;
+      var v2 = faTenderOutCum(tid, cm);
+      if (v2 != null) return v2;
     }
     return faGet("fak_" + c.k + "_0_" + i);
   }
@@ -3543,7 +3552,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (diff != null && Math.abs(diff) < 0.5) diff = 0;
       var fixTid = faFixTid(c, k);
       var fcrCell = fixTid
-        ? '<td class="fcr-fix" title="自动取自 B 页同标段同月产值（累计完成合计），不可修改">'
+        ? '<td class="fcr-fix" title="自动取自 B 页同标段同月：优先取地市州完成产值，无地市州数据时取产值累计合计，不可修改">'
           + (act == null ? "\u2014" : fmt(act)) + '</td>'
         : '<td><input class="fcr-in" type="text" data-int="1" data-k="fak_' + c.k + '_0_' + k + '"'
           + (act == null ? ' placeholder="—"' : ' data-def="' + fmt(act) + '" value="' + fmt(act) + '"')
