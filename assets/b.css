@@ -442,6 +442,9 @@ td.nmc{white-space:nowrap;font-size:12px}
 .pg-st-ok .pg-st-dot{background:#2E9159}
 .pg-st-no .pg-st-dot{background:#C14343}
 .pg-st-na{color:#B9C0CC}
+.pg-col-r{display:grid;gap:14px;min-width:0}
+.pg-warn{display:inline-block;padding:2px 9px;border-radius:11px;background:#FBEAEA;color:#A72B2B;font-size:12px;font-weight:600;white-space:nowrap}
+.pg-warn .pg-st-dot{background:#C14343}
 .pg-tbl .fixv{color:#0F2C5C;background:transparent;border:0;padding:0 4px;display:block;min-width:0;font-variant-numeric:tabular-nums;text-align:right}
 .pg-tbl .fixv.fixc{text-align:center}
 .pg-ctr td,.pg-ctr th{text-align:center!important}

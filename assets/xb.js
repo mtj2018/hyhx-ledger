@@ -127,6 +127,16 @@
     return null;
   }
   function stateOf(tid, k) { var r = rec(tid, k); return r.sup ? 3 : (r.sub ? 2 : 1); }
+  /* 对外：数据填报情况页判断旬报逾期（已复核完成数） */
+  window.__XB = {
+    ready: function () { return LOADED; },
+    done: function (k) {
+      if (!LOADED) return null;
+      var n = 0;
+      for (var i = 1; i <= 10; i++) if (DATA[i] && DATA[i].x && DATA[i].x[k] && DATA[i].x[k].sup) n++;
+      return n;
+    }
+  };
   function hasTot(tid, i) {
     var tot = DATA[tid] && DATA[tid].tot ? DATA[tid].tot : null;
     return !!(tot && tot[i] !== null && tot[i] !== undefined && isFinite(+tot[i]) && +tot[i] > 0);
