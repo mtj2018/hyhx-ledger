@@ -291,8 +291,8 @@
 
     if (z.tids.length === 1 && z.tids[0] === 1) {
       var t1 = 1, s1 = stateOf(t1, k);
-      h += '<div class="xb-zone"><div class="xb-zone-hd"><span>' + TENDERS[0] + " · " + ownerOf(t1) + " 本旬完成</span>"
-        + statusChip(t1, k) + '<div class="xb-flow">' + flowBtns(t1, k, s1) + "</div></div>"
+      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>' + TENDERS[0] + "</b><span>" + ownerOf(t1)
+        + "</span>" + statusChip(t1, k) + '<div class="xb-flow">' + flowBtns(t1, k, s1) + "</div></div>"
         + segTable(t1, k, s1) + "</div>";
       h += '<div class="xb-zone"><div class="xb-zone-hd"><b>地市州统计</b><span>' + TENDERS[0] + " · 蔡甸 / 汉川 / 仙桃 设计量与完成情况</span></div>"
         + cTable(k, s1) + "</div>";
