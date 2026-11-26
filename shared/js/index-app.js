@@ -3584,6 +3584,8 @@
       if (sg) sg.style.display = (PG_TAB === "tender") ? "" : "none";
       if (tp) tp.style.display = (PG_TAB === "tender") ? "none" : "";
       if (ct) ct.style.display = (PG_TAB === "tender") ? "" : "none";
+      var src = q("#pg-src");
+      if (src) src.textContent = "数据来源：" + ((PG_TAB === "tender" && WK_SNAP) ? "产值周报填报页" : "工程月报填报页");
       if (PG_TAB === "tender") renderSeg();
     }
     function pgTabBind() {
@@ -4051,8 +4053,10 @@ var TO_MS = 15000;
       try { if (window.__syncChip) window.__syncChip(ok ? "ok" : "warn", ok ? "" : t); } catch (e_sc) {}
       var e = q("#pg-src");
       if (!e) return;
-      /* 成功不打扰：只在失败时留字，成功后清空 */
-      e.textContent = ok ? "" : t;
+      /* 成功不打扰：只把来源行写回当前页签对应的取数来源，失败才显示错误 */
+      var wkSrc = false;
+      try { var cutEl = q("#pg-cut"); wkSrc = !!(cutEl && /产值周报/.test(cutEl.textContent || "")); } catch (eT) {}
+      e.textContent = ok ? ("数据来源：" + (wkSrc ? "产值周报填报页" : "工程月报填报页")) : t;
       e.style.color = ok ? "" : "#A24A18";
     }
     var pushQueue = Promise.resolve();
