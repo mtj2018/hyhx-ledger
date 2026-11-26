@@ -825,6 +825,16 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 @media (max-width:1560px){.seg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:1080px){.seg-grid{grid-template-columns:minmax(0,1fr)}.seg-cmp{grid-column:span 1}}
 </style>
+<style id="a9css">
+/* 侧栏常驻同步状态：最后同步时间 + 待推项数（小字，不抢眼） */
+.rail-sync{display:flex;align-items:center;gap:7px;margin-top:10px;padding:9px 14px;border:1px solid var(--line);
+  background:#FBFCFE;color:#7C8B9F;font-size:11.5px;letter-spacing:.01em;line-height:1.5}
+.rail-sync .rs-dot{width:6px;height:6px;border-radius:50%;background:#C6CFDB;flex:0 0 6px}
+.rail-sync .rs-dot.is-ok{background:#4C9E78}
+.rail-sync .rs-dot.is-warn{background:#D08A45}
+.rail-sync .rs-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:980px){.rail-sync{display:none}}
+</style>
 </head>
 <body class="is-masked">
 
@@ -860,6 +870,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       <a class="nav-item" href="#other" data-view="other"><span>其他信息</span></a>
     </nav>
     <a class="nav-jump" target="_blank" rel="noopener" href="report.html" title="打开工程月报填报页（B 页）"><span>基础数据填报</span></a>
+    <div class="rail-sync" id="rail-sync" title="本页改动会自动保存并写回云端"><span class="rs-dot"></span><span class="rs-t">尚未同步云端</span></div>
 
   </aside>
 
@@ -2941,6 +2952,26 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     S.files[i][6] = "已选择";
     blobCache[i] = { name: f.name, url: URL.createObjectURL(f), key: key };
     idbPut(key, { name: f.name, blob: f, ts: Date.now() });
+    /* 同时存一份到数据仓，换电脑也能打开；超过 10MB 只留本机 */
+    if (f.size > 10485760) {
+      if (window.__syncChip) window.__syncChip("warn", "附件超过 10MB，只存本机，未上传云端");
+    } else {
+      var rd = new FileReader();
+      rd.onload = function () {
+        var b64 = String(rd.result || "");
+        var x = b64.indexOf(",");
+        b64 = x >= 0 ? b64.slice(x + 1) : "";
+        if (!b64) return;
+        if (window.__syncChip) window.__syncChip("busy");
+        attPut(key, { name: f.name, type: f.type || "", size: f.size, ts: Date.now(), data: b64 })
+          .then(function (okUp) {
+            if (window.__syncChip) window.__syncChip(okUp || !ONLINE ? "ok" : "warn", okUp ? "" : "本机打开，附件未上传云端");
+          }, function (err) {
+            if (window.__syncChip) window.__syncChip("warn", "附件未上传云端：" + (err && err.message ? err.message : err));
+          });
+      };
+      rd.readAsDataURL(f);
+    }
     renderFiles();
     touch();
   });
@@ -2957,14 +2988,27 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         window.open(URL.createObjectURL(rec.blob), "_blank");
         return;
       }
+      /* 本机没缓存（换电脑/清过缓存）：从数据仓 files/ 取回 */
+      var uid = r[7] || "";
+      var remote = uid ? attRead(uid).then(function (x) { return x && x.obj; }, function () { return null; }) : Promise.resolve(null);
+      remote.then(function (o) {
+        if (o && o.data) {
+          var url = URL.createObjectURL(b64Blob(o.data, o.type || ""));
+          window.open(url, "_blank");
+          return;
+        }
+        openLocal(v);
+      });
+    });
+  }
+  function openLocal(v) {
       if (/^(https?:|file:)/i.test(v)) { window.open(v, "_blank"); return; }
       if (/[\\/]/.test(v)) {
         var p = v.replace(/\\/g, "/").replace(/^\/+/, "");
         window.open("file:///" + encodeURI(p).replace(/#/g, "%23"), "_blank");
         return;
       }
-      alert("本机没有存到这份文件（可能是换电脑或清过浏览器数据），请点「更换」重新选一次。");
-    });
+      alert("本机与云端都没有这份文件，请点「更换」重新选一次。");
   }
 
   /* ---------- 台账分类切换 ---------- */
@@ -4085,9 +4129,8 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     })();
     window.__REPDB = DB;
 
+    /* 旧 Gist 通道与经典令牌已下线：数据只走私有仓 mtj2018/hyhx-ledger-data（ghGetAll） */
     var CLOUD = {
-      token: ["gh", "p_rzbm0wOAJ6", "FZFFgxRfMO", "B33Snm1piw1Wybw9"].join(""),
-      gistId: "2e29599c80a9553e78c81670de9342fd",
       ledger: "hyhx-ledger.json",
       report: "hyhx-report.json",
       ledgerTsKey: KEY + "-cloudts"
@@ -4745,10 +4788,13 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (!t) return;
       b.className = "sync-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
       /* 成功态不显示任何文案：只在失败/进行中留状态，避免"已自动保存"这类提示反复出现 */
-      t.textContent = st === "warn" ? "未同步云端 · 已存本机"
+      t.textContent = st === "warn" ? (txt || "未同步云端 · 已存本机")
         : st === "busy" ? "正在保存…" : "";
-      b.style.display = (st === "warn" || st === "busy") ? "" : "none";
-      if (txt) b.setAttribute("title", txt); else b.setAttribute("title", "本页改动会自动保存并写回云端");
+      /* 只留一个小圆点，不写文字；悬停可看最后同步时间与待推项数 */
+      b.style.display = "";
+      var tipTxt = st === "warn" ? (txt || "未同步云端 · 已存本机")
+        : st === "busy" ? "正在保存…" : (typeof syncTip === "function" ? syncTip() : "已同步");
+      b.setAttribute("title", tipTxt);
       if (SC_T) { clearTimeout(SC_T); SC_T = null; }
       if (st === "busy") SC_T = setTimeout(function () { syncChip(ONLINE ? "ok" : "warn"); }, 12000);
     }
@@ -4975,17 +5021,75 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
   }
 
     /* ---- 云端：读取填报数据 / 台账（v3：分文件 + 超时 + 校验重推 + 待推队列） ---- */
-    function api() { return "https://api.github.com/gists/" + CLOUD.gistId; }
-    function hdr() {
-      return { "Authorization": "Bearer " + CLOUD.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" };
-    }
-    var TO_MS = 15000;
+var TO_MS = 15000;
     var PKEY = KEY + "-pend";
     var PEND = [];
     try { PEND = JSON.parse(localStorage.getItem(PKEY) || "[]") || []; } catch (e_p0) { PEND = []; }
     function savePend() { try { localStorage.setItem(PKEY, JSON.stringify(PEND)); } catch (e) {} }
-    function markPend(ks) { (ks || []).forEach(function (k) { if (PEND.indexOf(k) < 0) PEND.push(k); }); savePend(); }
-    function clearPend(ks) { PEND = PEND.filter(function (k) { return (ks || []).indexOf(k) < 0; }); savePend(); }
+    function markPend(ks) { (ks || []).forEach(function (k) { if (PEND.indexOf(k) < 0) PEND.push(k); }); savePend(); try { railSync(); } catch (e) {} }
+    function clearPend(ks) { PEND = PEND.filter(function (k) { return (ks || []).indexOf(k) < 0; }); savePend(); try { railSync(); } catch (e) {} }
+
+    /* 最后同步时间（云端 ts，写成功后更新） */
+    function lastSyncAt() {
+      var t = 0;
+      try { t = Number(localStorage.getItem(CLOUD.ledgerTsKey) || 0); } catch (e) { t = 0; }
+      return t;
+    }
+    function two2(n) { return (n < 10 ? "0" : "") + n; }
+    function syncStamp(t) {
+      if (!t) return "";
+      var d = new Date(t);
+      return two2(d.getMonth() + 1) + "-" + two2(d.getDate()) + " " + two2(d.getHours()) + ":" + two2(d.getMinutes());
+    }
+    function syncTip() {
+      var s = lastSyncAt(), n = PEND.length;
+      var base = s ? ("已同步 · " + syncStamp(s)) : "尚未同步云端";
+      return base + (n ? (" · 待推 " + n + " 项") : "");
+    }
+    window.__pgSyncTip = syncTip;
+    /* 侧栏常驻小字：最后同步时间 + 待推项数（不打扰但可查） */
+    function railSync() {
+      var box = document.getElementById("rail-sync");
+      if (!box) return;
+      var t = box.querySelector(".rs-t"), dot = box.querySelector(".rs-dot");
+      var s = lastSyncAt(), n = PEND.length;
+      if (t) t.textContent = (s ? ("最后同步 " + syncStamp(s)) : "尚未同步云端") + (n ? (" · 待推 " + n + " 项") : "");
+      if (dot) dot.className = "rs-dot" + (n ? " is-warn" : (s ? " is-ok" : ""));
+      box.setAttribute("title", syncTip());
+    }
+
+    /* ---------- #17 附件存数据仓：files/<uid>.json（base64） ---------- */
+    function attUrl(uid) {
+      return "https://api.github.com/repos/" + GH.owner + "/" + GH.repo + "/contents/files/" + uid + ".json?ref=" + GH.branch;
+    }
+    function attRead(uid) {
+      return ghFetch(attUrl(uid), { headers: { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json" } }).then(function (r) {
+        if (r.status === 404) return { obj: null, sha: null };
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json().then(function (j) {
+          var o = null;
+          try { o = JSON.parse(ghU64(j.content)); } catch (e) { o = null; }
+          return { obj: o, sha: j.sha };
+        });
+      });
+    }
+    function attPut(uid, obj) {
+      if (!ONLINE) return Promise.resolve(false);
+      return attRead(uid).then(function (cur) {
+        var payload = { message: "attach " + uid + " " + new Date().toISOString(), content: ghB64(JSON.stringify(obj)) };
+        if (cur && cur.sha) payload.sha = cur.sha;
+        return ghFetch(attUrl(uid), {
+          method: "PUT",
+          headers: { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return true; });
+      });
+    }
+    function b64Blob(b64, type) {
+      var bin = atob(String(b64 || "")), n = bin.length, u8 = new Uint8Array(n), i;
+      for (i = 0; i < n; i++) u8[i] = bin.charCodeAt(i);
+      return new Blob([u8], { type: type || "application/octet-stream" });
+    }
     function __jc(o) { try { return JSON.parse(JSON.stringify(o === undefined ? null : o)); } catch (e) { return null; } }
     function __same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
     function xfetch(url, opt, ms) {
@@ -5009,7 +5113,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       if (!f || !f.content) return null;
       try { return JSON.parse(f.content); } catch (e) { return null; }
     }
-        function readGist() {
+        function readCloud() {
       return ghGetAll().then(function (map) {
         var out = {}, cts = 0;
         Object.keys(map).forEach(function (n) {
@@ -5062,6 +5166,13 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
       keys = (keys || []).filter(function (v, i, arr) { return arr.indexOf(v) === i; });
       if (!keys.length) return Promise.resolve(true);
       if (!ONLINE) return Promise.resolve(true);
+      /* 首屏还没拉完云端：先把改动记进待推队列，连通后自动补写，避免“刚打开就填”被拒写丢数据 */
+      if (!SYNC_OK) {
+        markPend(keys);
+        srcMsg("数据加载中，暂不写云端（已存本机，连上后自动补齐）", false);
+        try { railSync(); } catch (e) {}
+        return Promise.resolve(false);
+      }
       var picked = {}, groups = {};
       keys.forEach(function (k) {
         picked[k] = __jc(S[k]);
@@ -5085,6 +5196,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         done.forEach(function (x) { x.ks.forEach(function (k) { SNAP[k] = __jc(S[k]); }); });
         try { localStorage.setItem(CLOUD.ledgerTsKey, String(ts)); } catch (e) {}
         srcMsg("", true);
+        try { railSync(); } catch (e) {}
         return true;
       }).catch(function (e) {
         var msg = (e && e.name === "AbortError") ? "请求超时" : (e && e.message ? e.message : String(e));
@@ -5115,7 +5227,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     window.__pgPushKey = pushKey;
     /* 读取：云端为准，但本页改过的字段、待推字段一律以本机为准，且不再整页刷新 */
     function pullAll() {
-      return readGist().then(function (all) {
+      return readCloud().then(function (all) {
         var cloudS = assemble(all), changed = changedKeys(), pend = PEND.slice(), k;
         for (k in cloudS) {
           if (!cloudS.hasOwnProperty(k)) continue;
@@ -5167,6 +5279,7 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
         try { if (typeof clRender === "function") clRender(true); } catch (e) {}
         srcMsg("已同步云端数据 · " + new Date(all.cts || Date.now()).toLocaleString(), true);
         SYNC_OK = true;
+        try { railSync(); } catch (e) {}
         if (changedKeys().length || PEND.length) pushLedger();
         return true;
       }).catch(function (e) {
