@@ -218,13 +218,15 @@
       inp.oninput = function () {
         var p = inp.getAttribute("data-wkq").split("|"), tid = p[0], i = +p[1];
         var r = rec(tid, CUR.key);
+        var oldQ = r.q[i] || 0;
+        var basePrev = (r.cum[i] || 0) - oldQ;   /* 上周末累计固定不变 */
         var v = parseFloat(inp.value);
         r.q[i] = isFinite(v) ? num(v) : 0;
-        r.cum = r.q.map(function (x, j) { return (rj(tid, j) + (x || 0)); });
+        r.cum[i] = basePrev + r.q[i];
         var cellv = host.querySelector('[data-wkcum="' + tid + "|" + i + '"]');
         if (cellv) cellv.textContent = fmt(r.cum[i]);
         var prevCell = inp.closest("tr").querySelector(".wk-prev");
-        if (prevCell) prevCell.textContent = fmt(r.cum[i] - r.q[i]);
+        if (prevCell) prevCell.textContent = fmt(basePrev);
         save(tid);
       };
       inp.onblur = function () { render(); };
