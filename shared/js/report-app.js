@@ -385,7 +385,8 @@
       + '<td class="r" data-ocumtot="1">' + fmt(tot.cum, 0) + "</td>"
       + '<td class="r" style="display:none" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
     var note = wkData ? "（取产值周报 " + wkKeyTxt + "）" : "";
-    host.innerHTML = head("分项产值情况", subTitle(t) + note)
+    /* 分项产值情况不再显示「2026年11月」这种月份字样，只保留标段名 */
+    host.innerHTML = head("分项产值情况", (t ? t.name : "") + note)
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
       + '<th style="width:44px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none">合同额</th>'
       + '<th style="width:96px">本月完成</th><th style="width:96px">累计完成</th>'
@@ -647,7 +648,7 @@
     var items = [
       { nm: "土石方日报", cyc: "每日", due: "每日 24:00 前", org: "各标段施工单位", d: null, warn: null },
       { nm: "产值周报", cyc: "每周四", due: dstr(dWk), org: "土建 10 个标段施工单位", d: dWk, warn: overdueRep("wk", thursdayOf(new Date(tmr.getTime() - 7 * 86400000)), tmr) },
-      { nm: "工程旬报", cyc: "每月 10 日 / 20 日 / 30 日（2 月为 28 日）", due: dstr(dXun), org: "各标段施工单位填报 · 驻地办复核", d: dXun, warn: overdueRep("xb", xunPrev(now), tmr) },
+      { nm: "工程旬报", cyc: "每月 10 日 / 20 日 / 30 日", due: dstr(dXun), org: "各标段施工单位填报 · 驻地办复核", d: dXun, warn: overdueRep("xb", xunPrev(now), tmr) },
       { nm: "工程月报", cyc: "每月 20 日", due: dstr(d20), org: "各标段施工单位 · 驻地办", d: d20, warn: overdueRep("month", schedPrev(20, now), tmr) },
       { nm: "地市州月报", cyc: "每月 28 日", due: dstr(dLast), org: "各地市州驻地办", d: dLast, warn: overdueRep("jr", schedPrev("last", now), tmr) },
       { nm: "晴雨表", cyc: "系统自动更新", due: "—", org: "系统自动更新，不需填报", d: null, warn: null }
@@ -673,9 +674,52 @@
       + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
   }
 
+  /* 各报表对接人（来源：项目对接人表格；监理按标段合并显示） */
+  var CNT = [
+    { nm: "土建1标", jl: "万达", c: ["刘迅", "南赛花", "南赛花", "南赛花", "刘迅", "南赛花"] },
+    { nm: "土建2标", jl: "魏代全", c: ["王磊", "钟玉鸣", "张强", "徐曼榕", "王斌", "张爽"] },
+    { nm: "土建3标", jl: "魏代全", c: ["郑尧尧", "曹泽飞", "曹泽飞", "曹泽飞", "郑尧尧", "曾小帆"] },
+    { nm: "土建4标", jl: "魏代全", c: ["张思梦", "张思梦", "张思梦", "张思梦", "杨飞", "杨飞"] },
+    { nm: "土建5标", jl: "谢明钰", c: ["李定洋", "李定洋", "李定洋", "李定洋", "李定洋", "李定洋"] },
+    { nm: "土建6标", jl: "谢明钰", c: ["吴俊", "吴俊", "吴俊", "吴俊", "吴俊", "田发"] },
+    { nm: "土建7标", jl: "李艳君", c: ["闫继坤", "呙境阳", "呙境阳", "呙境阳", "呙境阳", "呙境阳"] },
+    { nm: "土建8标", jl: "李艳君", c: ["彭万恒", "彭万恒", "彭万恒", "彭万恒", "彭万恒", "彭万恒"] },
+    { nm: "土建9标", jl: "崔清柱", c: ["汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛"] },
+    { nm: "土建10标", jl: "崔清柱", c: ["牛雍", "牛雍", "牛雍", "牛雍", "李闯", "李闯"] }
+  ];
+  function renderContacts() {
+    var host = $("#pg-cnt");
+    if (!host) return;
+    var groups = [], i;
+    CNT.forEach(function (x) {
+      var g = groups[groups.length - 1];
+      if (g && g.jl === x.jl) g.n++; else groups.push({ jl: x.jl, n: 1, at: groups.length ? null : 0 });
+    });
+    /* 重新定位每组起始行 */
+    var gi = 0, rows = "";
+    groups.forEach(function (g, idx) { g.start = idx === 0 ? 0 : groups[idx - 1].start + groups[idx - 1].n; });
+    CNT.forEach(function (x, r) {
+      var g = groups[gi], jl = "";
+      if (r === g.start) jl = '<td class="c cnt-jl" rowspan="' + g.n + '">' + x.jl + "</td>";
+      if (r === g.start + g.n - 1) gi++;
+      rows += '<tr><td class="nmc cnt-nm">' + x.nm + "</td>" + jl
+        + x.c.map(function (v) { return '<td class="c">' + v + "</td>"; }).join("") + "</tr>";
+    });
+    var ths = ["施工单位", "监理", "土石方<br>日报", "产值<br>周报", "工程<br>旬报", "工程<br>月报", "形象<br>进度图", "航拍<br>视频"];
+    host.innerHTML = '<div class="card-head"><h2>各报表对接人</h2>'
+      + '<span class="hint">按标段 · 监理为驻地办对接人</span></div>'
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl cnt-tbl">'
+      + '<colgroup><col style="width:17%"><col style="width:13%"><col><col><col><col><col><col></colgroup><thead><tr>'
+      + ths.map(function (h, i) {
+        return i === 0 ? '<th class="nmc">' + h + "</th>"
+          : (i === 1 ? '<th class="c">' + h + "</th>" : '<th class="c">' + h + "</th>");
+      }).join("") + "</thead><tbody>" + rows + "</tbody></table></div>";
+  }
+
   function renderStatus() {
     if (!onPage("status")) return;
     renderSched();
+    renderContacts();
     var host = $("#pg-st");
     if (!host) return;
     var d = stPeriod(20), mth = ymof(d);
@@ -714,7 +758,26 @@
       + ths + "</thead><tbody>" + rows + "</tbody></table></div>";
     renderStatusJr(ymof(stPeriod(28)));
     renderWkStatus();
+    try { syncStatusCols(); } catch (eC) {}
   }
+  /* 右列（地市州月报 + 产值周报）总高与左侧工程月报卡对齐 */
+  function syncStatusCols() {
+    var st = $("#pg-st"), jr = $("#jr-st"), wk = $("#wk-st");
+    if (!st || !jr || !wk) return;
+    var H = st.offsetHeight; if (!H) return;
+    var b1 = jr.querySelector(".card-body"), b2 = wk.querySelector(".card-body");
+    if (!b1 || !b2) return;
+    b1.style.height = ""; b2.style.height = "";
+    b1.style.overflowY = ""; b2.style.overflowY = "";
+    var gap = 12;
+    var total = jr.offsetHeight + gap + wk.offsetHeight;
+    var extra = H - total;          /* 右列比左卡矮多少，补到产值周报卡上 */
+    var h2 = b2.offsetHeight + extra;
+    b2.style.height = (extra > 0 ? h2 : b2.offsetHeight + extra) + "px";
+    b2.style.overflowY = (b2.scrollHeight > b2.clientHeight) ? "auto" : "hidden";
+    b1.style.overflowY = (b1.scrollHeight > b1.clientHeight) ? "auto" : "hidden";
+  }
+  window.addEventListener("resize", function () { try { syncStatusCols(); } catch (eR) {} });
   function renderStatusJr(mth) {
     var host = $("#jr-st");
     if (!host) return;

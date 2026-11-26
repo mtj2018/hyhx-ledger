@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/a.cfg.js?v=261126195407"></script>
-<script src="shared/js/legacy-index-routes.js?v=261126195407"></script>
+<script src="assets/a.cfg.js?v=261126215740"></script>
+<script src="shared/js/legacy-index-routes.js?v=261126215740"></script>
 <script>
 (function () {
-  var BUILD = "261126195407";
+  var BUILD = "261126215740";
   if (!BUILD || (location.protocol !== "http:" && location.protocol !== "https:")) return;
   var verUrl = (location.pathname.indexOf("/report/") >= 0 ? "../ver.json" : "ver.json") + "?t=" + Date.now();
   fetch(verUrl, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
@@ -21,9 +21,9 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>沪渝高速公路武汉至宜昌段改扩建工程 · 项目总览</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/a.css?v=261126195407">
-<link rel="stylesheet" href="assets/xb.css?v=261126195407">
-<link rel="stylesheet" href="shared/css/ui.css?v=261126195407">
+<link rel="stylesheet" href="assets/a.css?v=261126215740">
+<link rel="stylesheet" href="assets/xb.css?v=261126215740">
+<link rel="stylesheet" href="shared/css/ui.css?v=261126215740">
 </head>
 <body data-page="overview" data-view="overview">
 <header class="top">
@@ -48,9 +48,8 @@
       <a class="nav-item" href="investment.html"><span>概算执行管理</span></a>
       <a class="nav-item" href="fixed-assets.html"><span>固定投资管理</span></a>
       <a class="nav-item" href="progress.html"><span>形象进度管理</span></a>
-      <a class="nav-item" href="regions.html"><span>地市州管理</span></a>
+      <a class="nav-item nav-tail" href="regions.html"><span>地市州管理</span></a>
     </nav>
-    <a class="nav-jump" href="report.html" title="打开数据填报入口"><span>基础数据填报</span></a>
   </aside>
   <main id="main-content" tabindex="-1">
 <section class="view is-on" id="view-overview">
@@ -61,9 +60,10 @@
           <p>核心指标集中展示，数据随填报内容自动更新。可从下方快捷入口进入各业务视图。</p>
           <div class="ov-status"><span>项目状态</span><strong><span data-mirror="status">在建</span></strong></div>
           <div class="ov-actions">
-            <a class="ov-action primary" href="investment.html">投资执行</a>
-            <a class="ov-action" href="progress.html">形象进度</a>
-            <a class="ov-action" href="report.html">进入数据填报</a>
+            <button type="button" class="ov-action is-on" data-ov="info">基本信息</button>
+            <button type="button" class="ov-action" data-ov="ctr">合同清单</button>
+            <button type="button" class="ov-action" data-ov="files">文档管理</button>
+            <button type="button" class="ov-action" data-ov="other">其他信息</button>
           </div>
         </div>
         <div class="ov-metrics">
@@ -89,7 +89,6 @@
           </article>
         </div>
       </section>
-      <div class="card ov-tabs-card"><div class="ov-tabs"><button type="button" class="fa-tab on" data-ov="info">基本信息</button><button type="button" class="fa-tab" data-ov="ctr">合同清单</button><button type="button" class="fa-tab" data-ov="files">文档管理</button><button type="button" class="fa-tab" data-ov="other">其他信息</button></div></div>
       <div id="ov-info">
       <div class="card">
         <div class="card-head"><h2>项目基本情况</h2></div>
@@ -329,9 +328,9 @@
     <div class="pg-gate-tip" id="pg-tip">本机输入一次密码后，7 天内无需重复输入</div>
   </div>
 </div>
-<script src="shared/js/index-app.js?v=261126195407"></script>
-<script src="shared/js/pages/overview.js?v=261126195407"></script>
-<script src="shared/js/gate.js?v=261126195407"></script>
-<script src="shared/js/ui.js?v=261126195407"></script>
+<script src="shared/js/index-app.js?v=261126215740"></script>
+<script src="shared/js/pages/overview.js?v=261126215740"></script>
+<script src="shared/js/gate.js?v=261126215740"></script>
+<script src="shared/js/ui.js?v=261126215740"></script>
 </body>
 </html>

@@ -868,3 +868,14 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
 .rail nav .nav-sec:hover{background:var(--mist)}
 .rail nav .nav-sec.is-fold::after{transform:rotate(-90deg)}
 .rail nav .nav-item.sub.is-fold{display:none}
+
+/* 报送流程内嵌在「选择年月」格子里：压缩尺寸以塞进 KPI 单元格 */
+.kpi .wf-inline{margin-top:10px}
+.kpi .wf-inline .wf-cap{font-size:10.5px}
+.kpi .wf-inline .wf-bar{margin-top:5px}
+.kpi .wf-inline .wf-step{font-size:10.5px;padding:6px 0 5px}
+
+/* 固定投资各地市州卡：左格「选择年月」加宽，容纳内嵌的报送流程 */
+.fa-panel .kpi{grid-template-columns:1.24fr 1fr 1fr 1fr}
+/* 右栏「提示信息」上下居中，底部细分线正好落在左侧表头位置 */
+.fa-note{display:flex;flex-direction:column;justify-content:center}

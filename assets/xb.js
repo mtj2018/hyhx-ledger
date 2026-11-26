@@ -39,6 +39,8 @@
     "仙桃": [57.8, 35.7, 38.9, 1976, 1392, 1423, 973, 7186, 7186]
   };
   var CITIES = ["蔡甸", "汉川", "仙桃"];
+  /* 页面显示统一用地市州名：蔡甸段→武汉、汉川段→孝感；内部数据键仍用 CITIES 原值 */
+  var CLABEL = { "蔡甸": "武汉", "汉川": "孝感", "仙桃": "仙桃" };
   var ZB = [
     { id: "z1", nm: "一驻地办", sub: "土建1标", tids: [1] },
     { id: "z2", nm: "二驻地办", sub: "土建2、3、4标", tids: [2, 3, 4] },
@@ -159,8 +161,9 @@
     host.innerHTML = '<span class="xb-lb">填报期</span><select class="pg-sel" id="xb-y">' +
       ys.map(function (v) { return '<option value="' + v + '"' + (v === ky ? " selected" : "") + ">" + v + " 年</option>"; }).join("") + "</select>" +
       '<select class="pg-sel" id="xb-m">' + Array.from({ length: 12 }, function (_, i) { return i + 1; }).map(function (v) { return '<option value="' + v + '"' + (v === km ? " selected" : "") + ">" + v + " 月</option>"; }).join("") + "</select>" +
-      '<select class="pg-sel" id="xb-d">' + xunOf(ky, km).map(function (d) {
-        return '<option value="' + d + '"' + (d === kd ? " selected" : "") + ">" + d + " 日旬报</option>";
+      '<select class="pg-sel" id="xb-d">' + xunOf(ky, km).map(function (d, i) {
+        var no = (km - 1) * 3 + (i + 1);
+        return '<option value="' + d + '"' + (d === kd ? " selected" : "") + ">" + d + " 日 · 第" + no + "旬</option>";
       }).join("") + "</select>";
     var dEl = $("#xb-date");
     if (dEl) dEl.textContent = cnDate(k);
@@ -254,6 +257,8 @@
 
   /* 地市州统计（土建1标）：每个地市州一张小卡片（设计量 / 累计完成 / 完成比例），三张并列一行 */
   function cCard(a, k, open) {
+    /* 显示名统一为地市州：蔡甸→武汉、汉川→孝感（数据键沿用原值，保证历史数据可读） */
+    var aLab = CLABEL[a] || a;
     var c = (DATA[1] && DATA[1].c) || ((DATA[1] = DATA[1] || { v: 1, tid: 1, x: {} }).c = {});
     if (!c) { DATA[1].c = {}; c = DATA[1].c; }
     var ck = c[k] || (c[k] = {});
@@ -275,7 +280,7 @@
         : (v === "" ? "—" : fmt(+v, CU[i]))) + "</td>";
       rows += '<td data-xbcpct="' + a + "|" + i + '">' + (pv || "—") + "</td></tr>";
     });
-    return '<div class="xb-cn-card"><div class="xb-cn-hd"><b>' + a + "</b><em>" + TENDERS[0] + "</em></div>"
+    return '<div class="xb-cn-card"><div class="xb-cn-hd"><b>' + aLab + "</b><em>" + TENDERS[0] + "</em></div>"
       + '<table class="xb-ct3"><thead><tr><th class="cn-n">项目</th><th class="cn-u">单位</th><th>设计量</th><th>累计完成</th><th>完成比例</th></tr></thead>'
       + "<tbody>" + rows + "</tbody></table></div>";
   }

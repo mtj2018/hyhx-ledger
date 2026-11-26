@@ -1379,27 +1379,10 @@
   document.addEventListener("click", function (e) {
     var t = e.target && e.target.closest ? e.target : null;
     if (!t) return;
-    var sub = t.closest("[data-lksub]"), ico = t.closest("[data-lkico]");
-    if (!sub && !ico) return;
+    var ico = t.closest("[data-lkico]");
+    if (!ico) return;
     e.preventDefault();
-    var k = sub ? sub.getAttribute("data-lksub") : ico.getAttribute("data-lkico");
-    if (sub) {
-      if (cardLocked(k)) { aToast("请先点小锁解锁后再提交"); return; }
-      var ks = cardKeys(k);
-      S["lkc_" + k] = "1";
-      cardApply(k);
-      try { save(true); } catch (e1) {}
-      aToast("正在提交：" + cardName(k) + " …");
-      var pr = null;
-      try { pr = window.__pgPushLedger ? window.__pgPushLedger() : null; } catch (e2) {}
-      if (pr && pr.then) {
-        pr.then(function (ok) {
-          if (ok === false) aToast("已存本机，云端稍后自动重试", true);
-          else aToast("已提交并锁定：" + cardName(k) + "（" + ks.length + " 项）");
-        }, function () { aToast("已存本机，云端稍后自动重试", true); });
-      } else aToast("已提交并锁定：" + cardName(k));
-      return;
-    }
+    var k = ico.getAttribute("data-lkico");
     if (!cardLocked(k)) {
       S["lkc_" + k] = "1";
       cardApply(k);
@@ -1952,7 +1935,7 @@
              ["加油站", 0, 0, 319726], ["房建2标(估)", 0, 0]],
       ord: [0, 1, 2, 3, 5, 4],
       other: [["其他费", 44195, 27596]] },
-    { k: "hanchuan", city: "孝感市", seg: "汉川段", invest: 116600, gsJ: 83022, htJ: 84742, htAll: 118287,
+    { k: "hanchuan", city: "孝感市", seg: "", invest: 116600, gsJ: 83022, htJ: 84742, htAll: 118287,
       months: FA_TAGS,
       jian: [["土建1标", 13607, 36003], ["机电1标", 0, 0], ["交安1标", 0, 0], ["房建2标(估)", 0, 0]],
       other: [["其他费", 5823, 723]] },
@@ -2375,6 +2358,11 @@
     return '<div class="fa-wf"><div class="wf-cap">报送流程</div>'
       + '<div class="wf-bar" data-wfc="' + c.k + '">' + faFlowSteps(c.k) + '</div></div>';
   }
+  /* 报送流程内嵌在「选择年月」格子里，不再单独占一行 */
+  function faFlowInline(c) {
+    return '<div class="wf-inline"><div class="wf-cap">报送流程</div>'
+      + '<div class="wf-bar" data-wfc="' + c.k + '">' + faFlowSteps(c.k) + '</div></div>';
+  }
   document.addEventListener("click", function (e) {
     var b = e.target && e.target.closest ? e.target.closest("[data-wf]") : null;
     if (!b) return;
@@ -2387,11 +2375,16 @@
   });
 
   function faCheckRail(c, cm) {
-    var rows = "", k, act, cum, diff, sumAct = null, sumCum = 0;
-    var sumAll = 0, htAllSum = faHtBand(c) + faHtOther(c);
+    var rows = "", k, act, cum, diff, sumAct = null, sumCum = 0, sumCurJ = 0;
+    var sumAll = 0, sumCurAll = 0, htAllSum = faHtBand(c) + faHtOther(c);
     for (k = 0; k < c.jian.length; k++) sumAll += faCum(c, 0, k, cm);
     for (k = 0; k < c.other.length; k++) sumAll += faCum(c, 1, k, cm);
     for (k = 0; k < c.jian.length; k++) sumCum += faCum(c, 0, k, cm);
+    for (k = 0; k < c.jian.length; k++) sumCurJ += faCurVal(c, 0, k, cm) || 0;
+    for (k = 0; k < c.jian.length; k++) sumCurAll += faCurVal(c, 0, k, cm) || 0;
+    for (k = 0; k < c.other.length; k++) sumCurAll += faCurVal(c, 1, k, cm) || 0;
+    var lastB = sumCum - sumCurJ, lastAll = sumAll - sumCurAll;
+    var lastShare = lastAll ? Math.round(lastB / lastAll * 100) : 0;
     var jx = faJianIdx(c);
     for (var q = 0; q < jx.length; q++) {
       k = jx[q];
@@ -2417,7 +2410,8 @@
       + '<td id="fqs_' + c.k + '"' + (sDiff != null && sDiff < 0 ? ' style="color:#C0392B"' : '') + '>'
       + (sDiff == null ? "—" : fmt(sDiff)) + '</td></tr>' + rows;
     return '<div class="fa-note"><div class="fn-h"><i></i>提示信息</div>'
-      + '<div class="fn-b">本卡只需填 <b>' + faTagMonth(cm) + ' 月本月投资</b>，填完点右上「提交」即锁定；<br>'
+      + '<div class="fn-b">截止上月末，累计报送投资 <b>' + fmt(lastAll) + '</b> 万元，其中建安费累计报送 '
+      + '<b>' + fmt(lastB) + '</b> 万元，占已报投资的 <b>' + lastShare + '%</b>。<br>'
       + '实际投资取自 B 页同标段同月，差额＝实际投资 − 累计报送投资。</div></div>'
       + '<div style="padding:10px 10px 0"><table class="fcr-tbl"><colgroup><col><col style="width:70px"><col style="width:64px"></colgroup>'
       + '<thead><tr><th>标段</th><th>实际投资</th><th>差额</th></tr></thead>'
@@ -2491,11 +2485,7 @@
       + faTd(fmt(jn + on), "num hlm", "ft_" + c.k + "_n")
       + faTd(fmt(htB + htO - tAll), "num faint", "ft_" + c.k + "_r") + '</tr>';
 
-    /* 合计下方提示：截至上月末累计报送（= 截至本月累计 − 本月当月） */
-    var lastB = jc2 - jn, lastAll = (jc2 - jn) + (oc2 - on);
-    rows += '<tr class="fcr-tip"><td colspan="9"><span class="fcr-tipb">提示</span>'
-      + '截止上月末，累计报送投资' + fmt(lastAll) + '万元，其中建安费累计报送' + fmt(lastB)
-      + '万元，占已报投资的' + (lastAll ? Math.round(lastB / lastAll * 100) : 0) + '%。</td></tr>';
+    /* 截止上月末累计报送的口径提示，已移到右侧「提示信息」小标签，表内不再单列一行 */
 
     var cols = '<col style="width:4.8%"><col style="width:12.6%"><col style="width:10.4%">'
       + '<col style="width:10.4%"><col style="width:12.6%"><col style="width:10.4%">'
@@ -2503,7 +2493,7 @@
 
     var kpi = c.months
       ? ('<div class="kpi">'
-        + '<div><div class="krow"><div class="k">选择年月</div></div>' + faPeriodSel(c, cm) + '</div>'
+        + '<div><div class="krow"><div class="k">选择年月</div></div>' + faPeriodSel(c, cm) + faFlowInline(c) + '</div>'
         + '<div><div class="krow"><div class="k">概算总投资</div></div>'
         + '<div class="v"><span id="fk_' + c.k + '_inv">' + fmt(invNow) + '</span><span class="u">万元</span></div>'
         + '<div class="sub" id="fk_' + c.k + '_s1">完成投资 ' + fmt(tAll) + ' 万元<br>占比 '
@@ -2531,15 +2521,12 @@
     var twoCard = !!c.months;
     var hd = '<div class="fa-hd"><div class="fa-ttl">' + c.city + (c.seg ? '（' + c.seg + '）' : '') + ' 本月投资填报</div>'
       + '<div class="fa-sub">仅「本月投资」可填，其余数据已固化</div>'
-      + '<div class="clk-bar" style="margin-left:auto"><span class="clk-st" data-lkst="fa_' + c.k + '">已提交 · 锁定</span>'
-      + '<button type="button" class="clk-ico" data-lkico="fa_' + c.k + '" aria-label="小锁"></button>'
-      + '<button type="button" class="clk-sub" data-lksub="fa_' + c.k + '">提交</button></div></div>';
+      + '<div class="clk-bar" style="margin-left:auto"><button type="button" class="clk-ico" data-lkico="fa_' + c.k + '" aria-label="小锁"></button></div></div>';
     return '<div class="fa-panel' + (twoCard ? '' : ' card') + '" id="fa-p-' + c.k + '"'
       + ' style="display:none;' + (twoCard ? 'gap:14px' : 'padding:0;overflow:hidden') + '">'
       + (twoCard ? '<div class="card" style="flex:1 1 auto;min-width:0;margin:0;padding:0;overflow:hidden">' : '')
       + hd
       + kpi
-      + faFlowStrip(c)
       + '<div class="card-body" style="padding-top:12px">'
 
       + '<div class="tw"><table class="tbl fa-tbl ctr"><colgroup>' + cols + '</colgroup>'
@@ -2626,28 +2613,18 @@
   function faAlignRail() {
     document.querySelectorAll("#fa-wrap .fa-panel").forEach(function (p) {
       if (p.style.display === "none") return;
-      var head = p.querySelector(".fcr-head"), tbl = p.querySelector(".fa-tbl");
-      if (!head || !tbl) return;
-      var ftbl = p.querySelector(".fcr-tbl");
-      if (ftbl) ftbl.style.marginTop = "0px";
-      /* 先量出流程块自身需要的高度：右栏高度不足、或 KPI 尚未排版完成时，
-         也不会把「报送流程」压扁成 0 高而被 overflow 裁掉 */
-      head.style.height = "auto";
-      var needH = Math.round(head.getBoundingClientRect().height);
-      head.style.height = "0px";
-      var htop = head.getBoundingClientRect().top;
-      /* 顶部分隔线：与左侧 KPI 那一行的底线齐平（不再按表格首行推算） */
-      var kpi = p.querySelector(".kpi");
-      var d = kpi
-        ? kpi.getBoundingClientRect().bottom - htop
-        : tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
-      if (d > 300) d = tbl.querySelector("thead tr").getBoundingClientRect().top - htop;
-      head.style.height = Math.max(d > 0 ? Math.round(d) : 0, needH) + "px";
-      /* 行对齐改由表格上外边距承担，避免把分隔线推走 */
-      var m0 = tbl.querySelector("tbody tr"), r0 = ftbl ? ftbl.querySelector("tbody tr") : null;
-      if (m0 && r0 && ftbl) {
-        var delta = Math.round(m0.getBoundingClientRect().top - r0.getBoundingClientRect().top);
-        ftbl.style.marginTop = (delta > 0 ? delta : 0) + "px";
+      var tbl = p.querySelector(".fa-tbl"), ftbl = p.querySelector(".fcr-tbl");
+      if (!tbl || !ftbl) return;
+      var note = p.querySelector(".fa-note");
+      if (note) note.style.height = "";
+      var lth = tbl.querySelector("thead tr"), rth = ftbl.querySelector("thead tr");
+      if (!lth || !rth) return;
+      var delta = Math.round(lth.getBoundingClientRect().top - rth.getBoundingClientRect().top);
+      /* 右栏「提示信息」补足高度，使其下沿与左侧表头齐平：
+         右侧表格从与左表相同的位置开始，标段行逐行对齐 */
+      if (note && delta > 0) {
+        var nh = Math.round(note.getBoundingClientRect().height);
+        note.style.height = (nh + delta) + "px";
       }
     });
   }

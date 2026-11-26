@@ -681,25 +681,20 @@ td.nmc{white-space:nowrap;font-size:12px}
   .pg-flag{display:block;width:100%}
   .jr-who{font-size:11.5px}
 }
-"
-      + "@page{size:A4 portrait;margin:20mm 20mm}"
-      + "html{-webkit-print-color-adjust:exact;print-color-adjust:exact}"
-      + "body{font-family:'FangSong','仿宋',serif;color:#000;margin:0;padding:0}"
-      + "h1{font-family:'SimHei','黑体',serif;font-size:18.7pt;font-weight:700;text-align:center;letter-spacing:.5pt;margin:0 0 9pt}"
-      + ".meta{display:flex;justify-content:space-between;font-family:'KaiTi','楷体',serif;font-size:9.4pt;margin:0 1pt 4pt}"
-      + "table{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Times New Roman',serif;font-size:9.4pt}"
-      + "th,td{border:.6pt solid #000;padding:0;text-align:center;vertical-align:middle;line-height:1.05}"
-      + "thead tr:first-child{height:26pt}"
-      + "thead tr:last-child{height:25pt}"
-      + "tbody tr{height:34.7pt}"
-      + "th{font-family:'SimHei','黑体',serif;font-weight:700;font-size:7.3pt;line-height:1.15}"
-      + "th.grp{font-size:10.3pt}"
-      + "td.z{background:#EBF8F7}"
-      + "td.nm{font-family:'FangSong','仿宋',serif;font-size:9.4pt;line-height:1.2}"
-      + "td.en{font-family:'FangSong','仿宋',serif;font-size:8.3pt}"
-      + "td.tag{font-family:'Times New Roman',serif;font-size:8.3pt}"
-      + "tr.tot td{font-weight:400}"
-      + ".note{font-family:'FangSong','仿宋',serif;font-size:12.5pt;line-height:1.22;margin:9pt 0 0;text-indent:2em;text-align:justify}"
-      + ".note b{font-weight:700}"
-      + ".note.n2{margin-top:16pt}"
-      + "
+
+
+/* 2026-11-26: B 页「各报表填报时间与责任单位」右侧并排「各报表对接人」，两卡等高 */
+.pg-sched-row{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:stretch;margin-bottom:14px}
+.pg-sched-row > .card{display:flex;flex-direction:column;min-height:0;margin:0}
+.pg-sched-row > .card > .card-body{flex:1 1 auto;min-height:0;overflow:auto}
+.cnt-tbl{font-size:12px;table-layout:fixed;height:100%}
+.cnt-tbl th,.cnt-tbl td{padding:5px 3px;white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.cnt-tbl th{line-height:1.3;padding-top:5px;padding-bottom:5px}
+.cnt-tbl .cnt-nm{white-space:nowrap;font-weight:600;text-align:left;padding-left:8px}
+.cnt-tbl .cnt-jl{font-weight:600;color:#0F2C5C;background:#F8FAFE}
+/* 右侧两卡（地市州月报 / 产值周报）纵向铺满，与左侧工程月报等高 */
+.pg-col-r{display:flex;flex-direction:column;gap:12px;min-height:0}
+.pg-col-r > .card{display:flex;flex-direction:column;min-height:0;margin:0}
+.pg-col-r > .card > .card-body{flex:1 1 auto;min-height:0;overflow:auto}
+#wk-st .pg-tbl th,#wk-st .pg-tbl td{padding-top:3px;padding-bottom:3px}
+@media (max-width:1180px){.pg-sched-row{grid-template-columns:1fr}}

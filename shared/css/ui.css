@@ -485,3 +485,26 @@ textarea:focus-visible,
     animation-iteration-count: 1 !important;
   }
 }
+
+/* 2026-11-26: 导航最后一项改为圆角块（B 页晴雨表 / A 页地市州管理），不再有「基础数据填报」跳转 */
+.rail nav .nav-tail {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 0 0 var(--ui-radius-md) var(--ui-radius-md);
+  background: var(--paper);
+  box-shadow: 0 3px 14px rgba(15, 44, 92, .05);
+}
+.rail nav .nav-tail:hover { border-color: #B8C8DE; }
+.rail nav .nav-tail.is-on { border-radius: 0; }
+
+/* 项目总览卡片内的四个入口（基本信息 / 合同清单 / 文档管理 / 其他信息） */
+.ov-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 10px;
+}
+.ov-action.is-on {
+  border-color: #fff;
+  background: #fff;
+  color: var(--navy);
+}
