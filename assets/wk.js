@@ -274,7 +274,7 @@
       + '<td class="wk-cum" data-wktcum="' + tid + '">' + fmt(cs) + "</td></tr>";
     var txtBox = span > 1
       ? '<div class="wk-txt"><div class="wk-note"><b>文字周报</b><span>' + (PH[tid] || "本周形象进度、节点、存在问题") + '</span></div>'
-        + '<textarea data-wktxt="' + tid + '" placeholder="本周形象进度、节点、存在的问题…"' + (lk ? " readonly" : "") + ">" + (r ? (r.txt || "") : "") + "</textarea></div>"
+        + '<textarea data-wktxt="' + tid + '" class="' + (lk ? "wk-ro" : "") + '" placeholder="本周形象进度、节点、存在的问题…"' + (lk ? " readonly" : "") + ">" + (r ? (r.txt || "") : "") + "</textarea></div>"
       : "";
     var tag = tagOf(tid);
     return '<div class="wk-card' + (span > 1 ? " wk-wide" : "") + '" style="grid-column:span ' + span + '">'
@@ -327,6 +327,14 @@
         var tid = ta.getAttribute("data-wktxt"), r = rec(tid, CUR.key);
         r.txt = ta.value; save(tid);
       };
+      /* 已提交（锁定）的文字周报：点一下整段复制，不再改动 */
+      ta.addEventListener("click", function () {
+        var tid = ta.getAttribute("data-wktxt"), r = rec(tid, CUR.key);
+        if (!(r && r.lk)) return;
+        var v = ta.value;
+        if (!v) return;
+        copyTxt(v, function () { flagMsg("已复制：" + tenderName(tid) + " 文字周报"); });
+      });
     });
     host.querySelectorAll("[data-wksub]").forEach(function (btn) {
       btn.onclick = function () {
@@ -392,6 +400,22 @@
   }
 
   function flagMsg(m) { var el = $("#wk-msg"); if (el) { el.textContent = m; el.classList.add("on"); setTimeout(function () { el.classList.remove("on"); }, 3000); } }
+  /* 复制文字周报：优先剪贴板 API，失败退回 execCommand */
+  function copyTxt(txt, ok) {
+    function fb() {
+      var ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.style.position = "fixed"; ta.style.left = "-9999px"; ta.style.top = "0";
+      document.body.appendChild(ta); ta.select();
+      var done = false;
+      try { done = document.execCommand("copy"); } catch (e) {}
+      ta.remove();
+      if (done) ok(); else flagMsg("复制失败，请手动选择文字复制");
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(ok, fb);
+    } else fb();
+  }
 
   function boot() {
     CUR.key = clampKey(ymd(thursdayNear(new Date())));

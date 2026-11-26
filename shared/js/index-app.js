@@ -3493,12 +3493,54 @@
       BASE.tenders.forEach(function (x) { if (x.tid === tid) out = x; });
       return out;
     }
+    /* 2026-11-27：完成率统计改用「产值周报」最新一期累计（数据仓 xb-wk-<标段>.json，随填报自动前进） */
+    var WK_SNAP = null;
+    function dayKey() {
+      var d = new Date();
+      return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+    }
+    function wkSnapBuild(all) {
+      if (!all) return null;
+      var byTid = {}, keys = {}, today = dayKey(), tids = Object.keys(all || {});
+      tids.forEach(function (n) {
+        var m = /^xb-wk-(\d+)\.json$/.exec(n);
+        if (!m) return;
+        var f = all[n], tid = "t" + m[1];
+        if (!f || !f.w || typeof f.w !== "object") return;
+        byTid[tid] = f.w;
+        Object.keys(f.w).forEach(function (k) { if (k <= today) keys[k] = 1; });
+      });
+      var ks = Object.keys(keys).sort(), key = "", tid2, k, r;
+      for (var i = ks.length - 1; i >= 0 && !key; i--) {
+        k = ks[i];
+        for (tid2 in byTid) {
+          r = byTid[tid2][k];
+          if (r && r.lk) { key = k; break; }
+        }
+      }
+      /* 只认「已提交」的期次：没有提交过就退回月报口径 */
+      if (!key) return null;
+      var cum = {}, n2 = 0;
+      Object.keys(byTid).forEach(function (tid) {
+        var rr = byTid[tid][key];
+        if (rr && rr.cum && rr.cum.length) { cum[tid] = rr.cum; n2++; }
+      });
+      return n2 ? { key: key, cum: cum } : null;
+    }
+    function cumAtRow(t, row, i) {
+      if (WK_SNAP && WK_SNAP.cum) {
+        var a = WK_SNAP.cum[t.tid];
+        if (a && a.length > i && a[i] !== null && a[i] !== undefined && isFinite(a[i])) return +a[i];
+      }
+      return outAt(t, row, YM).cum;
+    }
     function segCum(t, proj) {
-      var s = 0, hit = false;
+      var s = 0, hit = false, i = 0;
       t.out.forEach(function (row) {
+        var idx = i++;
         if (proj.src.indexOf(row.nm) < 0) return;
         hit = true;
-        s += outAt(t, row, YM).cum;
+        s += cumAtRow(t, row, idx);
       });
       return hit ? s : null;
     }
@@ -3574,10 +3616,11 @@
       return v;
     }
     function segCumAll(t, o) {
-      var s = 0, lmOn = (window.__CTR_STATE || o).lm;
+      var s = 0, lmOn = (window.__CTR_STATE || o).lm, i = 0;
       t.out.forEach(function (row) {
+        var idx = i++;
         if (!lmOn && row.nm === "路面工程") return;
-        s += outAt(t, row, YM).cum;
+        s += cumAtRow(t, row, idx);
       });
       return s;
     }
@@ -3628,7 +3671,15 @@
       }
       var yms = (YM || "").split("-");
       var cut = q("#pg-cut");
-      if (cut) cut.textContent = "累计至 " + (yms[0] || "") + " 年 " + (parseInt(yms[1], 10) || "") + " 月";
+      if (cut) {
+        if (WK_SNAP && WK_SNAP.key) {
+          var wk = WK_SNAP.key.split("-");
+          cut.textContent = "数据提取自产值周报：" + (wk[0] || "") + " 年 "
+            + (parseInt(wk[1], 10) || "") + " 月 " + (parseInt(wk[2], 10) || "") + " 日";
+        } else {
+          cut.textContent = "累计至 " + (yms[0] || "") + " 年 " + (parseInt(yms[1], 10) || "") + " 月";
+        }
+      }
       var h = segCmpCard();
       SEG_TEN.forEach(function (tid) {
         var t = segTender(tid); if (!t) return;
@@ -4105,10 +4156,13 @@ var TO_MS = 15000;
             localStorage.setItem(RKEY + "-rep-ts", JSON.stringify(rts));
           } catch (e) {}
         }
+        /* 产值周报最新一期：完成率统计以它为取数口径 */
+        try { WK_SNAP = wkSnapBuild(all); } catch (eWK) { WK_SNAP = null; }
         render();
         /* 云端数据到达后整页重算一次：月度完成 / 年度计划 / 各卡片锁状态都以云端为准 */
         try { applyState(); recalc(); markEditable(); } catch (eRS) {}
         try { cardPaintAll(); } catch (eRK) {}
+        try { if (PG_TAB === "tender") renderSeg(); } catch (eSG) {}
 
         try {
 

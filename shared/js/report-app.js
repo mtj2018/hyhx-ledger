@@ -633,7 +633,7 @@
     return null;
   }
   function warnCell(o) {
-    if (!o) return '<span class="pg-due-ok">—</span>';
+    if (!o) return '<span class="pg-due-none">—</span>';
     if (o.done >= o.total) return '<span class="pg-due-ok">正常</span>';
     var miss = o.total - o.done;
     return '<span class="pg-warn"><span class="pg-st-dot"></span>逾期 ' + miss + " 个" + o.nm + "未提交</span>";
@@ -644,21 +644,22 @@
     var host = $("#pg-sched");
     if (!host) return;
     var now = new Date(), tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    /* 当期＝本周四（周四当天是本期填报日，之后仍算这一期，未提交即为逾期） */
     var dWk = thursdayOf(now), dXun = xunNext(now), d20 = schedNext(20, now), d28 = schedNext(28, now);
     var items = [
       { nm: "土石方日报", cyc: "每日", due: "每日 24:00 前", org: "各标段施工单位", d: null, warn: null },
-      { nm: "产值周报", cyc: "每周四", due: dstr(dWk), org: "土建 10 个标段施工单位", d: dWk, warn: overdueRep("wk", thursdayOf(new Date(tmr.getTime() - 7 * 86400000)), tmr) },
+      { nm: "产值周报", cyc: "每周四", due: dstr(dWk), org: "土建 10 个标段施工单位", d: dWk, warn: overdueRep("wk", dWk, tmr) },
       { nm: "工程旬报", cyc: "每月 10 日 / 20 日 / 30 日", due: dstr(dXun), org: "各标段施工单位填报 · 驻地办复核", d: dXun, warn: overdueRep("xb", xunPrev(now), tmr) },
       { nm: "工程月报", cyc: "每月 20 日", due: dstr(d20), org: "各标段施工单位 · 驻地办", d: d20, warn: overdueRep("month", schedPrev(20, now), tmr) },
       { nm: "地市州月报", cyc: "每月 28 日", due: dstr(d28), org: "各地市州驻地办", d: d28, warn: overdueRep("jr", schedPrev(28, now), tmr) },
       { nm: "晴雨表", cyc: "系统自动更新", due: "—", org: "系统自动更新，不需填报", d: null, warn: null }
     ];
     var rows = items.map(function (it, i) {
-      var flag = '<span class="pg-due-ok">—</span>', dueCell = it.due;
+      var flag = '<span class="pg-due-none">—</span>', dueCell = it.due;
       if (it.d) {
-        var dd = dayDiff(it.d, tmr);
-        if (dd === 0) flag = '<span class="pg-due-near">本期填报日</span>';
-        else if (dd > 0) flag = dd <= 5 ? '<span class="pg-due-near">临近 · 剩 ' + dd + " 天</span>" : '<span class="pg-due-ok">正常</span>';
+        var dd = dayDiff(it.d, tmr), bad = !!(it.warn && it.warn.done < it.warn.total);
+        if (dd === 0) flag = '<span class="pg-due-today">今日填报</span>';
+        else if (bad || dd < 0) flag = '<span class="pg-due-bad">非正常</span>';
         else flag = '<span class="pg-due-ok">正常</span>';
       }
       return '<tr><td class="c">' + (i + 1) + "</td><td class='nmc'>" + it.nm + "</td>"
@@ -666,7 +667,7 @@
         + '<td class="c">' + it.org + "</td><td class=\"c\">" + flag + "</td>"
         + '<td class="c">' + warnCell(it.warn) + "</td></tr>";
     }).join("");
-    host.innerHTML = '<div class="card-head"><h2>各报表填报时间与责任单位</h2><span class="hint">提前 5 天进入提醒状态 · 逾期未提交进入警告状态 · 土石方日报不设提醒与警告</span></div>'
+    host.innerHTML = '<div class="card-head"><h2>各报表填报时间与责任单位</h2><span class="hint">当日填报为「今日填报」· 逾期未提交为「非正常」· 按期填报为「正常」· 土石方日报不设提醒与警告</span></div>'
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
       + '<th style="width:46px" class="c">序号</th><th class="nmc">报表</th><th style="width:238px" class="c">填报周期</th>'
       + '<th style="width:150px" class="c">当期填报时间</th><th class="c">责任单位</th>'
@@ -690,30 +691,28 @@
   function renderContacts() {
     var host = $("#pg-cnt");
     if (!host) return;
-    var groups = [], i;
+    var groups = [];
     CNT.forEach(function (x) {
-      var g = groups[groups.length - 1];
-      if (g && g.jl === x.jl) g.n++; else groups.push({ jl: x.jl, n: 1, at: groups.length ? null : 0 });
+      var g = null;
+      groups.forEach(function (y) { if (y.jl === x.jl) g = y; });
+      if (!g) { g = { jl: x.jl, list: [] }; groups.push(g); }
+      g.list.push(x);
     });
-    /* 重新定位每组起始行 */
-    var gi = 0, rows = "";
-    groups.forEach(function (g, idx) { g.start = idx === 0 ? 0 : groups[idx - 1].start + groups[idx - 1].n; });
-    CNT.forEach(function (x, r) {
-      var g = groups[gi], jl = "";
-      if (r === g.start) jl = '<td class="c cnt-jl" rowspan="' + g.n + '">' + x.jl + "</td>";
-      if (r === g.start + g.n - 1) gi++;
-      rows += '<tr><td class="nmc cnt-nm">' + x.nm + "</td>" + jl
-        + x.c.map(function (v) { return '<td class="c">' + v + "</td>"; }).join("") + "</tr>";
-    });
-    var ths = ["施工单位", "监理", "土石方<br>日报", "产值<br>周报", "工程<br>旬报", "工程<br>月报", "形象<br>进度图", "航拍<br>视频"];
+    var ths = ["标段", "土石方日报", "产值周报", "工程旬报", "工程月报", "形象进度图", "航拍视频"];
+    var cards = groups.map(function (g) {
+      var rows = g.list.map(function (x) {
+        return '<div class="cnt-r"><span class="cnt-seg">' + x.nm + "</span>"
+          + x.c.map(function (v) { return "<span>" + (v || "—") + "</span>"; }).join("") + "</div>";
+      }).join("");
+      return '<div class="cnt-item"><div class="cnt-badge"><b>' + g.jl + "</b>"
+        + '<span>驻地办 · ' + g.list.length + " 个标段</span></div>"
+        + '<div class="cnt-tb"><div class="cnt-r cnt-rhd">'
+        + ths.map(function (h) { return "<span>" + h + "</span>"; }).join("")
+        + "</div>" + rows + "</div></div>";
+    }).join("");
     host.innerHTML = '<div class="card-head"><h2>各报表对接人</h2>'
-      + '<span class="hint">按标段 · 监理为驻地办对接人</span></div>'
-      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl cnt-tbl">'
-      + '<colgroup><col style="width:17%"><col style="width:13%"><col><col><col><col><col><col></colgroup><thead><tr>'
-      + ths.map(function (h, i) {
-        return i === 0 ? '<th class="nmc">' + h + "</th>"
-          : (i === 1 ? '<th class="c">' + h + "</th>" : '<th class="c">' + h + "</th>");
-      }).join("") + "</thead><tbody>" + rows + "</tbody></table></div>";
+      + '<span class="hint">按监理单位分组 · 监理为驻地办对接人</span></div>'
+      + '<div class="card-body" style="padding:0"><div class="cnt-grid">' + cards + "</div></div>";
   }
 
   function renderStatus() {

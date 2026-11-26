@@ -615,7 +615,8 @@ td.r,.pg-tbl td.r{text-align:center!important}
 /* ---------- 页面查看锁 ---------- */
 body.is-masked .shell{filter:blur(9px) saturate(.92);pointer-events:none;user-select:none}
 body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,body.is-masked #top-lock{opacity:.4;pointer-events:none}
-.pg-gate{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+/* 2026-11-27：默认不显示，只有本机未验证时才由 gate.js 显示，切页不再闪现密码卡 */
+.pg-gate{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
   background:rgba(9,26,52,.42);font-family:inherit}
 .pg-gate-box{width:392px;max-width:calc(100vw - 36px);background:#FFFFFF;border-radius:12px;padding:26px 26px 20px;
   box-shadow:0 20px 50px rgba(6,20,44,.36);text-align:center}

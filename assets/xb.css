@@ -162,6 +162,8 @@
 .wk-txt{display:block;min-width:0}
 .wk-txt textarea{width:100%;min-height:96px;height:100%;resize:vertical;border:1px solid #EFE6C6;border-radius:3px;background:#FFFDF0;padding:6px 8px;font:12px/1.6 inherit;color:#243B5E;box-sizing:border-box}
 .wk-txt textarea[readonly]{background:#F6F7F9;border-color:#E6E9EF;color:#5B6675;cursor:default}
+/* 2026-11-27: 已提交的文字周报支持「点一下复制」 */
+.wk-txt textarea.wk-ro{cursor:copy}
 .wk-day{width:142px}
 .wk-week{font-size:12px;color:var(--navy);font-weight:600;letter-spacing:.02em}
 .wk-qv{display:inline-block;min-width:52px;font-size:12px;color:#243B5E}
@@ -172,7 +174,11 @@
 @media (max-width:1360px){.wk-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:1020px){.wk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pg-due-near{display:inline-block;padding:1px 8px;border-radius:10px;background:#FFF4D6;color:#A66B00;font-weight:600;font-size:12px}
-.pg-due-ok{color:#9AA5B5;font-size:12px}
+/* 2026-11-27: 提醒状态三态——当日（蓝）/ 逾期未提交（红）/ 按期（灰） */
+.pg-due-ok{display:inline-block;padding:1px 9px;border-radius:10px;background:#F1F3F7;color:#78859B;font-size:12px;font-weight:600;white-space:nowrap}
+.pg-due-today{display:inline-block;padding:1px 9px;border-radius:10px;background:#E7F0FE;color:#17457F;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:inset 0 0 0 1px #C9DDF8}
+.pg-due-bad{display:inline-block;padding:1px 9px;border-radius:10px;background:#FDEBEC;color:#B02A2A;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:inset 0 0 0 1px #F4C8CB}
+.pg-due-none{color:#B3BCCB;font-size:12px}
 .wk-card.wk-wide .wk-txt textarea{min-height:112px}
 .wk-card.wk-wide .wk-txt{display:flex;flex-direction:column;gap:5px;height:100%;min-height:0;padding-right:0;margin-right:0}
 .wk-note{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#8A94A6;line-height:1.4;white-space:nowrap;overflow:hidden;min-width:0;padding:2px 1px 0}
