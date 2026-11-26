@@ -63,6 +63,14 @@
   }
   /* 比例不要小数 */
   function pct(a, b) { return b > 0 ? Math.round(a / b * 100) + "%" : "—"; }
+  /* 输入框回显：万方/万米 保留 1 位，其余取整 */
+  function fin(v, u) {
+    if (v === "" || v === null || v === undefined) return "";
+    var n = +v;
+    if (!isFinite(n)) return String(v);
+    if (u === "万方" || u === "万米") return n.toFixed(1);
+    return String(Math.round(n));
+  }
 
   /* ---------------- 云端读写 ---------------- */
   function hdr() { return { "Authorization": "Bearer " + TOKEN, "Accept": "application/vnd.github+json" }; }
@@ -220,6 +228,13 @@
     return '<div class="xb-wrap"><table class="xb-ct2" data-xbtab="' + tid + '"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table></div>";
   }
 
+  /* 地市州上期累计：新一期未填时沿用上一期数值，避免每旬从零重录 */
+  function cityPrev(k, city, i) {
+    var c = (DATA[1] && DATA[1].c) || {};
+    var keys = Object.keys(c).filter(function (x) { return x < k && c[x] && c[x][city] && c[x][city][i] !== undefined && c[x][city][i] !== ""; }).sort();
+    return keys.length ? c[keys[keys.length - 1]][city][i] : null;
+  }
+
   /* 地市州统计（土建1标）：行=9 项工程量，列=蔡甸/汉川/仙桃 的设计量 / 累计完成 / 完成比例 */
   function cTable(k, st) {
     var c = (DATA[1] && DATA[1].c) || ((DATA[1] = DATA[1] || { v: 1, tid: 1, x: {} }).c = {});
@@ -242,11 +257,13 @@
           row += '<td class="xb-gray">—</td><td class="xb-gray">—</td><td class="xb-gray">—</td>';
           return;
         }
-        var v = (ck[a] && ck[a][i] !== undefined) ? ck[a][i] : "";
+        var own = (ck[a] && ck[a][i] !== undefined) ? ck[a][i] : null;
+        var pp = cityPrev(k, a, i);
+        var v = own !== null ? own : (pp === null ? "" : pp);
         var pv = (v === "" || !isFinite(+v)) ? null : pct(+v, dv);
         row += "<td>" + dv + "</td>";
         row += '<td class="xb-q">' + (open
-          ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + v + '" placeholder="">'
+          ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + fin(v, CU[i]) + '" placeholder="">'
           : (v === "" ? "—" : fmt(+v, CU[i]))) + "</td>";
         row += '<td data-xbcpct="' + a + "|" + i + '">' + (pv || "—") + "</td>";
       });
