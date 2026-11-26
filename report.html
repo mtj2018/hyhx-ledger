@@ -2858,13 +2858,23 @@ td.nmc{white-space:nowrap;font-size:12px}
   }
 
   function buildFile(name, ts) {
+    /* 写云端前剔除临时的「提交中」标记，避免脏标记进云端 */
+    function noWait(o) {
+      o = cloneRep(o || {});
+      Object.keys(o).forEach(function (m) {
+        var l = o[m] && o[m].lock;
+        if (!l) return;
+        Object.keys(l).forEach(function (x) { if (/w$/.test(x)) delete l[x]; });
+      });
+      return o;
+    }
     if (name.indexOf("xt-rep-") === 0) {
       var k = name.slice(7, name.length - 5);
-      return { ts: ts, v: cloneRep((DB.reports || {})[k] || {}) };
+      return { ts: ts, v: noWait((DB.reports || {})[k]) };
     }
     if (name.indexOf("xt-jr-") === 0) {
       var c = junc(name.slice(6, name.length - 5));
-      return { ts: ts, v: cloneRep((DB.jr || {})[c] || {}) };
+      return { ts: ts, v: noWait((DB.jr || {})[c]) };
     }
     if (name.indexOf("xt-tsf-") === 0) {
       var k2 = name.slice(7, name.length - 5), days = {};
