@@ -3527,6 +3527,35 @@
       });
       return n2 ? { key: key, cum: cum } : null;
     }
+    /* 单独拉产值周报 10 个分文件：整页云端读取失败时也能取到最新一期（最多重试一次） */
+    function wkOne(nm) {
+      return xfetch(ghUrl(nm), { headers: ghHdr() }, 30000).then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      }).then(function (j) {
+        var obj = null;
+        try { obj = JSON.parse(ghU64(j.content)); } catch (e0) {}
+        return { name: nm, obj: obj };
+      });
+    }
+    function wkPull(round) {
+      var names = [], all = {}, got = 0, n;
+      for (n = 1; n <= 10; n++) names.push("xb-wk-" + n + ".json");
+      return Promise.all(names.map(function (nm) {
+        return wkOne(nm).then(function (x) { return x; }, function () { return { name: nm, obj: null }; });
+      })).then(function (arr) {
+        arr.forEach(function (x) { if (x && x.obj) { all[x.name] = x.obj; got++; } });
+        if (got >= 6) {
+          WK_SNAP = wkSnapBuild(all);
+          try { if (PG_TAB === "tender") renderSeg(); } catch (eSG) {}
+          return true;
+        }
+        if ((round || 0) < 1) {
+          return new Promise(function (res) { setTimeout(function () { res(wkPull((round || 0) + 1)); }, 1600); });
+        }
+        return false;
+      });
+    }
     function cumAtRow(t, row, i) {
       if (WK_SNAP && WK_SNAP.cum) {
         var a = WK_SNAP.cum[t.tid];
@@ -4182,6 +4211,7 @@ var TO_MS = 15000;
       }).catch(function (e) {
         SYNC_OK = false;
         srcMsg("云端读取失败（" + (e && e.message ? e.message : e) + "），本页改动只存本机，稍后自动重试", false);
+        if (q("#pg-seg")) { try { wkPull(0); } catch (eWK1) {} }
         return false;
       });
     }
@@ -4221,6 +4251,7 @@ var TO_MS = 15000;
     render();
     /* 本机 file:// 打开不再自动拉取线上数据；只有线上访问才同步 */
     if (ONLINE) pullAll();
+    if (ONLINE && q("#pg-seg")) { try { wkPull(0); } catch (eWK0) {} }
   })();
 
   /* A 页所有可编辑输入框：点击或键盘进入即全选当前内容，直接输入即可覆盖 */
