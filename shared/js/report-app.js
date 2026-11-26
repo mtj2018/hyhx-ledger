@@ -644,13 +644,13 @@
     var host = $("#pg-sched");
     if (!host) return;
     var now = new Date(), tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    var dWk = thursdayOf(now), dXun = xunNext(now), d20 = schedNext(20, now), dLast = schedNext("last", now);
+    var dWk = thursdayOf(now), dXun = xunNext(now), d20 = schedNext(20, now), d28 = schedNext(28, now);
     var items = [
       { nm: "土石方日报", cyc: "每日", due: "每日 24:00 前", org: "各标段施工单位", d: null, warn: null },
       { nm: "产值周报", cyc: "每周四", due: dstr(dWk), org: "土建 10 个标段施工单位", d: dWk, warn: overdueRep("wk", thursdayOf(new Date(tmr.getTime() - 7 * 86400000)), tmr) },
       { nm: "工程旬报", cyc: "每月 10 日 / 20 日 / 30 日", due: dstr(dXun), org: "各标段施工单位填报 · 驻地办复核", d: dXun, warn: overdueRep("xb", xunPrev(now), tmr) },
       { nm: "工程月报", cyc: "每月 20 日", due: dstr(d20), org: "各标段施工单位 · 驻地办", d: d20, warn: overdueRep("month", schedPrev(20, now), tmr) },
-      { nm: "地市州月报", cyc: "每月 28 日", due: dstr(dLast), org: "各地市州驻地办", d: dLast, warn: overdueRep("jr", schedPrev("last", now), tmr) },
+      { nm: "地市州月报", cyc: "每月 28 日", due: dstr(d28), org: "各地市州驻地办", d: d28, warn: overdueRep("jr", schedPrev(28, now), tmr) },
       { nm: "晴雨表", cyc: "系统自动更新", due: "—", org: "系统自动更新，不需填报", d: null, warn: null }
     ];
     var rows = items.map(function (it, i) {
