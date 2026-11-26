@@ -486,16 +486,17 @@ textarea:focus-visible,
   }
 }
 
-/* 2026-11-26: 导航最后一项改为圆角块（B 页晴雨表 / A 页地市州管理），不再有「基础数据填报」跳转 */
-.rail nav .nav-tail {
-  margin-top: 12px;
-  border: 1px solid var(--line);
-  border-radius: 0 0 var(--ui-radius-md) var(--ui-radius-md);
-  background: var(--paper);
-  box-shadow: 0 3px 14px rgba(15, 44, 92, .05);
+/* 2026-11-26: 导航是同一张卡，末项与其它项同样式，只在卡片底部收圆角 */
+@media (min-width: 981px) {
+  .rail nav {
+    border-bottom: 1px solid var(--line);
+    border-radius: var(--ui-radius-md);
+  }
+  .rail nav .nav-tail {
+    border-radius: 0 0 var(--ui-radius-md) var(--ui-radius-md);
+    border-bottom: 0;
+  }
 }
-.rail nav .nav-tail:hover { border-color: #B8C8DE; }
-.rail nav .nav-tail.is-on { border-radius: 0; }
 
 /* 项目总览卡片内的四个入口（基本信息 / 合同清单 / 文档管理 / 其他信息） */
 .ov-actions {
