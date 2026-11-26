@@ -984,6 +984,11 @@ td.nmc{white-space:nowrap;font-size:12px}
     }).join("");
   }
   var LKNAME = { shape: "形象进度", out: "产值", ppl: "人员", reg: "分地市州" };
+  var REPWAIT = 0;
+  function repWait(on) { REPWAIT += (on ? 1 : -1); if (REPWAIT < 0) REPWAIT = 0; }
+  window.addEventListener("beforeunload", function (e) {
+    if (REPWAIT > 0) { e.preventDefault(); e.returnValue = "提交正在写入云端，离开会中断提交。"; return e.returnValue; }
+  });
   function lockOf(tid, ym) {
     var r = rep(tid, ym, true);
     r.lock = r.lock || {};
@@ -993,6 +998,8 @@ td.nmc{white-space:nowrap;font-size:12px}
     return !!lockOf(tid || CUR.tid, ym || CUR.ym)[name];
   }
   function lockBtn(name) {
+    var wl = lockOf(CUR.tid, CUR.ym);
+    if (wl[name + "w"]) return '<button type="button" class="pg-lk is-wait" disabled title="正在写入云端，请稍候">提交中</button>';
     var on = isLocked(name);
     var svg = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
     var tip = on ? "已锁定，点击解锁修改" : "点击提交并锁定本月数据";
@@ -1280,6 +1287,17 @@ td.nmc{white-space:nowrap;font-size:12px}
     荆州: "四驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。",
     宜昌: "四驻地办负责填报土建、交安工程信息；机电、房建相关驻地办填写对应项目信息。"
   };
+  function jrWaitLk(city, ym, key) {
+    var r = jrRec(city, ym, false), l = r.lock || {};
+    return !!l[key + "w"];
+  }
+  function jrMarkWait(key) {
+    try {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-jr-sub="' + key + '"]'), function (b) {
+        b.disabled = true; b.className = "pg-lk is-wait"; b.textContent = "提交中"; b.title = "正在写入云端，请稍候";
+      });
+    } catch (e) {}
+  }
   var JRSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></g></svg>';
   function jrCityName(c) { return (JRCFG.cityMap || {})[c] || c; }
   /* 地市州显示名（数据键仍沿用原键，避免影响已存数据） */
@@ -1509,19 +1527,38 @@ td.nmc{white-space:nowrap;font-size:12px}
     if (!sub) return;
     var key = sub.getAttribute("data-jr-sub") || "all";
     var rec = jrRec(JR.city, JR.ym, true);
+    if (rec.lock[key + "w"]) { flag("正在写入云端，请稍候…", false); return; }
     if (!jrLocked(JR.city, JR.ym, key)) {
       rec.lock.all = 0;
-      rec.lock[key] = 1;
-      persistLocal(); renderJr(); renderStatus(); pushCloud();
-      flag("已提交：" + DSP(JR.city) + " " + (key === "lead" ? "一驻地办" : key === "lead2" ? "二驻地办" : key === "me" ? "机电驻地办" : "房建驻地办"), true);
+      rec.lock[key + "w"] = 1;
+      persistLocal(); renderJr(); renderStatus(); jrMarkWait(key);
+      repWait(1);
+      pushCloud().then(function (ok) {
+        if (!ok) {
+          delete rec.lock[key + "w"]; persistLocal(); renderJr(); renderStatus(); repWait(-1);
+          flag("提交未写入云端，请再点一次「提交」重试", false);
+          return;
+        }
+        rec.lock[key] = 1; delete rec.lock[key + "w"];
+        persistLocal(); renderJr(); renderStatus();
+        pushCloud().then(function (ok2) {
+          repWait(-1);
+          flag(ok2 ? ("已提交：" + DSP(JR.city) + " " + (key === "lead" ? "一驻地办" : key === "lead2" ? "二驻地办" : key === "me" ? "机电驻地办" : "房建驻地办"))
+                   : "已提交，但提交标记尚未写入云端，稍后会自动补推", !!ok2);
+        });
+      });
     } else {
       var pw = prompt("取消提交需输入密码：");
       if (pw === null) return;
       if (String(pw).trim() !== "a") { alert("密码错误"); return; }
       rec.lock.all = 0;
       rec.lock[key] = 0;
-      persistLocal(); renderJr(); renderStatus(); pushCloud();
-      flag("已取消提交：" + DSP(JR.city), true);
+      persistLocal(); renderJr(); renderStatus();
+      repWait(1);
+      pushCloud().then(function (ok) {
+        repWait(-1);
+        flag(ok ? ("已取消提交：" + DSP(JR.city)) : "解锁未写入云端，请重试", !!ok);
+      });
     }
   });
   document.addEventListener("input", function (e) {
@@ -1557,8 +1594,10 @@ td.nmc{white-space:nowrap;font-size:12px}
     var left = document.getElementById("pane-left");
     var right = document.getElementById("pane-right");
     if (!reg || !left || !right) return;
-    if (CUR.tid === "j1") {
-      if (reg.parentNode !== left) left.appendChild(reg);
+    /* C 区顺序固定：分项产值情况 → 地市州产值（如有）→ 人员情况 */
+    var ppl = document.getElementById("card-ppl");
+    if (ppl && ppl.parentNode === right) {
+      if (reg.parentNode !== right || reg.nextElementSibling !== ppl) right.insertBefore(reg, ppl);
     } else if (reg.parentNode !== right) {
       right.appendChild(reg);
     }
@@ -1587,22 +1626,42 @@ td.nmc{white-space:nowrap;font-size:12px}
     var lk = e.target.closest ? e.target.closest("[data-lk]") : null;
     if (lk) {
       var name = lk.getAttribute("data-lk");
+      var rl = lockOf(CUR.tid, CUR.ym);
+      if (rl[name + "w"]) { flag("正在写入云端，请稍候…", false); return; }
       if (!isLocked(name)) {
-        lockOf(CUR.tid, CUR.ym)[name] = 1;
+        rl[name + "w"] = 1;
         DIRTY = false;
         persist();
-        pushCloud();
-        flag("已提交并锁定：" + LKNAME[name], true);
         renderAll();
+        repWait(1);
+        pushCloud().then(function (ok) {
+          if (!ok) {
+            delete rl[name + "w"]; persist(); renderAll(); repWait(-1);
+            flag("提交未写入云端，请再点一次「提交」重试", false);
+            return;
+          }
+          rl[name] = 1; delete rl[name + "w"];
+          persist(); renderAll();
+          /* 数据已落云端，再把「已提交」标记单独写一次，保证别处看到的提交状态一致 */
+          pushCloud().then(function (ok2) {
+            repWait(-1);
+            if (!ok2) flag("已提交，但提交标记尚未写入云端，稍后会自动补推", false);
+            else flag("已提交并锁定：" + LKNAME[name], true);
+          });
+        });
       } else {
         var pw = prompt("该表格已锁定。请输入修改密码：");
         if (pw === null) return;
         if (pw.trim() !== "a") { alert("密码错误，无法解锁"); return; }
         lockOf(CUR.tid, CUR.ym)[name] = 0;   /* 0＝已撤销提交，便于按字段合并时如实同步 */
         DIRTY = false;        persist();
-        pushCloud();
-        flag("已解锁：" + LKNAME[name] + "，可以修改", true);
         renderAll();
+        repWait(1);
+        pushCloud().then(function (ok) {
+          repWait(-1);
+          flag(ok ? ("已解锁：" + LKNAME[name] + "，可以修改") : "解锁未写入云端，请重试", !!ok);
+          renderAll();
+        });
       }
       return;
     }
@@ -2929,7 +2988,16 @@ td.nmc{white-space:nowrap;font-size:12px}
         tsf: merged.tsf || {}, tsfBase: merged.tsfBase || {}
       };
       BASE0 = cloneRep(cloud);
-      /* 清掉上次中断留下的「提交中」标记 */
+      /* 清掉上次中断留下的「提交中」标记（工程月报、地市州月报一并清理） */
+      (function () {
+        function clr(lk) { if (!lk) return; Object.keys(lk).forEach(function (x) { if (/w$/.test(x) && x !== "lkw") delete lk[x]; }); }
+        Object.keys(DB.reports || {}).forEach(function (k) {
+          var t = DB.reports[k] || {}; Object.keys(t).forEach(function (m) { clr(t[m] && t[m].lock); });
+        });
+        Object.keys(DB.jr || {}).forEach(function (c) {
+          var t = DB.jr[c] || {}; Object.keys(t).forEach(function (m) { clr(t[m] && t[m].lock); });
+        });
+      })();
       Object.keys(DB.tsf || {}).forEach(function (d0) {
         Object.keys(DB.tsf[d0] || {}).forEach(function (k0) {
           var r0 = DB.tsf[d0][k0];
