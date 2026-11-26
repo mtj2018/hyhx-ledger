@@ -21,9 +21,15 @@
   var GROUPS = ["土石方", "软基处理", "桥梁"];
   var TENDERS = ["土建1标", "土建2标", "土建3标", "土建4标", "土建5标",
                  "土建6标", "土建7标", "土建8标", "土建9标", "土建10标"];
-  var OWNS = ["HYSJSG-1标建设集团", "HYTJ-2标中铁十九局", "HYTJ-3标中铁二十五局", "HYTJ-4标中铁十七局",
-              "HYTJ-5标葛洲坝路桥", "HYTJ-6标中建八局", "HYTJ-7标中交一公局", "HYTJ-8标中交路建",
-              "HYTJ-9标中铁五局", "HYTJ-10标中电建路桥"];
+  /* 承建单位：全称取自 A 页「合同清单 → 施工单位名单」，保持一致 */
+  var OWNS = ["湖北交投建设集团有限公司", "中铁十九局集团有限公司", "中铁二十五局集团有限公司", "中铁十七局集团有限公司",
+              "中国葛洲坝集团路桥工程有限公司", "中国建筑第八工程局有限公司", "中交一公局集团有限公司", "中交路桥建设有限公司",
+              "中铁五局集团有限公司", "中电建路桥集团有限公司"];
+  /* 导出 PDF 的标段列：标段号 + 单位简称（与旬报附件一致） */
+  var BLABEL = ["HYSJSG-1标", "HYTJ-2标", "HYTJ-3标", "HYTJ-4标", "HYTJ-5标",
+                "HYTJ-6标", "HYTJ-7标", "HYTJ-8标", "HYTJ-9标", "HYTJ-10标"];
+  var BSHORT = ["建设集团", "中铁十九局", "中铁二十五局", "中铁十七局", "葛洲坝路桥",
+                "中建八局", "中交一公局", "中交路建", "中铁五局", "中电建路桥"];
   var CITEMS = ["土石方", "路基管桩", "水泥搅拌桩", "桩基", "桥梁管桩", "墩柱", "盖梁", "梁板预制", "梁板安装"];
   var CU = ["万方", "万米", "万米", "根", "套", "个", "个", "片", "片"];
   /* 地市州（土建1标）设计量：取自旬报 Excel「1标（蔡甸/汉川/仙桃）」块，空值为无此设计量 */
@@ -167,8 +173,8 @@
 
   /* ---------------- 横幅：驻地办 / 期次 / 流程状态 ---------------- */
   function zbOf(id) { for (var i = 0; i < ZB.length; i++) if (ZB[i].id === id) return ZB[i]; return ZB[0]; }
-  /* 承建单位：去掉「HYTJ-9标」式前缀，只显示单位名 */
-  function ownerOf(tid) { return String(OWNS[tid - 1] || "").replace(/^[^标]*标/, ""); }
+  /* 承建单位：直接取 A 页合同清单的施工单位全称 */
+  function ownerOf(tid) { return String(OWNS[tid - 1] || ""); }
 
   function statusChip(tid, k) {
     var st = stateOf(tid, k);
@@ -178,13 +184,13 @@
   function flowBtns(tid, k, st) {
     if (st === 3) return '<span class="xb-done">流程已完成</span>';
     if (st === 1) {
-      return '<button type="button" class="xb-btn" data-xb-sub="' + tid + '">提交本旬数据</button>'
+      return '<button type="button" class="pg-lk" data-xb-sub="' + tid + '">提交本旬数据</button>'
         + '<span class="xb-tip">提交后本旬数字锁定，转监理复核。</span>';
     }
     var need = !((rec(tid, k).red || []).length);
-    var passCls = need ? "xb-btn ok warn" : "xb-btn ok";
+    var passCls = need ? "pg-lk ok warn" : "pg-lk ok";
     var passTxt = (need && CONFIRM[tid]) ? "确认无标红，提交完成" : (need ? "复核通过（需确认）" : "复核通过并提交");
-    return '<button type="button" class="xb-btn ghost" data-xb-back="' + tid + '">退回施工单位</button>'
+    return '<button type="button" class="pg-lk ghost" data-xb-back="' + tid + '">退回施工单位</button>'
       + '<button type="button" class="' + passCls + '" data-xb-pass="' + tid + '">' + passTxt + "</button>"
       + '<span class="xb-tip">' + (need
         ? (CONFIRM[tid] ? "本旬该标段未标红任何滞后项，请再点一次确认提交。" : "本旬该标段尚无标红项；复核通过时需二次确认。")
@@ -220,7 +226,7 @@
     rows += '<tr class="q"><td class="lb">本旬完成</td>' + ITEMS.map(function (it, i) {
       if (!hasTot(tid, i)) return '<td class="xb-gray">—</td>';
       return '<td class="xb-q">' + (open
-        ? '<input type="text" inputmode="decimal" data-xbq="' + tid + "|" + i + '" value="' + (r.q[i] === 0 ? "" : r.q[i]) + '" placeholder="0">'
+        ? '<input type="text" inputmode="decimal" data-xbq="' + tid + "|" + i + '" value="' + fin(r.q[i] === null || r.q[i] === undefined ? 0 : r.q[i], it.u) + '">'
         : fmt(r.q[i], it.u)) + "</td>";
     }).join("") + "</tr>";
     rows += '<tr><td class="lb">累计完成</td>' + ITEMS.map(function (it, i) {
@@ -245,41 +251,35 @@
     return keys.length ? c[keys[keys.length - 1]][city][i] : null;
   }
 
-  /* 地市州统计（土建1标）：行=9 项工程量，列=蔡甸/汉川/仙桃 的设计量 / 累计完成 / 完成比例 */
-  function cTable(k, st) {
+  /* 地市州统计（土建1标）：每个地市州一张小卡片（设计量 / 累计完成 / 完成比例），三张并列一行 */
+  function cCard(a, k, open) {
     var c = (DATA[1] && DATA[1].c) || ((DATA[1] = DATA[1] || { v: 1, tid: 1, x: {} }).c = {});
     if (!c) { DATA[1].c = {}; c = DATA[1].c; }
     var ck = c[k] || (c[k] = {});
-    var open = (st === 1);
-
-    var h1 = '<tr class="gs"><th class="lb" rowspan="2">地市州 / 项目</th><th class="it" rowspan="2">单位</th>';
-    CITIES.forEach(function (a) { h1 += '<th colspan="3" class="grp">' + a + "</th>"; });
-    h1 += "</tr><tr>";
-    CITIES.forEach(function () { h1 += '<th class="it">设计量</th><th class="it">累计完成</th><th class="it">完成比例</th>'; });
-    h1 += "</tr>";
-
     var rows = "";
     CITEMS.forEach(function (n, i) {
-      var row = '<tr><td class="lb">' + n + "</td><td>" + CU[i] + "</td>";
-      CITIES.forEach(function (a) {
-        var dv = DMAP[a][i];
-        if (dv === null || dv === undefined) {
-          row += '<td class="xb-gray">—</td><td class="xb-gray">—</td><td class="xb-gray">—</td>';
-          return;
-        }
-        var own = (ck[a] && ck[a][i] !== undefined) ? ck[a][i] : null;
-        var pp = cityPrev(k, a, i);
-        var v = own !== null ? own : (pp === null ? "" : pp);
-        var pv = (v === "" || !isFinite(+v)) ? null : pct(+v, dv);
-        row += "<td>" + dv + "</td>";
-        row += '<td class="xb-q">' + (open
-          ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + fin(v, CU[i]) + '" placeholder="">'
-          : (v === "" ? "—" : fmt(+v, CU[i]))) + "</td>";
-        row += '<td data-xbcpct="' + a + "|" + i + '">' + (pv || "—") + "</td>";
-      });
-      rows += row + "</tr>";
+      var dv = DMAP[a][i];
+      rows += '<tr><td class="cn-n">' + n + '</td><td class="cn-u">' + CU[i] + "</td>";
+      if (dv === null || dv === undefined) {
+        rows += '<td class="xb-gray">—</td><td class="xb-gray">—</td><td class="xb-gray">—</td></tr>';
+        return;
+      }
+      var own = (ck[a] && ck[a][i] !== undefined) ? ck[a][i] : null;
+      var pp = cityPrev(k, a, i);
+      var v = own !== null ? own : (pp === null ? "" : pp);
+      var pv = (v === "" || !isFinite(+v)) ? null : pct(+v, dv);
+      rows += "<td>" + dv + "</td>";
+      rows += '<td class="xb-q">' + (open
+        ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + fin(v, CU[i]) + '">'
+        : (v === "" ? "—" : fmt(+v, CU[i]))) + "</td>";
+      rows += '<td data-xbcpct="' + a + "|" + i + '">' + (pv || "—") + "</td></tr>";
     });
-    return '<div class="xb-wrap"><table class="xb-ct2 xb-cc"><thead>' + h1 + "</thead><tbody>" + rows + "</tbody></table></div>";
+    return '<div class="xb-cn-card"><div class="xb-cn-hd"><b>' + a + "</b><em>" + TENDERS[0] + "</em></div>"
+      + '<table class="xb-ct3"><thead><tr><th class="cn-n">项目</th><th class="cn-u">单位</th><th>设计量</th><th>累计完成</th><th>完成比例</th></tr></thead>'
+      + "<tbody>" + rows + "</tbody></table></div>";
+  }
+  function cTable(k, st) {
+    return '<div class="xb-city3">' + CITIES.map(function (a) { return cCard(a, k, st === 1); }).join("") + "</div>";
   }
 
   /* ---------------- 渲染 ---------------- */
@@ -287,15 +287,14 @@
     var pane = $("#xb-body"); if (!pane) return;
     if (!LOADED) { pane.innerHTML = '<div class="xb-loading">正在读取云端旬报数据…</div>'; return; }
     var k = CUR.xun || todayKey(), z = zbOf(CUR.zb);
-    var h = '<div class="xb-head"><div class="xb-t"><b>' + z.nm + "</b>"
-      + '<span class="xb-xun">' + z.sub + " · " + k.replace(/-/g, ".") + " 旬</span></div></div>";
+    var h = '<div class="xb-head"><div class="xb-t"><b>' + z.nm + "</b></div></div>";
 
     if (z.tids.length === 1 && z.tids[0] === 1) {
       var t1 = 1, s1 = stateOf(t1, k);
-      h += '<div class="xb-zone"><div class="xb-zone-hd"><span>' + TENDERS[0] + " 本旬完成</span>"
+      h += '<div class="xb-zone"><div class="xb-zone-hd"><span>' + TENDERS[0] + " · " + ownerOf(t1) + " 本旬完成</span>"
         + statusChip(t1, k) + '<div class="xb-flow">' + flowBtns(t1, k, s1) + "</div></div>"
         + segTable(t1, k, s1) + "</div>";
-      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>地市州统计</b><span>' + TENDERS[0] + " · 设计量 / 累计完成 / 完成比例（蔡甸 / 汉川 / 仙桃）</span></div>"
+      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>地市州统计</b><span>' + TENDERS[0] + " · 蔡甸 / 汉川 / 仙桃 设计量与完成情况</span></div>"
         + cTable(k, s1) + "</div>";
     } else {
       z.tids.forEach(function (tid) {
@@ -432,73 +431,125 @@
     });
   }
 
-  /* ---------------- 导出 PDF（按旬报 Excel 版式：汇总 + 10 个标段，A3 横向） ---------------- */
+  /* ---------------- 导出 PDF（完全按用户提供的旬报附件版式：A3 竖版，汇总 + 10 个标段） ---------------- */
+  /* 附件桥涵为 8 列：无「预应力管桩(万米)」，其「预应力管桩（套）」即本页「预应力管桩配套」 */
+  var PDF_IDX = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17];
+  var PDF_W = [68.4, 59.5, 32.7, 32.6, 32.7, 32.6, 32.6, 32.7, 32.6, 32.7, 32.6,
+               37.7, 37.7, 37.6, 37.7, 37.7, 37.7, 37.7, 37.2];
+  var PDF_UNIT = ["万方", "万方", "万方", "万方", "万米", "万米", "万米", "万米", "万方",
+                  "根", "套", "个", "个", "片", "片", "座", "道"];
+  /* 附件数字格式：累计完成固定 1 位小数；总设计量/本旬完成按原值（整数不带 .0）；根/套/个等取整；不加千分位 */
+  function pdfNum(v, u, fixed) {
+    if (v === null || v === undefined || v === "" || !isFinite(v)) return "";
+    var n = +v;
+    if (u === "万方" || u === "万米") {
+      if (Math.abs(n) < 1e-9) return "0";
+      return Math.abs(n - Math.round(n)) < 1e-9 ? String(Math.round(n)) : n.toFixed(1);
+    }
+    return String(Math.round(n));
+  }
   function pdfData() {
     var k = CUR.xun || todayKey();
     var blocks = [];
     for (var tid = 1; tid <= 10; tid++) {
-      var tot = (DATA[tid] && DATA[tid].tot) ? DATA[tid].tot : ITEMS.map(function () { return null; });
+      var tot = (DATA[tid] && DATA[tid].tot) ? DATA[tid].tot : [];
       var pc = prevCum(tid, k);
       var r = rec(tid, k);
       var cur = ITEMS.map(function (it, i) { return (pc ? (+pc[i] || 0) : 0) + (+r.q[i] || 0); });
-      blocks.push({ nm: OWNS[tid - 1], tot: tot, pc: pc || ITEMS.map(function () { return 0; }), cur: cur, q: r.q || ITEMS.map(function () { return 0; }) });
+      blocks.push({
+        id: BLABEL[tid - 1], short: BSHORT[tid - 1], tot: tot, pc: pc,
+        cur: cur, q: ITEMS.map(function (it, i) { return +r.q[i] || 0; }), red: r.red || []
+      });
     }
     return { k: k, blocks: blocks };
   }
   function exportPdf() {
     var d = pdfData();
-    var sum = function (fn) { return ITEMS.map(function (it, i) { var s = 0; d.blocks.forEach(function (b) { s += (+fn(b, i) || 0); }); return s; }); };
-    var sumTot = sum(function (b, i) { return b.tot[i]; });
-    var sumCur = sum(function (b, i) { return b.cur[i]; });
-    var sumQ = sum(function (b, i) { return b.q[i]; });
-    var sumPc = sumCur.map(function (v, i) { return v - sumQ[i]; });
+    var sumf = function (fn) {
+      return PDF_IDX.map(function (i) {
+        var s = 0, any = false;
+        d.blocks.forEach(function (b) { var v = fn(b, i); if (v !== null && v !== "" && isFinite(v)) { s += +v; any = true; } });
+        return any ? s : null;
+      });
+    };
+    var sumTot = sumf(function (b, i) { return b.tot[i]; });
+    var sumCur = sumf(function (b, i) { return b.cur[i]; });
+    var sumQ = sumf(function (b, i) { return b.q[i]; });
 
-    function cellRows(nm, tot, pc, cur, q, strong) {
-      var cls = strong ? ' class="sum"' : "";
-      var rr = "";
-      rr += '<tr' + cls + '><td class="blk" rowspan="5">' + nm + '</td><td class="lb">总设计量</td>'
-        + ITEMS.map(function (it, i) { return "<td>" + fmt(tot[i], it.u) + "</td>"; }).join("") + "</tr>";
-      rr += "<tr" + cls + '><td class="lb">截至上期完成</td>' + ITEMS.map(function (it, i) { return "<td>" + fmt(pc[i], it.u) + "</td>"; }).join("") + "</tr>";
-      rr += "<tr" + cls + '><td class="lb">累计完成</td>' + ITEMS.map(function (it, i) { return "<td>" + fmt(cur[i], it.u) + "</td>"; }).join("") + "</tr>";
-      rr += "<tr" + cls + '><td class="lb">累计完成比例</td>' + ITEMS.map(function (it, i) { return "<td>" + pct(cur[i], tot[i]) + "</td>"; }).join("") + "</tr>";
-      rr += "<tr" + cls + '><td class="lb">本旬完成</td>' + ITEMS.map(function (it, i) { return "<td>" + fmt(q[i], it.u) + "</td>"; }).join("") + "</tr>";
-      return rr;
+    function nums(vals, redIdxs, fixed) {
+      return PDF_IDX.map(function (i, ci) {
+        var u = PDF_UNIT[ci], v = vals[ci];
+        var red = redIdxs && redIdxs.indexOf(i) >= 0;
+        return '<td class="n' + (red ? " rd" : "") + '">' + pdfNum(v, u, fixed) + "</td>";
+      }).join("");
+    }
+    function blockRows(label, short, tot, pc, cur, q, red, isSum) {
+      var idx = PDF_IDX;
+      var lab = isSum
+        ? '<td class="bkl sum" rowspan="4">汇总</td>'
+        : '<td class="bkl" rowspan="4"><span>' + label + "</span><span>" + short + "</span></td>";
+      var r1 = '<tr class="b1">' + lab + '<td class="lb">总设计量</td>' + nums(idx.map(function (i, ci) { return tot[ci]; })) + "</tr>";
+      var r2 = '<tr class="b2"><td class="lb">累计完成</td>' + nums(idx.map(function (i, ci) { return cur[ci]; })) + "</tr>";
+      var r3 = '<tr class="b3"><td class="lb">累计完成比例</td>' + idx.map(function (i, ci) {
+        var t = tot[ci], c = cur[ci];
+        return '<td class="n">' + ((t !== null && t !== undefined && isFinite(t) && t > 0 && c !== null && c !== undefined) ? Math.round(c / t * 100) + "%" : "") + "</td>";
+      }).join("") + "</tr>";
+      var r4 = '<tr class="b4' + (isSum ? " s4" : "") + '"><td class="lb">本旬完成</td>' + nums(idx.map(function (i, ci) { return q[ci]; }), red) + "</tr>";
+      return r1 + r2 + r3 + r4;
     }
 
-    var head = '<tr class="h1"><th rowspan="5">标段</th><th rowspan="5">项目</th>'
-      + '<th colspan="9">路基工程</th><th colspan="9">桥梁工程</th></tr>'
+    /* 表头：5 行（标段跨 5 行；桥涵 8 项跨第 2~4 行；土石方/软基分级） */
+    var head = '<tr class="h1"><th colspan="2" rowspan="5">标段</th><th colspan="9">路基工程</th><th colspan="8">桥梁工程</th></tr>'
       + '<tr class="h2"><th colspan="4">土石方工程</th><th colspan="5">软基处理</th>'
-      + '<th rowspan="3">桩基</th><th rowspan="3">预应力管桩</th><th rowspan="3">预应力管桩配套</th>'
-      + '<th rowspan="3">墩柱</th><th rowspan="3">盖梁</th><th rowspan="3">梁板预制</th><th rowspan="3">梁板安装</th>'
-      + '<th rowspan="3">小桥</th><th rowspan="3">小型构造物</th></tr>'
-      + '<tr class="h3"><th colspan="2" rowspan="2">挖方</th><th colspan="2" rowspan="2">填方</th>'
-      + '<th rowspan="2">路基管桩</th><th rowspan="2">水泥搅拌桩</th><th rowspan="2">高压旋喷桩</th>'
-      + '<th rowspan="2">固化土桩</th><th rowspan="2">换填类</th></tr>'
-      + '<tr class="h3"><th>主线</th><th>匝道</th><th>主线</th><th>匝道</th></tr>'
-      + '<tr class="h4">' + ITEMS.map(function (it) { return "<th>" + it.u + "</th>"; }).join("") + "</tr>";
+      + '<th rowspan="3">桩基</th><th rowspan="3"><span>预应力</span><span>管桩</span></th><th rowspan="3">墩柱</th><th rowspan="3">盖梁</th>'
+      + '<th rowspan="3"><span>梁板</span><span>预制</span></th><th rowspan="3"><span>梁板</span><span>安装</span></th>'
+      + '<th rowspan="3">小桥</th><th rowspan="3"><span>小型</span><span>构造物</span></th></tr>'
+      + '<tr class="h3"><th colspan="2">挖方</th><th colspan="2">填方</th>'
+      + '<th rowspan="2"><span>路基</span><span>管桩</span></th><th rowspan="2"><span>水泥搅</span><span>拌桩</span></th>'
+      + '<th rowspan="2"><span>高压旋</span><span>喷桩</span></th><th rowspan="2"><span>固化</span><span>土桩</span></th>'
+      + '<th rowspan="2">换填类</th></tr>'
+      + '<tr class="h4"><th>主线</th><th>匝道</th><th>主线</th><th>匝道</th></tr>'
+      + '<tr class="h5">' + PDF_UNIT.map(function (u) { return "<th>" + u + "</th>"; }).join("") + "</tr>";
 
-    var body = cellRows("汇总", sumTot, sumPc, sumCur, sumQ, true);
-    d.blocks.forEach(function (b) { body += cellRows(b.nm.replace("标", "标<br>"), b.tot, b.pc, b.cur, b.q, false); });
+    var body = blockRows("", "", sumTot, null, sumCur, sumQ, null, true);
+    d.blocks.forEach(function (b) {
+      var t = PDF_IDX.map(function (i) { return (b.tot[i] === undefined ? null : b.tot[i]); });
+      var c = PDF_IDX.map(function (i) { return b.cur[i]; });
+      var q = PDF_IDX.map(function (i) { return b.q[i]; });
+      body += blockRows(b.id, b.short, t, b.pc, c, q, b.red, false);
+    });
 
     var title = "沪渝高速公路武汉至宜昌段改扩建工程施工旬报（" + d.k.replace(/-/g, ".") + "）";
-    var cols = '<colgroup><col style="width:5%"><col style="width:5%">'
-      + ITEMS.map(function () { return '<col style="width:5%">'; }).join("") + "</colgroup>";
+    var cols = '<colgroup>' + PDF_W.map(function (w) { return '<col style="width:' + w + 'pt">'; }).join("") + "</colgroup>";
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title><style>'
-      + '@page{size:A3 landscape;margin:8mm}'
-      + 'body{font-family:"Microsoft YaHei",SimHei,sans-serif;color:#000;margin:0}'
-      + 'h1{font-size:14pt;text-align:center;margin:0 0 6px;font-weight:600;letter-spacing:1px}'
-      + 'table{border-collapse:collapse;width:100%;table-layout:fixed}'
-      + 'th,td{border:1px solid #333;font-size:6.9pt;text-align:center;padding:1px 1px;line-height:1.22;overflow:hidden}'
-      + 'tr.h1 th,tr.h2 th{background:#F2F2F2;font-weight:600;font-size:7pt}'
-      + 'tr.h3 th,tr.h4 th{background:#F7F7F7;font-size:6.6pt}'
-      + 'td.lb{background:#FAFAFA;white-space:nowrap;font-size:6.6pt}'
-      + 'td.blk{font-weight:600;font-size:7pt;background:#FFF;line-height:1.35}'
-      + 'tr.sum td{font-weight:600;background:#F4F6FA}'
-      + 'thead{display:table-header-group}'
-      + '.note{font-size:7pt;margin-top:4px}'
-      + '</style></head><body><h1>' + title + '</h1><table>' + cols + '<thead>' + head + '</thead><tbody>' + body
-      + '</tbody></table><div class="note">备注：各标段标红数据为严重滞后项目。</div>'
-      + '<script>window.onload=function(){setTimeout(function(){window.print();},300)}<\/script></body></html>';
+      + '@page{size:841.85pt 1190.55pt;margin:0}'
+      + 'html,body{margin:0;padding:0;background:#fff}'
+      + 'body{-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#000}'
+      + '.tt{position:absolute;left:0;top:52pt;width:841.85pt;margin:0;text-align:center;'
+      + 'font-family:"方正小标宋简体","FZXBSJW--GB1-0","FZXiaoBiaoSong-B05S",SimSun,serif;font-weight:700;font-size:17.3pt;line-height:27pt}'
+      + 'table{position:absolute;left:53.5pt;top:105.7pt;width:722.7pt;border-collapse:collapse;table-layout:fixed;border:0.96pt solid #000}'
+      + 'th,td{border:0.48pt solid #000;padding:0;text-align:center;vertical-align:middle;overflow:hidden}'
+      + 'tr.h1 th,tr.h2 th,tr.h3 th,tr.h4 th,tr.h5 th{font-family:SimHei,"黑体",sans-serif;font-size:8.64pt;font-weight:400;line-height:1.18}'
+      + 'tr.h1 th,tr.h2 th{font-size:8.64pt}'
+      + 'tr.h1{height:13.2pt}tr.h2{height:12.7pt}tr.h3{height:12.8pt}tr.h4{height:12.7pt}tr.h5{height:12.7pt}'
+      + '.h1 th:first-child{font-size:12.48pt}'
+      + 'td.n{font-family:"Times New Roman",serif;font-size:10.56pt;line-height:1}'
+      + 'td.lb{font-family:FangSong,"仿宋_GB2312","仿宋",serif;font-size:8.64pt;line-height:1.2;white-space:nowrap}'
+      + 'th span{display:block}'
+      + 'td.bkl{font-family:FangSong,"仿宋_GB2312","仿宋",serif;font-size:10.56pt;line-height:1.28}'
+      + 'td.bkl span{display:block}'
+      + 'td.bkl.sum{font-size:13.44pt;line-height:1.6}'
+      + 'tr.b1,tr.b2,tr.b3,tr.b4{height:18.7pt}'
+      + 'tr.b4 td{background:#ECF8F7}'
+      + 'tr.b4.s4 td{background:#EFF6FC}'
+      + 'tr.b4 td{border-bottom:0.96pt solid #000}'
+      + 'td.bkl{border-bottom:0.96pt solid #000}'
+      + 'td.rd{color:#FF0000}'
+      + '.nt{position:absolute;left:56.2pt;top:996pt;font-family:FangSong,"仿宋_GB2312","仿宋",serif;font-size:12.48pt;line-height:16pt}'
+      + '</style></head><body><div class="tt">' + title + '</div>'
+      + "<table>" + cols + "<thead>" + head + "</thead><tbody>" + body + "</tbody></table>"
+      + '<div class="nt">备注：各标段标红数据为严重滞后项目</div>'
+      + '<script>window.onload=function(){setTimeout(function(){window.focus();window.print();},260)}<\/script></body></html>';
 
     var w = window.open("", "_blank");
     if (!w) { flagMsg("浏览器拦截了新窗口，请允许弹窗后重试"); return; }

@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/b.cfg.js?v=261126160503"></script>
+<script src="assets/b.cfg.js?v=261126162553"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126160503";
+  var BUILD = "261126162553";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126160503") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126162553") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,14 +25,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速改扩建工程 · 基础数据填报</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/b.css?v=261126160503">
+<link rel="stylesheet" href="assets/b.css?v=261126162553">
 
 
 
 
 
 
-<link rel="stylesheet" href="assets/xb.css?v=261126160503">
+<link rel="stylesheet" href="assets/xb.css?v=261126162553">
 </head>
 
 <body>
@@ -79,7 +79,6 @@
             <div class="tsf-cal" id="tsf-cal"></div>
           </div>
           <div class="card" id="tsf-sum"></div>
-          <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>点各标段右侧「提交」把该标段当日数据写回云端并锁定（HYSJSG-1标＝土建1标，HYTJ-2标＝土建2标，依次类推）；锁定后需点锁图标确认后才能修改；未提交的改动只存在本机。</span></div></div>
         </div>
       </div>
     </section>
@@ -102,13 +101,13 @@
         <div id="pane-right" class="pg-right">
           <div class="card" id="card-out"></div>
           <div class="card" id="card-ppl"></div>
-          <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>点各表右上「提交」把本标段本月数据写回云端并锁定，锁定后点锁图标确认再改；未提交的改动只存在本机。</span></div></div>
+
         </div>
       </div>
     </section>
     <section class="view" id="view-wk">
       <div class="card">
-        <div class="card-head"><h2>产值周报填报</h2><span class="hint pg-flag"><b>每周四更新</b><i>·</i>各标段只填本周完成，累计自动累计</span><span class="pg-money">货币单位：万元</span></div>
+        <div class="card-head"><h2>产值周报填报</h2><span class="hint pg-flag"><b>每周四更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">货币单位：万元</span></div>
         <div class="xb-bar" id="wk-bar"></div>
       </div>
       <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>各标段只填「本周完成」，累计完成自动累加；如前期多报、错报，本周完成可填<b>负数</b>修正，累计会自动冲减。工程月报「分项产值情况」自动取当月 19 日 23:00 前最新一期周报数据。</span></div></div>
@@ -121,6 +120,7 @@
         <div class="xb-bar" id="xb-bar"></div>
         <div id="xb-tid"></div>
       </div>
+      <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>每月10日/20日/30日填报 · 填报完成后点击「提交」</span></div></div>
       <div class="card" id="xb-body"></div>
       <div id="xb-msg"></div>
     </section>
@@ -158,7 +158,7 @@
           <div class="card" id="jr-money"></div>
           <div class="card" id="jr-pct"></div>
           <div class="card" id="jr-map"></div>
-          <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>按驻地办汇总辖段数据后点各表右上「提交」，把本月数据写回云端并锁定；锁定后需解锁才能修改；未提交的改动只存在本机。</span></div></div>
+
         </div>
       </div>
     </section>
@@ -2787,7 +2787,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (ONLINE) pullCloud();
 })();
 </script>
-<script src="assets/xb.js?v=261126160503"></script>
-<script src="assets/wk.js?v=261126160503"></script>
+<script src="assets/xb.js?v=261126162553"></script>
+<script src="assets/wk.js?v=261126162553"></script>
 </body>
 </html>

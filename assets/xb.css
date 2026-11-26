@@ -69,6 +69,31 @@
 #xb-msg{font-size:12px;color:#1D6B33;opacity:0;transition:.3s;padding:0 18px 10px}
 #xb-msg.on{opacity:1}
 
+/* 旬报流程按钮：与地市州月报「提交」同款圆角 */
+.xb-flow .pg-lk{margin-left:0;padding:7px 16px;font-size:12.5px}
+.pg-lk.ghost{background:#fff;color:#16407F}
+.pg-lk.ghost:hover{background:#F2F6FC}
+.pg-lk.ok{background:#17734F;border-color:#17734F;box-shadow:0 2px 7px rgba(23,115,79,.3)}
+.pg-lk.ok:hover{background:#1B8659}
+.pg-lk.ok.warn{background:#B3591A;border-color:#B3591A;box-shadow:0 2px 7px rgba(179,89,26,.3)}
+.pg-lk.ok.warn:hover{background:#C46520}
+
+/* 地市州统计：每个地市州一张小卡片，三张并列，总宽与上方旬报表一致 */
+.xb-city3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;min-width:1180px}
+.xb-cn-card{border:1px solid var(--line);background:#fff;border-radius:6px;box-shadow:0 1px 2px rgba(16,36,72,.05);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.xb-cn-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--hair);background:var(--mist)}
+.xb-cn-hd b{font-size:13px;color:var(--navy);letter-spacing:.04em}
+.xb-cn-hd em{font-style:normal;font-size:11px;color:var(--muted)}
+.xb-ct3{width:100%;border-collapse:collapse;table-layout:fixed}
+.xb-ct3 th,.xb-ct3 td{border-bottom:1px solid var(--hair);text-align:center;padding:4px 4px;font-size:11.5px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xb-ct3 th{background:#F7FAFF;color:var(--navy);font-weight:600;font-size:11px}
+.xb-ct3 td.cn-n,.xb-ct3 th.cn-n{text-align:left;padding-left:10px;color:var(--navy);font-weight:600}
+.xb-ct3 td.cn-u,.xb-ct3 th.cn-u{color:var(--muted);font-size:10.5px;width:46px}
+.xb-ct3 td.xb-q{padding:2px 4px}
+.xb-ct3 td.xb-q input{width:100%;min-width:48px;font-family:inherit;font-size:11.5px;line-height:1.5;color:var(--ink);text-align:center;padding:3px 2px;border:1px solid #E3D9A8;background:#FFFDF0;border-radius:3px;box-sizing:border-box}
+.xb-ct3 td.xb-q input:focus{outline:none;border-color:#C9B061;background:#FFFBE2}
+.xb-ct3 td.xb-gray{color:#A7AEBA;background:#F7F8FA}
+
 /* ===== B 页顶部说明条 ===== */
 .bx-guide{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:12px;color:#BFD0EA;letter-spacing:.02em}
 .bx-guide i{font-style:normal;display:inline-flex;align-items:center;gap:6px;color:#E4ECF8}
