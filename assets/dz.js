@@ -105,8 +105,7 @@
     if (!ks.length) { host.innerHTML = '<div class="xb-loading">云端暂无旬报数据（请先在数据填报页提交工程旬报）</div>'; return; }
     var k = ks[ks.length - 1];   /* 只取最新一期 */
     var bar = $("#dz-bar");
-    if (bar) bar.innerHTML = '<span class="dz-src">数据取自 B 页工程旬报表，取云端最新一期：<b>'
-      + kTxt(k) + '</b>；表内为截至本期累计完成量，完成比例＝累计完成 ÷ 总设计量，随旬报填报自动更新。</span>';
+    if (bar) bar.innerHTML = '<span class="dz-src">数据提取自工程旬报：<b>' + kTxt(k) + '</b></span>';
 
     var h = '<div class="dz-grid">';
     CITYMAP.forEach(function (m) {
@@ -122,7 +121,6 @@
       h += "</tbody></table></div>";
     });
     h += "</div>";
-    h += '<div class="dz-note">口径：武汉＝土建1标武汉段，孝感＝土建1标孝感段，仙桃＝土建1标仙桃段＋土建2、3、4标，潜江＝土建5、6标，荆州＝土建7、8标，宜昌＝土建9、10标；土石方＝主线挖方＋匝道挖方＋主线填方＋匝道填方，桥梁管桩＝预应力管桩配套（套）。设计量与累计完成均取自工程旬报，土建1标按旬报「地市州统计」照搬。</div>';
     host.innerHTML = h;
   }
   function boot() {
