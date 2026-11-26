@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/b.cfg.js?v=261126120244"></script>
+<script src="assets/b.cfg.js?v=261126121438"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126120244";
+  var BUILD = "261126121438";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126120244") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126121438") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,14 +25,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速改扩建工程 · 基础数据填报</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/b.css?v=261126120244">
+<link rel="stylesheet" href="assets/b.css?v=261126121438">
 
 
 
 
 
 
-<link rel="stylesheet" href="assets/xb.css?v=261126120244">
+<link rel="stylesheet" href="assets/xb.css?v=261126121438">
 </head>
 
 <body>
@@ -484,21 +484,43 @@
   }
 
   /* ---------- 产值 ---------- */
+  /* 合同额唯一来源：A 页「合同清单」（与清单默认显示口径一致：不含暂列金、含路面工程） */
+  var CTR_NET = { t1: 513187, t2: 244414, t3: 127643, t4: 167211, t5: 175537,
+    t6: 193325, t7: 251746, t8: 166054, t9: 189754, t10: 113456,
+    j1: 12774, j2: 19647, j3: 13170, j4: 17512, j5: 13903,
+    m1: 65542, m2: 17216, m3: 20067 };
+  /* 把逐分项的合同额按比例缩放到清单总额，保证「合计＝A页合同清单」且各分项完成比例口径一致 */
+  function outCtrAlloc(t) {
+    var base = 0, i, arr = [];
+    t.out.forEach(function (r) { base += (r.contract || 0); });
+    var tot = (CTR_NET[CUR.tid] !== undefined) ? CTR_NET[CUR.tid] : base;
+    if (!base || !tot) return t.out.map(function (r) { return { c: (r.contract || 0), tot: tot || base }; });
+    var acc = 0;
+    for (i = 0; i < t.out.length; i++) {
+      var last = (i === t.out.length - 1);
+      var v = last ? (tot - acc) : Math.round((t.out[i].contract || 0) * tot / base);
+      acc += v;
+      arr.push({ c: v, tot: tot });
+    }
+    return arr;
+  }
   function renderOut() {
     var t = tenderOf(CUR.tid), host = $("#card-out");
     if (!t) { host.style.display = "none"; return; }
     host.style.display = "";
     if (notStarted(t)) { host.innerHTML = soonHead("分项产值情况", subTitle(t)); return; }
     var tot = { contract: 0, mon: 0, cum: 0 };
+    var alloc = outCtrAlloc(t);
+    tot.contract = alloc.length ? alloc[0].tot : CTR_NET[CUR.tid] || 0;
     var body = t.out.map(function (r, i) {
-      var o = outAt(t, r, CUR.ym);
-      tot.contract += (r.contract || 0); tot.mon += (o.mon || 0); tot.cum += (o.cum || 0);
-      var pctv = r.contract ? (o.cum / r.contract) : null;
+      var o = outAt(t, r, CUR.ym), cAmt = alloc[i].c;
+      tot.mon += (o.mon || 0); tot.cum += (o.cum || 0);
+      var pctv = cAmt ? (o.cum / cAmt) : null;
       var cumCell = FIXOPEN
         ? '<input class="pgi" data-ocumin="' + r.k + '" value="' + fmt(o.cum, 0) + '">'
         : '<span class="fixv">' + fmt(o.cum, 0) + "</span>";
       return '<tr><td class="c">' + (r.no || "") + "</td><td class=\"nmc\">" + r.nm + "</td>"
-        + '<td class="r" style="display:none">' + fmt(r.contract, 0) + "</td>"
+        + '<td class="r" style="display:none">' + fmt(cAmt, 0) + "</td>"
         + '<td class="r"><input class="pgi" data-out="' + r.k + '" value="' + fmt(o.mon, 0) + '"></td>'
         + '<td class="r">' + cumCell + "</td>"
         + '<td class="r" style="display:none" data-opct="' + r.k + '">' + (pctv === null ? "" : pct(pctv)) + "</td></tr>";
@@ -507,7 +529,7 @@
       + '<td class="r" data-otot="1">' + fmt(tot.mon, 0) + "</td>"
       + '<td class="r" data-ocumtot="1">' + fmt(tot.cum, 0) + "</td>"
       + '<td class="r" style="display:none" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
-    host.innerHTML = head("分项产值情况", subTitle(t), "out")
+    host.innerHTML = head("分项产值情况", subTitle(t) + ' · 合同额 ' + fmt(tot.contract, 0), "out")
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
       + '<th style="width:44px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none">合同额</th>'
       + '<th style="width:96px">本月完成</th><th style="width:96px">累计完成</th>'
@@ -1396,7 +1418,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
       var o = outAt(t1, r1, CUR.ym);
       var c1 = document.querySelector('[data-ocumin="' + r1.k + '"]'), p1 = document.querySelector('[data-opct="' + r1.k + '"]');
       if (c1) c1.value = fmt(o.cum, 0);
-      if (p1) p1.textContent = r1.contract ? pct(o.cum / r1.contract) : "";
+      if (p1) { var ca1 = outCtrAlloc(t1)[t1.out.indexOf(r1)]; p1.textContent = ca1.c ? pct(o.cum / ca1.c) : ""; }
       refreshTotal();
       $("#pg-hint").textContent = "有未保存的修改";
       return;
@@ -1408,7 +1430,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
       setEv(CUR.tid, CUR.ym, "outcum", r2.k, v);
       var o2 = outAt(t2, r2, CUR.ym);
       var p2 = document.querySelector('[data-opct="' + r2.k + '"]');
-      if (p2) p2.textContent = r2.contract ? pct(o2.cum / r2.contract) : "";
+      if (p2) { var ca2 = outCtrAlloc(t2)[t2.out.indexOf(r2)]; p2.textContent = ca2.c ? pct(o2.cum / ca2.c) : ""; }
       refreshTotal();
       $("#pg-hint").textContent = "有未保存的修改";
       return;
@@ -1430,8 +1452,8 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   });
   function refreshTotal() {
     var t = tenderOf(CUR.tid); if (!t) return;
-    var c = 0, m = 0, u = 0;
-    t.out.forEach(function (r, i) { var o = outAt(t, r, CUR.ym); c += (r.contract || 0); m += (o.mon || 0); u += (o.cum || 0); });
+    var c = 0, m = 0, u = 0, al = outCtrAlloc(t);
+    t.out.forEach(function (r, i) { var o = outAt(t, r, CUR.ym); c += al[i].c; m += (o.mon || 0); u += (o.cum || 0); });
     var a = document.querySelector('[data-otot="1"]');
     if (a) a.textContent = fmt(m, 0);
     var b2 = document.querySelector('[data-ocumtot="1"]');
@@ -2541,6 +2563,6 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (ONLINE) pullCloud();
 })();
 </script>
-<script src="assets/xb.js?v=261126120244"></script>
+<script src="assets/xb.js?v=261126121438"></script>
 </body>
 </html>

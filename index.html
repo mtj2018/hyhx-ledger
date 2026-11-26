@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/a.cfg.js?v=261126120244"></script>
+<script src="assets/a.cfg.js?v=261126121438"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126120244";
+  var BUILD = "261126121438";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126120244") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126121438") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,7 +25,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速公路武汉至宜昌段改扩建工程 · 项目信息</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/a.css?v=261126120244">
+<link rel="stylesheet" href="assets/a.css?v=261126121438">
 
 
 
@@ -43,7 +43,7 @@
 
 
 
-<link rel="stylesheet" href="assets/xb.css?v=261126120244">
+<link rel="stylesheet" href="assets/xb.css?v=261126121438">
 </head>
 <body class="is-masked">
 
@@ -3951,21 +3951,24 @@
         + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
         + '<span class="seg-sub">累计至 ' + (YM || "").replace("-", ".") + '</span></div>'
         + '<div class="seg-opts" style="margin:8px 0 4px">'
-        + '<button type="button" class="seg-opt' + (SEG_CMP.zlj ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
-        + '<button type="button" class="seg-opt' + (SEG_CMP.lm ? " on" : "") + '" data-copt="lm">含路面工程</button>'
+        + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).zlj) ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
+        + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).lm) ? " on" : "") + '" data-copt="lm">含路面工程</button>'
         + "</div>"
         + '<div class="seg-crows">' + rows + "</div></div>";
     }
     function segAmt(tid, o) {
+      /* 合同额唯一来源：A 页「合同清单」当前显示的数值（含暂列金/含路面工程开关也由清单控制） */
+      var net = window.__CTR_NET || {};
+      if (net[tid] !== undefined && isFinite(net[tid])) return net[tid];
       var c = SEG_CTR[tid] || {}, v = c.amt || 0;
       if (!o.zlj) v -= (c.zlj || 0);
       if (!o.lm) v -= (c.lm || 0);
       return v;
     }
     function segCumAll(t, o) {
-      var s = 0;
+      var s = 0, lmOn = (window.__CTR_STATE || o).lm;
       t.out.forEach(function (row) {
-        if (!o.lm && row.nm === "路面工程") return;
+        if (!lmOn && row.nm === "路面工程") return;
         s += outAt(t, row, YM).cum;
       });
       return s;
@@ -3975,7 +3978,7 @@
       SEG_PROJ.forEach(function (p) {
         var cv = ctr[p.key], cum = segCum(t, p);
         var has = (cv !== undefined && cv !== null && cv !== 0);
-        var dim = (p.key === "lm" && !o.lm) ? " dim" : "";
+        var dim = (p.key === "lm" && !((window.__CTR_STATE || o).lm)) ? " dim" : "";
         h += '<div class="seg-pr' + dim + '"><span>' + p.label + "</span>"
           + "<i>" + (has ? fmt(cv, 0) : "—") + "</i>"
           + "<i>" + (has && cum !== null ? fmt(cum, 0) : "—") + "</i>"
@@ -3985,17 +3988,33 @@
     }
     function renderSeg() {
       var host = q("#pg-seg"); if (!host) return;
+      if (!host.__ctrSync) {
+        host.__ctrSync = 1;
+        document.addEventListener("ctr-changed", function () { try { renderSeg(); } catch (e9) {} });
+      }
       if (!host.__sb) {
         host.__sb = 1;
         host.addEventListener("click", function (e) {
           var cb = (e.target && e.target.closest) ? e.target.closest("[data-copt]") : null;
-          if (cb) { var ck = cb.getAttribute("data-copt"); SEG_CMP[ck] = !SEG_CMP[ck]; renderSeg(); return; }
+          if (cb) {
+            var ck = cb.getAttribute("data-copt");
+            var st = window.__CTR_STATE || { zlj: !!SEG_CMP.zlj, lm: !!SEG_CMP.lm };
+            var nv = !st[ck];
+            if (typeof window.__ctrSet === "function") {
+              var o2 = {}; o2[ck] = nv; window.__ctrSet(o2);
+            } else { SEG_CMP[ck] = nv ? 1 : 0; }
+            renderSeg(); return;
+          }
           var b = (e.target && e.target.closest) ? e.target.closest("[data-opt]") : null;
           if (!b) return;
           var card = (b.closest ? b.closest(".seg-card") : null); if (!card) return;
-          var o = segOpt(card.getAttribute("data-tid"));
           var k = b.getAttribute("data-opt");
-          o[k] = !o[k];
+          var stg = window.__CTR_STATE || {};
+          if (typeof window.__ctrSet === "function" && stg[k] !== undefined) {
+            var o3 = {}; o3[k] = !stg[k]; window.__ctrSet(o3);
+          } else {
+            var o = segOpt(card.getAttribute("data-tid")); o[k] = !o[k];
+          }
           renderSeg();
         });
       }
@@ -4017,9 +4036,9 @@
           + "</div>"
           + '<div class="seg-bar"><em style="width:' + (Math.max(0, Math.min(1, rate)) * 100).toFixed(1) + '%"></em></div>'
           + '<div class="seg-opts">'
-          + '<button type="button" class="seg-opt' + (o.zlj ? " on" : "") + '" data-opt="zlj">含暂列金</button>'
+          + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || o).zlj) ? " on" : "") + '" data-opt="zlj">含暂列金</button>'
           + ((ctr.lm || 0) > 0
-              ? '<button type="button" class="seg-opt' + (o.lm ? " on" : "") + '" data-opt="lm">含路面工程</button>'
+              ? '<button type="button" class="seg-opt' + (((window.__CTR_STATE || o).lm) ? " on" : "") + '" data-opt="lm">含路面工程</button>'
               : "")
           + "</div>"
           + '<div class="seg-proj">' + segProjRows(t, ctr, o) + "</div>"
@@ -4727,6 +4746,32 @@ var TO_MS = 15000;
 
   var ON = { zlj: false, lm: true, zja: false, zjd: false };
   function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  /* 合同清单是「合同额」的唯一数据源：把每个标段当前显示的合同额同步到全局，
+     完成率统计 / B 页分项产值都只读这一份，不再各存一套数 */
+  function publishCtr() {
+    var net = {}, rows = document.querySelectorAll("#ctr-tj tbody tr");
+    Array.prototype.forEach.call(rows, function (tr, i) {
+      var cell = tr.querySelector("td.amt"); if (!cell) return;
+      var v = +String(cell.textContent).replace(/,/g, "");
+      if (isFinite(v)) net["t" + (i + 1)] = v;
+    });
+    [["ctr-ja", "j"], ["ctr-jd", "m"]].forEach(function (p) {
+      var tb = document.getElementById(p[0]); if (!tb) return;
+      Array.prototype.forEach.call(tb.querySelectorAll("tbody tr"), function (tr, i) {
+        var cell = tr.querySelector("td.amt"); if (!cell) return;
+        var v = +String(cell.textContent).replace(/,/g, "");
+        if (isFinite(v)) net[p[1] + (i + 1)] = v;
+      });
+    });
+    window.__CTR_NET = net;
+    window.__CTR_STATE = { zlj: !!ON.zlj, lm: !!ON.lm };
+    try { document.dispatchEvent(new CustomEvent("ctr-changed")); } catch (e0) {}
+  }
+  window.__ctrSet = function (opt) {
+    if (opt && opt.zlj !== undefined) ON.zlj = !!opt.zlj;
+    if (opt && opt.lm !== undefined) ON.lm = !!opt.lm;
+    paintCtr();
+  };
   function paintCtr() {
     var total = 0;
     Array.prototype.forEach.call(document.querySelectorAll("#ctr-tj td.amt"), function (c) {
@@ -4760,6 +4805,7 @@ var TO_MS = 15000;
       Array.prototype.forEach.call(tb.querySelectorAll("td.stot"), function (c) { c.textContent = fmt(tot); });
       Array.prototype.forEach.call(tb.querySelectorAll("td.z"), function (c) { c.classList.toggle("is-off", !on); });
     });
+    publishCtr();
   }
 
   document.addEventListener("click", function (e) {
@@ -4776,6 +4822,6 @@ var TO_MS = 15000;
 </script>
 
 </body>
-<script src="assets/dz.js?v=261126120244"></script>
+<script src="assets/dz.js?v=261126121438"></script>
 </html>
 <!-- （注：内容由AI生成） -->
