@@ -2585,8 +2585,7 @@
         + '</div>');
 
     var twoCard = !!c.months;
-    var hd = '<div class="fa-hd"><div class="fa-ttl">' + c.city + (c.seg ? '（' + c.seg + '）' : '') + ' 本月投资填报</div>'
-      + '<div class="fa-sub">仅「本月投资」可填，其余数据已固化</div>'
+    var hd = '<div class="fa-hd"><div class="fa-ttl">' + c.city + '投资填报</div>'
       + '<div class="clk-bar" style="margin-left:auto"><button type="button" class="clk-ico" data-lkico="fa_' + c.k + '" aria-label="小锁"></button></div></div>';
     return '<div class="fa-panel' + (twoCard ? '' : ' card') + '" id="fa-p-' + c.k + '"'
       + ' style="display:none;' + (twoCard ? 'gap:14px' : 'padding:0;overflow:hidden') + '">'
