@@ -11,8 +11,8 @@
   var MIN = "2026-11-19", MAX = "2029-12-31";
   var DATA = {}, SHA = {}, LOADED = false, CUR = { key: "" }, TM = {}, GRID_READY = 0;
   var PH = {
-    t2: "文字信息周报：填写仙桃城区高架桥主要形象完成情况",
-    t8: "文字信息周报：填写引江济汉特大桥主要形象完成情况"
+    t2: "填写仙桃城区高架桥主要形象完成情况",
+    t8: "填写引江济汉特大桥主要形象完成情况"
   };
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -231,7 +231,8 @@
         + '<td class="wk-cum" data-wkcum="' + tid + "|" + i + '">' + fmt(cum[i]) + "</td></tr>";
     }).join("");
     var txtBox = span > 1
-      ? '<div class="wk-txt"><textarea data-wktxt="' + tid + '" placeholder="' + (PH[tid] || "文字信息周报：本周形象进度、节点、存在问题…") + '"' + (lk ? " readonly" : "") + ">" + (r ? (r.txt || "") : "") + "</textarea></div>"
+      ? '<div class="wk-txt"><div class="wk-note"><b>文字周报</b><span>' + (PH[tid] || "本周形象进度、节点、存在问题") + '</span></div>'
+        + '<textarea data-wktxt="' + tid + '" placeholder="本周形象进度、节点、存在的问题…"' + (lk ? " readonly" : "") + ">" + (r ? (r.txt || "") : "") + "</textarea></div>"
       : "";
     var tag = tagOf(tid);
     return '<div class="wk-card' + (span > 1 ? " wk-wide" : "") + '" style="grid-column:span ' + span + '">'
