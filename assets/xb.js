@@ -155,7 +155,7 @@
         h += '<tr><td class="xb-it">' + n + '</td><td class="xb-u">' + uu + "</td>";
         ["蔡甸", "汉川", "仙桃"].forEach(function (a) {
           var v = (ck[a] && ck[a][i] !== undefined) ? ck[a][i] : "";
-          h += '<td class="xb-q">' + (canEdit ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + v + '" placeholder="0">' : (v === "" ? "—" : v)) + "</td>";
+          h += '<td class="xb-q">' + (canEdit ? '<input type="text" inputmode="decimal" data-xbc="' + a + "|" + i + '" value="' + v + '" placeholder="" >' : (v === "" ? "—" : v)) + "</td>";
         });
         h += "</tr>";
       });
