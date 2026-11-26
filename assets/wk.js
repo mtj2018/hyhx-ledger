@@ -169,8 +169,18 @@
     var k = keys[keys.length - 1];
     return { key: k, cum: cumArr(tid, k), ts: k };
   }
+  function window_WK_row(tid, ym) {
+    if (!LOADED) return null;
+    var o = DATA[tid]; if (!o) return null;
+    var cutoff = ym + "-19", keys = Object.keys(o.w || {}).filter(function (k) { return k <= cutoff && k >= MIN; }).sort();
+    if (!keys.length) return null;
+    var k = keys[keys.length - 1], r = rec(tid, k);
+    if (!r) return null;
+    return { key: k, q: (r.q || []).slice(), cum: (r.cum || []).slice() };
+  }
   window.__WK = {
     cum: function (tid, ym) { return monthCum(tid, ym); },
+    row: function (tid, ym) { return window_WK_row(tid, ym); },
     ready: function () { return LOADED; },
     seed: SEED,
     snap: function (key) {
@@ -255,6 +265,12 @@
           : '<input type="text" inputmode="decimal" data-wkq="' + tid + "|" + i + '" value="' + (q[i] === 0 ? "" : q[i]) + '" placeholder="0">') + "</td>"
         + '<td class="wk-cum" data-wkcum="' + tid + "|" + i + '">' + fmt(cum[i]) + "</td></tr>";
     }).join("");
+    var qs = 0, cs = 0;
+    rows.forEach(function (row, i) { qs += (+q[i] || 0); cs += (+cum[i] || 0); });
+    body += '<tr class="wk-tot"><td class="wk-it">合计</td>'
+      + '<td class="wk-prev" data-wktprev="' + tid + '">' + fmt(cs - qs) + "</td>"
+      + '<td class="wk-q" data-wktq="' + tid + '">' + fmt(qs) + "</td>"
+      + '<td class="wk-cum" data-wktcum="' + tid + '">' + fmt(cs) + "</td></tr>";
     var txtBox = span > 1
       ? '<div class="wk-txt"><div class="wk-note"><b>文字周报</b><span>' + (PH[tid] || "本周形象进度、节点、存在问题") + '</span></div>'
         + '<textarea data-wktxt="' + tid + '" placeholder="本周形象进度、节点、存在的问题…"' + (lk ? " readonly" : "") + ">" + (r ? (r.txt || "") : "") + "</textarea></div>"
@@ -293,6 +309,14 @@
         if (cellv) cellv.textContent = fmt(r.cum[i]);
         var prevCell = inp.closest("tr").querySelector(".wk-prev");
         if (prevCell) prevCell.textContent = fmt(basePrev);
+        var qs = 0, cs = 0;
+        r.q.forEach(function (v, j) { qs += (+v || 0); cs += (+r.cum[j] || 0); });
+        var tq = host.querySelector('[data-wktq="' + tid + '"]');
+        if (tq) tq.textContent = fmt(qs);
+        var tc = host.querySelector('[data-wktcum="' + tid + '"]');
+        if (tc) tc.textContent = fmt(cs);
+        var tp = host.querySelector('[data-wktprev="' + tid + '"]');
+        if (tp) tp.textContent = fmt(cs - qs);
         save(tid);
       };
       inp.onblur = function () { render(); };

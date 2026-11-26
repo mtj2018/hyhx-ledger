@@ -31,7 +31,7 @@
 .xb-ct2 tr.gs th.it{background:#F7FAFF}
 .xb-ct2 tr.unit th{background:#FBFCFE;color:var(--muted);font-weight:400;font-size:10.5px}
 .xb-ct2 tbody tr.rd td{padding:2px 2px;text-align:center}
-.xb-ct2 tbody tr.rd td.lb{text-align:center;padding-left:0}
+.xb-ct2 tbody tr.rd td.lb{text-align:left;padding-left:8px}
 .xb-ct2 tbody tr.is-red td{background:#FDEEEE}
 .xb-cc{min-width:760px}
 /* 悬停高亮整列（列级，不影响整行） */
@@ -93,6 +93,8 @@
 .xb-ct3 td.xb-q input{width:100%;min-width:48px;font-family:inherit;font-size:11.5px;line-height:1.5;color:var(--ink);text-align:center;padding:3px 2px;border:1px solid #E3D9A8;background:#FFFDF0;border-radius:3px;box-sizing:border-box}
 .xb-ct3 td.xb-q input:focus{outline:none;border-color:#C9B061;background:#FFFBE2}
 .xb-ct3 td.xb-gray{color:#A7AEBA;background:#F7F8FA}
+.xb-ct3 tbody tr:hover td{background:#DBEAFF}
+.xb-ct3 tbody tr:hover td.xb-gray{background:#D5E3F7}
 
 /* ===== B 页顶部说明条 ===== */
 .bx-guide{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:12px;color:#BFD0EA;letter-spacing:.02em}
@@ -150,6 +152,8 @@
 .wk-tbl td{padding:3px 4px;border-bottom:1px solid #F2F5F9;text-align:center;color:#243B5E}
 .wk-tbl td.wk-it{text-align:left;color:#3B4A63;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wk-tbl td.wk-cum{font-weight:600;color:#0F2C5C}
+.wk-tbl tr.wk-tot td{background:#F7F9FD;border-top:1px solid #E3E8F0;font-weight:700;color:var(--navy)}
+.wk-tbl tr.wk-tot td.wk-q{font-weight:700}
 .wk-tbl td.wk-q input{width:100%;max-width:64px;border:1px solid #EFE6C6;border-radius:2px;background:#FFFDF0;padding:2px 4px;text-align:center;font:inherit;color:#243B5E}
 .wk-tbl td.wk-q input:focus{outline:none;background:#FFF6D4;border-color:#D9C77A}
 .wk-txt{display:block;min-width:0}

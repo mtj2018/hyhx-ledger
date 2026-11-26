@@ -235,7 +235,7 @@
     rows += '<tr><td class="lb">完成比例</td>' + ITEMS.map(function (it, i) {
       return '<td class="' + (cls0(i) ? "xb-gray" : "") + '" data-xbpct="' + tid + "|" + i + '">' + (hasTot(tid, i) ? pct(cur[i], tot[i]) : "—") + "</td>";
     }).join("") + "</tr>";
-    rows += '<tr class="rd"><td class="lb">滞后</td>' + ITEMS.map(function (it, i) {
+    rows += '<tr class="rd"><td class="lb">是否滞后</td>' + ITEMS.map(function (it, i) {
       if (!hasTot(tid, i)) return '<td class="xb-gray">—</td>';
       var red = (r.red || []).indexOf(i) >= 0;
       return '<td class="xb-rdc"><button type="button" data-red="' + tid + "|" + i + '" class="xb-rd' + (red ? " on" : "") + '"' + (redOn ? "" : " disabled") + ">" + (red ? "是" : "否") + "</button></td>";
@@ -294,7 +294,7 @@
       h += '<div class="xb-zone"><div class="xb-zone-hd"><b>' + TENDERS[0] + "</b><span>" + ownerOf(t1)
         + "</span>" + statusChip(t1, k) + '<div class="xb-flow">' + flowBtns(t1, k, s1) + "</div></div>"
         + segTable(t1, k, s1) + "</div>";
-      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>地市州统计</b><span>' + TENDERS[0] + " · 蔡甸 / 汉川 / 仙桃 设计量与完成情况</span></div>"
+      h += '<div class="xb-zone"><div class="xb-zone-hd"><b>地市州统计</b></div>'
         + cTable(k, s1) + "</div>";
     } else {
       z.tids.forEach(function (tid) {

@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/b.cfg.js?v=261126173202"></script>
+<script src="assets/b.cfg.js?v=261126183917"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126173202";
+  var BUILD = "261126183917";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126173202") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126183917") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,14 +25,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速改扩建工程 · 基础数据填报</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/b.css?v=261126173202">
+<link rel="stylesheet" href="assets/b.css?v=261126183917">
 
 
 
 
 
 
-<link rel="stylesheet" href="assets/xb.css?v=261126173202">
+<link rel="stylesheet" href="assets/xb.css?v=261126183917">
 </head>
 
 <body>
@@ -110,7 +110,7 @@
         <div class="card-head"><h2>产值周报填报</h2><span class="hint pg-flag"><b>每周四更新</b><i>·</i>填报完成后点击「提交」</span><span class="pg-money">货币单位：万元</span></div>
         <div class="xb-bar" id="wk-bar"></div>
       </div>
-      <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>各标段只填「本周完成」，累计完成自动累加；如前期多报、错报，本周完成可填<b>负数</b>修正，累计会自动冲减。工程月报「分项产值情况」自动取当月 19 日 23:00 前最新一期周报数据。</span></div></div>
+      <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>如前期多报、错报，本周完成可填<b>负数</b>修正，累计会自动冲减。工程月报「分项产值情况」自动取当月 19 日 23:00 前最新一期周报数据。</span></div></div>
       <div id="wk-body"></div>
       <div id="wk-msg"></div>
     </section>
@@ -528,16 +528,24 @@
     /* 产值周报（截至当月 19 日 23:00 的最新一期）自动带入 */
     var wkData = null, wkKeyTxt = "";
     try {
-      var w = (window.__WK && window.__WK.cum) ? window.__WK.cum(CUR.tid, CUR.ym) : null;
+      var w = (window.__WK && window.__WK.row) ? window.__WK.row(CUR.tid, CUR.ym) : null;
+      if (!w && window.__WK && window.__WK.cum) {
+        var w0 = window.__WK.cum(CUR.tid, CUR.ym);
+        if (w0 && w0.cum) w = { key: w0.key, q: null, cum: w0.cum };
+      }
       if (w && w.cum && w.cum.length === t.out.length) {
-        wkData = {}; t.out.forEach(function (r, i) { wkData[r.k] = w.cum[i]; });
+        wkData = {}; t.out.forEach(function (r, i) { wkData[r.k] = { q: (w.q ? w.q[i] : null), cum: w.cum[i] }; });
         wkKeyTxt = String(w.key || "").replace(/-/g, ".");
       }
     } catch (eWk) { wkData = null; }
     var body = t.out.map(function (r, i) {
-      var o = outAt(t, r, CUR.ym), cAmt = alloc[i].c, auto = !!(wkData && wkData[r.k] !== undefined && wkData[r.k] !== null);
+      var o = outAt(t, r, CUR.ym), cAmt = alloc[i].c, auto = !!(wkData && wkData[r.k] && wkData[r.k].cum !== undefined && wkData[r.k].cum !== null);
       var prevBase = (o.cum || 0) - (o.mon || 0);
-      if (auto) o = { mon: (wkData[r.k] - prevBase), cum: wkData[r.k] };
+      if (auto) {
+        var wv = wkData[r.k];
+        var mon = (wv.q !== null && wv.q !== undefined && isFinite(+wv.q)) ? +wv.q : (wv.cum - prevBase);
+        o = { mon: mon, cum: wv.cum };
+      }
       tot.mon += (o.mon || 0); tot.cum += (o.cum || 0);
       var pctv = cAmt ? (o.cum / cAmt) : null;
       var cumCell = (FIXOPEN && !auto)
@@ -579,6 +587,48 @@
   }
 
   /* ---------- 分地市州 ---------- */
+  /* 合计行：土建1标 / 机电1标 / 交安1标 */
+  var REGSUM_TIDS = { t1: 1, m1: 1, j1: 1 };
+  var JTKEYS = ["outPlan", "outDone", "glPlan", "glDone", "fhPlan", "fhDone", "bzPlan", "bzDone"];
+  function jtDec(k) { return (/Plan$|^outDone$/.test(k) && /^out/.test(k)) ? 0 : 2; }
+  function regSums() {
+    var reg = BASE.regions[CUR.tid];
+    if (!reg) return null;
+    var cur = (rep(CUR.tid, CUR.ym).reg || {});
+    var s = (reg.kind === "simple") ? [0, 0] : [0, 0, 0, 0, 0, 0, 0, 0];
+    reg.rows.forEach(function (r) {
+      var c = cur[r.city] || {};
+      if (reg.kind === "simple") {
+        s[0] += +((c.plan !== undefined ? c.plan : r.plan) || 0);
+        s[1] += +((c.done !== undefined ? c.done : r.done) || 0);
+      } else {
+        JTKEYS.forEach(function (k, j) { s[j] += +((c[k] !== undefined ? c[k] : r[k]) || 0); });
+      }
+    });
+    return { kind: reg.kind, s: s };
+  }
+  function regTotalRow(sm) {
+    if (!sm) return "";
+    if (sm.kind === "simple") {
+      return '<tr class="total"><td class="c">合计</td>'
+        + '<td class="r" data-regtot="0">' + fmt(sm.s[0], 0) + "</td>"
+        + '<td class="r" data-regtot="1">' + fmt(sm.s[1], 0) + "</td></tr>";
+    }
+    return '<tr class="total"><td class="c">合计</td>' + JTKEYS.map(function (k, j) {
+      return '<td class="' + (/^out/.test(k) ? "r" : "c") + (j % 2 === 0 ? " sep" : "") + '" data-regtot="' + j + '">' + fmt(sm.s[j], jtDec(k)) + "</td>";
+    }).join("") + "</tr>";
+  }
+  function refreshRegTotal() {
+    if (!REGSUM_TIDS[CUR.tid]) return;
+    var sm = regSums();
+    if (!sm) return;
+    var host = $("#card-reg");
+    if (!host) return;
+    host.querySelectorAll("[data-regtot]").forEach(function (td) {
+      var j = +td.getAttribute("data-regtot");
+      td.textContent = fmt(sm.s[j], sm.kind === "simple" ? 0 : jtDec(JTKEYS[j]));
+    });
+  }
   function renderReg() {
     var t = tenderOf(CUR.tid);
     var reg = BASE.regions[CUR.tid], host = $("#card-reg");
@@ -596,6 +646,8 @@
         return '<tr><td class="c">' + DSP(r.city) + "</td>" + planCell
           + '<td class="r"><input class="pgi" data-reg="' + r.city + '|done" value="' + fmt(done, 0) + '"></td></tr>';
       }).join("");
+      var sm1 = REGSUM_TIDS[CUR.tid] ? regSums() : null;
+      if (sm1) rows += regTotalRow(sm1);
       host.innerHTML = head("地市州产值", subTitle(t), "reg")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
         + '<th style="width:104px" class="c">地市州</th>'
@@ -619,6 +671,8 @@
           + cell("fhPlan", r.fhPlan, 1) + cell("fhDone", r.fhDone)
           + cell("bzPlan", r.bzPlan, 1) + cell("bzDone", r.bzDone) + "</tr>";
       }).join("");
+      var sm2 = REGSUM_TIDS[CUR.tid] ? regSums() : null;
+      if (sm2) rows2 += regTotalRow(sm2);
       var GW = ' style="width:72px"';
       host.innerHTML = head("分地市州填报", subTitle(t), "reg")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead>'
@@ -1270,9 +1324,17 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   function placeReg() {
     var reg = document.getElementById("card-reg");
     var left = document.getElementById("pane-left");
+    var right = document.getElementById("pane-right");
     var shape = document.getElementById("card-shape");
+    var out = document.getElementById("card-out");
     if (!reg || !left || !shape) return;
-    /* B 区顺序固定：形象进度完成情况一览表 → 分地市州填报（如有） */
+    /* 土建1标、机电1标：地市州产值卡放在「分项产值情况」下方（右栏）；其余标段仍在左栏「形象进度」下方 */
+    var below = (CUR.tid === "t1" || CUR.tid === "m1");
+    if (below && right && out) {
+      if (reg.parentNode !== right || reg.previousElementSibling !== out) right.insertBefore(reg, out.nextSibling);
+      return;
+    }
+    /* 其余：形象进度完成情况一览表 → 分地市州填报（如有） */
     if (reg.parentNode !== left || reg.previousElementSibling !== shape) left.insertBefore(reg, shape.nextSibling);
   }
   function renderAll() {
@@ -1661,6 +1723,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
       r.reg[p[0]][p[1]] = (v === null) ? "" : v;
       DIRTY = true;
       $("#pg-hint").textContent = "有未保存的修改";
+      refreshRegTotal();
       return;
     }
   });
@@ -2788,7 +2851,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (ONLINE) pullCloud();
 })();
 </script>
-<script src="assets/xb.js?v=261126173202"></script>
-<script src="assets/wk.js?v=261126173202"></script>
+<script src="assets/xb.js?v=261126183917"></script>
+<script src="assets/wk.js?v=261126183917"></script>
 </body>
 </html>
