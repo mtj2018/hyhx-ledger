@@ -3425,18 +3425,34 @@ body.is-masked #btn-export,body.is-masked #btn-import,body.is-masked #btn-save,b
     return window.__REPDB;
 
   }
+  function faRegRow(tid, city) {
+    var rg = (faBS().regions || {})[tid];
+    if (!rg || !rg.rows) return null;
+    for (var i = 0; i < rg.rows.length; i++) if (rg.rows[i].city === city) return rg.rows[i];
+    return null;
+  }
+  function faHasReg(tid) {
+    var rg = (faBS().regions || {})[tid];
+    return !!(rg && rg.rows && rg.rows.length);
+  }
   function faRegDone(tid, city, cm) {
     var db = faRepDB();
     if (!db || !db.reports || !tid || !city) return null;
     var ym = faYmOf(cm);
     if (!ym) return null;
     var r = (db.reports[tid] || {})[ym];
-    if (!r || !r.reg) return null;
-    var o = r.reg[city];
-    if (!o || typeof o !== "object") return null;
-    var v = o.done;
-    if (v === undefined || v === null || v === "") v = o.outDone;
-    if (v === undefined || v === null || v === "") return null;
+    if (!r) return null;
+    var o = (r && r.reg && r.reg[city] && typeof r.reg[city] === "object") ? r.reg[city] : null;
+    var v = o ? o.done : undefined;
+    if (v === undefined || v === null || v === "") v = o ? o.outDone : undefined;
+    /* 卡片里没填时用 BASE 里同一行的初值（交安取“产值完成”outDone） */
+    var row = faRegRow(tid, city);
+    if ((v === undefined || v === null || v === "") && row) {
+      v = row.done;
+      if (v === undefined || v === null || v === "") v = row.outDone;
+    }
+    if (v === undefined || v === null || v === "") v = faHasReg(tid) ? 0 : null;
+    if (v === null) return null;
     v = Number(v);
     return isFinite(v) ? v : null;
   }
