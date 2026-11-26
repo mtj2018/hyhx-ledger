@@ -155,7 +155,7 @@
 .wk-txt{display:block;min-width:0}
 .wk-txt textarea{width:100%;min-height:96px;height:100%;resize:vertical;border:1px solid #EFE6C6;border-radius:3px;background:#FFFDF0;padding:6px 8px;font:12px/1.6 inherit;color:#243B5E;box-sizing:border-box}
 .wk-txt textarea[readonly]{background:#F6F7F9;border-color:#E6E9EF;color:#5B6675;cursor:default}
-.wk-day{width:126px}
+.wk-day{width:142px}
 .wk-week{font-size:12px;color:var(--navy);font-weight:600;letter-spacing:.02em}
 .wk-qv{display:inline-block;min-width:52px;font-size:12px;color:#243B5E}
 .wk-txt textarea:focus{outline:none;background:#FFF6D4;border-color:#D9C77A}

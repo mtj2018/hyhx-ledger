@@ -190,31 +190,56 @@
     }
   };
 
-  /* ---------------- 期次选择：年 / 月 下拉 + 日期方框 ---------------- */
+  /* ---------------- 期次选择：年 / 月 / 「日 · 第N周」下拉（与工程旬报一致） ---------------- */
   function setKey(k) {
     var t = ymd(thursdayNear(parseKey(k)));
     if (t < MIN) t = MIN;
     if (t > MAX) t = MAX;
     CUR.key = t;
   }
+  /* 某月可填的周四（起点 2026-11-19 之前的一律不出现） */
+  function dayOpts(y, m) {
+    var out = [], d = new Date(y, m - 1, 1);
+    while (d.getMonth() === m - 1) {
+      if (d.getDay() === 4) { var s = ymd(d); if (s >= MIN && s <= MAX) out.push(s); }
+      d.setDate(d.getDate() + 1);
+    }
+    return out;
+  }
+  function monthOpts(y) {
+    var out = [];
+    for (var m = 1; m <= 12; m++) if (dayOpts(y, m).length) out.push(m);
+    return out;
+  }
+  /* 周序按自然月内计数：26 日 → 第四周 */
+  function wkOf(k) { return Math.ceil(parseInt(k.slice(8, 10), 10) / 7); }
+  function cnW(n) { return ("零一二三四五六".charAt(n) || n); }
   function options() {
     var host = $("#wk-bar"); if (!host) return;
-    var d = parseKey(CUR.key);
-    var ys = []; for (var y = 2026; y <= 2029; y++) ys.push(y);
+    var d = parseKey(CUR.key), y = d.getFullYear(), m = d.getMonth() + 1;
+    var ms = monthOpts(y);
+    var ds = dayOpts(y, m) || [];
     host.innerHTML = '<span class="xb-lb">填报期</span>'
-      + '<select class="pg-sel" id="wk-y">' + ys.map(function (v) { return '<option value="' + v + '"' + (v === d.getFullYear() ? " selected" : "") + ">" + v + " 年</option>"; }).join("") + "</select>"
-      + '<select class="pg-sel" id="wk-m">' + Array.from({ length: 12 }, function (_, i) { return i + 1; }).map(function (v) { return '<option value="' + v + '"' + (v === d.getMonth() + 1 ? " selected" : "") + ">" + v + " 月</option>"; }).join("") + "</select>"
-      + '<input type="date" class="pg-sel wk-day" id="wk-d" value="' + CUR.key + '" min="' + MIN + '" max="' + MAX + '" title="点击选择填报日（按当周周四计）">'
-      + '<span class="wk-week" id="wk-week">' + weekLabel(CUR.key) + "（周四）</span>"
+      + '<select class="pg-sel" id="wk-y">' + [2026, 2027, 2028, 2029].map(function (v) { return '<option value="' + v + '"' + (v === y ? " selected" : "") + ">" + v + " 年</option>"; }).join("") + "</select>"
+      + '<select class="pg-sel" id="wk-m">' + ms.map(function (v) { return '<option value="' + v + '"' + (v === m ? " selected" : "") + ">" + v + " 月</option>"; }).join("") + "</select>"
+      + '<select class="pg-sel wk-day" id="wk-d">' + ds.map(function (k) {
+        return '<option value="' + k + '"' + (k === CUR.key ? " selected" : "") + ">" + parseInt(k.slice(8, 10), 10) + " 日 · 第" + cnW(wkOf(k)) + "周</option>";
+      }).join("") + "</select>"
       + '<span class="xb-note">只填「本周完成」，允许填负数修正前几周多报/错报</span>';
-    $("#wk-y").onchange = $("#wk-m").onchange = pickYM;
-    $("#wk-d").onchange = function () { setKey(this.value || CUR.key); options(); render(); };
+    $("#wk-y").onchange = pickY;
+    $("#wk-m").onchange = pickM;
+    $("#wk-d").onchange = function () { if (this.value) CUR.key = this.value; render(); };
   }
-  function pickYM() {
+  function pickY() {
     var y = +$("#wk-y").value, m = +$("#wk-m").value;
-    var last = new Date(y, m, 0).getDate();
-    var day = Math.min(parseKey(CUR.key).getDate(), last);
-    setKey(ymd(new Date(y, m - 1, day)));
+    if (!dayOpts(y, m).length) m = monthOpts(y)[0];
+    CUR.key = dayOpts(y, m)[0];
+    options(); render();
+  }
+  function pickM() {
+    var y = +$("#wk-y").value, m = +$("#wk-m").value;
+    var ds = dayOpts(y, m);
+    CUR.key = ds[0];
     options(); render();
   }
 
