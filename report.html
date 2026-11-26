@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="assets/b.cfg.js?v=261126121438"></script>
+<script src="assets/b.cfg.js?v=261126142428"></script>
 
 <script>
 /* 版本自检：文件被 CDN 缓存（最多10分钟）时，自动跳到本次发布的最新版本，裸链接也能看到新版 */
 (function () {
-  var BUILD = "261126121438";
+  var BUILD = "261126142428";
   if (location.protocol !== "http:" && location.protocol !== "https:") return;
-  if (!BUILD || BUILD.indexOf("261126121438") >= 0) return;
+  if (!BUILD || BUILD.indexOf("261126142428") >= 0) return;
   var key = /\/report\.html$/.test(location.pathname) ? "report" : "index";
   var once = "pg-ver-" + key;
   try { if (sessionStorage.getItem(once) === BUILD) return; } catch (e0) {}
@@ -25,14 +25,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沪渝高速改扩建工程 · 基础数据填报</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/b.css?v=261126121438">
+<link rel="stylesheet" href="assets/b.css?v=261126142428">
 
 
 
 
 
 
-<link rel="stylesheet" href="assets/xb.css?v=261126121438">
+<link rel="stylesheet" href="assets/xb.css?v=261126142428">
 </head>
 
 <body>
@@ -43,13 +43,14 @@
       <div style="display:flex;align-items:center;gap:10px">
         <div class="top-name" style="width:auto">沪渝高速公路武汉至宜昌段改扩建工程</div>
       </div>
+      <div class="top-sub">建设单位 湖北汉宜高速公路有限公司　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
       <div class="bx-guide">
         <i><span class="g-dot"></span><span><b class="g-k">绿点＝同步状态</b>：绿色「已同步云端」、闪烁「正在保存…」、灰色「未同步·已存本机」；改动即自动保存并写回云端，无需手动存盘。</span></i>
         <i><span><b class="g-k">提交按钮</b>：各表右上的「提交」把本标段本表数据写回云端并锁定，锁定后需解锁才能修改；未提交的改动只存在本机。</span></i>
       </div>
     </div>
     <div class="top-meta">
-      <div class="bx-chip" id="bx-chip" title="本页改动会自动保存并写回云端"><span class="bx-dot"></span><span class="bx-t"></span></div>
+      <div class="sync-chip" id="bx-chip" style="display:none" title="本页改动会自动保存并写回云端"><span class="sc-dot"></span><span class="sc-t"></span></div>
       <button id="btn-fix" type="button" class="top-lock" title="解锁后可修改固化的基础数据" aria-label="解锁固化数据"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.6" y="10.6" width="14.8" height="9.6" rx="2.2"/><path d="M7.9 10.6V7.7a4.1 4.1 0 0 1 8.2 0v2.9"/></svg></button>
       <button id="btn-export" type="button" style="font-family:inherit;font-size:12.5px;line-height:1;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#FFFFFF;font-weight:500">导出数据</button>
     </div>
@@ -81,6 +82,7 @@
             <div class="tsf-cal" id="tsf-cal"></div>
           </div>
           <div class="card" id="tsf-sum"></div>
+          <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>点各标段右侧「提交」把该标段当日数据写回云端并锁定（HYSJSG-1标＝土建1标，HYTJ-2标＝土建2标，依次类推）；锁定后需点锁图标确认后才能修改；未提交的改动只存在本机。</span></div></div>
         </div>
       </div>
     </section>
@@ -103,12 +105,13 @@
           <div class="card" id="card-out"></div>
           <div class="card" id="card-reg"></div>
           <div class="card" id="card-ppl"></div>
+          <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>点各表右上「提交」把本标段本月数据写回云端并锁定，锁定后点锁图标确认再改；未提交的改动只存在本机。</span></div></div>
         </div>
       </div>
     </section>
     <section class="view" id="view-xb">
       <div class="card">
-        <div class="card-head"><h2>工程旬报填报</h2><span class="hint pg-flag"><b>每月 10 / 20 / 月末</b><i>·</i>施工单位填报 → 驻地办审核</span><span class="pg-money">单位：万方 / 万米 / 根 / 套 / 个 / 片 / 座 / 道</span></div>
+        <div class="card-head"><h2>工程旬报填报</h2><span class="hint pg-flag"><b>每月 10 / 20 / 月末</b><i>·</i>施工单位填报 → 监理复核 → 完成</span><span class="pg-money">单位：万方 / 万米 / 根 / 套 / 个 / 片 / 座 / 道</span></div>
         <div class="xb-bar" id="xb-bar"></div>
         <div id="xb-tid"></div>
       </div>
@@ -152,6 +155,7 @@
           <div class="card" id="jr-money"></div>
           <div class="card" id="jr-pct"></div>
           <div class="card" id="jr-map"></div>
+          <div class="bx-tipcard"><div class="bx-tip"><span class="bx-tipb">提示</span><span>按驻地办汇总辖段数据后点各表右上「提交」，把本月数据写回云端并锁定；锁定后需解锁才能修改；未提交的改动只存在本机。</span></div></div>
         </div>
       </div>
     </section>
@@ -1763,7 +1767,8 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     if (wait) {
       return '<button type="button" class="pg-lk is-wait" data-tsf-lk="' + k + '" title="正在写入云端，请稍候" aria-label="提交中">提交中</button>';
     }
-    var tip = on ? "已提交（云端已确认），点击解锁修改" : "提交本标段当日数据";
+    var seg = tsfSegName(k);
+    var tip = on ? (seg + " 已提交（云端已确认），点击解锁修改") : ("提交 " + seg + " 当日数据并锁定");
     return '<button type="button" class="pg-lk' + (on ? " is-on" : "") + '" data-tsf-lk="' + k + '" title="' + tip + '" aria-label="' + tip + '">' + (on ? svg : "提交") + "</button>";
   }
 
@@ -2090,11 +2095,11 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
           });
         });
       } else {
-        var pw = prompt("该标段已提交锁定。请输入修改密码：");
-        if (pw === null) return;
-        if (pw.trim() !== "a") { alert("密码错误，无法解锁"); return; }
-        tsfGrpSet(TS.sel, k, "lk", false); DIRTY = false; persist(); pushCloud();
-        flag("已解锁，可以修改", true); tsfRenderAll();
+        /* 与工程月报一致：锁旁气泡确认后再解锁，不再弹口令输入框 */
+        bxPop(lk, '是否确定修改 <span class="p-seg">“' + tsfSegName(k) + '”</span> 数据？', function () {
+          tsfGrpSet(TS.sel, k, "lk", false); DIRTY = false; persist(); pushCloud();
+          flag("已解锁" + tsfSegName(k) + "，可以修改", true); tsfRenderAll();
+        });
       }
       return;
     }
@@ -2372,15 +2377,15 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     return { ts: lf.ts, v: mrg(cf && cf.v, lf.v, bv) };
   }
 
-  /* 顶部同步状态：成功只留圆点，失败/写入中才出文字，并显示待推项数 */
+  /* 顶部同步状态：与 A 页同款，圆点旁始终写明状态（已同步云端 / 正在保存… / 未同步） */
   var BX_T = null;
   function bxSync(st, txt) {
     var b = document.getElementById("bx-chip");
     if (!b) return;
-    var t = b.querySelector(".bx-t"), n = (typeof PEND !== "undefined" ? PEND.length : 0);
-    b.className = "bx-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
+    var t = b.querySelector(".sc-t"), n = (typeof PEND !== "undefined" ? PEND.length : 0);
+    b.className = "sync-chip" + (st === "warn" ? " is-warn" : st === "busy" ? " is-busy" : "");
     b.style.display = "";
-    if (t) t.textContent = st === "warn" ? (txt || "未同步云端 · 已存本机") : st === "busy" ? "正在保存…" : "";
+    if (t) t.textContent = st === "warn" ? (txt || "未同步云端 · 已存本机") : st === "busy" ? "正在保存…" : "已同步云端";
     b.setAttribute("title", st === "warn" ? (txt || "未同步云端 · 已存本机")
       : st === "busy" ? "正在写入云端…" : ("已同步云端" + (n ? (" · 待推 " + n + " 项") : "")));
     if (BX_T) { clearTimeout(BX_T); BX_T = null; }
@@ -2528,6 +2533,16 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
 
 
   /* ---- 标段成组：土建10标 有「路基填筑(t10a)」「路基挖方(t10b)」两行，共用一个提交按钮 ---- */
+  /* 土石方标段名 → 土建N标（HYSJSG-1标＝土建1标，HYTJ-2标＝土建2标，依次类推） */
+  function tsfSegName(k) {
+    var rows = TG.rows, i, a = -1, nm = "";
+    for (i = 0; i < rows.length; i++) { if (rows[i].k === k) { a = i; break; } }
+    if (a < 0) return "本标段";
+    while (a > 0 && !rows[a].nm) a--;
+    nm = rows[a].nm || "";
+    var m = nm.match(/-(\d+)标/);
+    return m ? ("土建" + m[1] + "标") : nm;
+  }
   function tsfGrp(k) {
     var rows = TG.rows, i, a = -1, b;
     for (i = 0; i < rows.length; i++) { if (rows[i].k === k) { a = i; break; } }
@@ -2563,6 +2578,6 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (ONLINE) pullCloud();
 })();
 </script>
-<script src="assets/xb.js?v=261126121438"></script>
+<script src="assets/xb.js?v=261126142428"></script>
 </body>
 </html>

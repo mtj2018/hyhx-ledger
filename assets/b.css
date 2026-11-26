@@ -620,15 +620,26 @@ td.nmc{white-space:nowrap;font-size:12px}
 .wx-two .wx-city{font-size:13px}
 .wx-two .wx-sub{font-size:11px}
 @media (max-width:1180px){.wx-two{grid-template-columns:minmax(0,1fr)}}
-/* 顶部同步状态：成功只留一个小点，悬停看“已同步/待推几项”；失败才有文字 */
-.bx-chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:6px;
-  border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);color:#DCE7F8;font-size:12px;
-  letter-spacing:.02em;white-space:nowrap;flex:0 0 auto}
-.bx-chip .bx-dot{width:6px;height:6px;border-radius:50%;background:#5FD0A0;flex:0 0 6px}
-.bx-chip.is-busy .bx-dot{background:#F4C33B;animation:bxPulse 1s ease-in-out infinite}
-.bx-chip.is-warn{border-color:rgba(255,196,138,.55);color:#FFE2C4}
-.bx-chip.is-warn .bx-dot{background:#E8925A}
-.bx-chip .bx-t{line-height:1}
+/* 顶部同步状态：与 A 页完全一致的圆点＋文字（已同步云端 / 正在保存… / 未同步云端） */
+.sync-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;align-self:center;
+  height:30px;padding:0 10px 0 9px;border-radius:6px;border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.10);color:#DCE7F8;font-size:12px;letter-spacing:.02em;white-space:nowrap;
+  box-sizing:border-box;margin-right:2px}
+.sync-chip .sc-dot{width:6px;height:6px;border-radius:50%;background:#5FD0A0;flex:0 0 auto;
+  box-shadow:0 0 0 2px rgba(95,208,160,.16)}
+.sync-chip .sc-t{line-height:1}
+.sync-chip.is-busy .sc-dot{background:#F4C33B;box-shadow:0 0 0 2px rgba(244,195,59,.18);
+  animation:scPulse 1s ease-in-out infinite}
+@keyframes scPulse{0%,100%{opacity:1}50%{opacity:.45}}
+.sync-chip.is-warn{border-color:rgba(255,196,138,.55);color:#FFE2C4}
+.sync-chip.is-warn .sc-dot{background:#E8925A;box-shadow:0 0 0 2px rgba(232,146,90,.18)}
+/* 提交按钮说明：与 A 页「固定投资管理」地市州 B 区合计下方同款黄色提示条 */
+.bx-tip{background:#FDF3CE;border:1px solid #F2E2AE;border-radius:4px;color:#7A5300;
+  font-size:12px;line-height:1.6;padding:8px 11px;display:flex;gap:7px;align-items:flex-start}
+.bx-tip+.bx-tip{margin-top:8px}
+.bx-tip .bx-tipb{display:inline-block;background:#F4C33B;color:#4A3200;font-size:10.5px;font-weight:700;
+  border-radius:3px;padding:1px 5px;letter-spacing:.05em;flex:0 0 auto;margin-top:1px}
+.bx-tipcard{background:transparent;border:0;box-shadow:none;padding:0;margin-top:10px}
 @keyframes bxPulse{0%,100%{opacity:1}50%{opacity:.45}}
 
 /* ---------- #16 窄屏（现场用手机填报土石方） ---------- */
