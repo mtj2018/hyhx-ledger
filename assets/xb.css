@@ -94,3 +94,35 @@
   .xb-role{margin-left:0}
   .dz-grid{grid-template-columns:1fr}
 }
+
+/* ===== 产值周报（B 页） ===== */
+.wk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.wk-card{background:#fff;border:1px solid #E3E8F0;border-radius:6px;box-shadow:0 1px 2px rgba(16,36,72,.05);padding:8px 10px 10px;display:flex;flex-direction:column;min-width:0}
+.wk-hd{display:flex;align-items:center;gap:6px;padding:0 0 6px;border-bottom:1px solid #EDF1F7;margin-bottom:6px}
+.wk-hd b{font-size:13px;color:#0F2C5C;white-space:nowrap}
+.wk-hd em{font-style:normal;font-size:11px;color:#8A94A6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-hd .wk-dot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:#C7CDD8}
+.wk-hd .wk-dot.ok{background:#2E9159}
+.wk-hd .wk-dot.err{background:#C0392B}
+.wk-body{display:flex;gap:10px;flex:1;min-width:0}
+.wk-body>table{flex:1}
+.wk-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.wk-tbl th{background:#F5F7FB;color:#5B6675;font-weight:600;padding:4px 4px;text-align:center;border-bottom:1px solid #E3E8F0;white-space:nowrap;font-size:11.5px}
+.wk-tbl td{padding:3px 4px;border-bottom:1px solid #F2F5F9;text-align:center;color:#243B5E}
+.wk-tbl td.wk-it{text-align:left;color:#3B4A63;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-tbl td.wk-cum{font-weight:600;color:#0F2C5C}
+.wk-tbl td.wk-q input{width:100%;max-width:64px;border:1px solid #EFE6C6;border-radius:2px;background:#FFFDF0;padding:2px 4px;text-align:center;font:inherit;color:#243B5E}
+.wk-tbl td.wk-q input:focus{outline:none;background:#FFF6D4;border-color:#D9C77A}
+.wk-txt{width:34%;min-width:150px;display:flex}
+.wk-txt textarea{width:100%;min-height:96px;resize:vertical;border:1px solid #EFE6C6;border-radius:3px;background:#FFFDF0;padding:6px 8px;font:12px/1.6 inherit;color:#243B5E}
+.wk-txt textarea:focus{outline:none;background:#FFF6D4;border-color:#D9C77A}
+.wk-txt textarea::placeholder{color:#A8B0BE}
+#wk-msg{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#17325C;color:#fff;font-size:12.5px;padding:7px 14px;border-radius:16px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+#wk-msg.on{opacity:1}
+@media (max-width:1360px){.wk-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1020px){.wk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pg-due-near{display:inline-block;padding:1px 8px;border-radius:10px;background:#FFF4D6;color:#A66B00;font-weight:600;font-size:12px}
+.pg-due-ok{color:#9AA5B5;font-size:12px}
+.wk-card.wk-wide .wk-body{flex-direction:column}
+.wk-card.wk-wide .wk-txt{width:100%;min-width:0}
+.wk-card.wk-wide .wk-txt textarea{min-height:52px}
