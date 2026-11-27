@@ -25,8 +25,8 @@
 
   var ON = { zlj: false, lm: true, zja: false, zjd: false };
   /* 两套清单：c = 合同清单（原版本），0 = 0#清单（2026-11-27 套用，仅土建标段） */
-  var MODE = "c";
-  try { if (localStorage.getItem("hyhx-ctr-set") === "0") MODE = "0"; } catch (e0) {}
+  var MODE = "0";
+  try { if (localStorage.getItem("hyhx-ctr-set") === "c") MODE = "c"; } catch (e0) {}
   var SET_DATE = "2026年11月27日";
   var CH = [
     [100, "临时工程"], [200, "路基工程"], [300, "路面工程"], [400, "桥涵工程"],
@@ -49,7 +49,7 @@
     var v = +String(s == null ? "" : s).replace(/,/g, "").trim();
     return isFinite(v) ? v : 0;
   }
-  function dec() { return MODE === "0" ? 2 : 0; }
+  function dec() { return 0; }
   function dash(td) { td.innerHTML = '<span style="color:#AEB8C6">—</span>'; }
 
   /* 每个修订行：章节单元格按当前清单取值；无 0# 金额时沿用合同金额 */
@@ -138,16 +138,20 @@
       nrow++;
       rv.cells.forEach(function (c) {
         var k = c.key, v = (MODE === "0") ? c.z : c.c;
-        if (v === 0) dash(c.td); else c.td.textContent = fmt(v, decd);
-        c.td.classList.toggle("is-0", MODE === "0" && c.has0 && v !== 0);
+        var dv = Math.round(v);
+        if (dv === 0) dash(c.td); else c.td.textContent = fmt(dv, 0);
+        c.td.classList.toggle("is-0", MODE === "0" && c.has0 && dv !== 0);
         if (k === 300) c.td.classList.toggle("is-off", !ON.lm);
-        chTot[k] = (chTot[k] || 0) + v;
+        chTot[k] = (chTot[k] || 0) + dv;
       });
       var shown = 0;
-      rv.cells.forEach(function (c) { if (c.key === 300 && !ON.lm) return; shown += (MODE === "0" ? c.z : c.c); });
-      shown += ON.zlj ? rv.zlj : 0;
-      if (amtCell) amtCell.textContent = fmt(shown, decd);
-      total += shown; ztot += rv.zlj;
+      rv.cells.forEach(function (c) {
+        if (c.key === 300 && !ON.lm) return;
+        shown += Math.round((MODE === "0") ? c.z : c.c);
+      });
+      shown += ON.zlj ? Math.round(rv.zlj) : 0;
+      if (amtCell) amtCell.textContent = fmt(shown, 0);
+      total += shown; ztot += Math.round(rv.zlj);
     });
 
     /* 交安 / 机电：暂列金同样可切换是否计入合同额（0#清单不涉及，金额保持不变） */
@@ -188,8 +192,6 @@
     });
 
     /* 切换按钮 / 备注 */
-    var tbl = document.getElementById("ctr-tj");
-    if (tbl) tbl.classList.toggle("is-zero", MODE === "0");
     var btn = document.getElementById("ctr-set");
     if (btn) {
       btn.textContent = "清单：" + (MODE === "0" ? "0#清单" : "合同清单");
