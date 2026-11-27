@@ -126,6 +126,7 @@
     });
   }
   var CACHE_KEY = "hyhx-wk-cache-v1";
+  var LOADING = null, EARLY = null;
   function readCache() {
     try {
       var c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
@@ -162,7 +163,11 @@
     });
   }
 
-  var LOADING = null;
+  function fetchAll(ts) {
+    return jgetAll(ts).catch(function () {
+      return Promise.all(ts.map(function (t) { return jget("xb-wk-" + t.tid.slice(1) + ".json").catch(function () { return null; }); }));
+    });
+  }
   function load(force) {
     if (LOADED && !force) return Promise.resolve(DATA);
     if (LOADING && !force) return LOADING;
@@ -182,9 +187,7 @@
       /* 刚读取过的快照先直接用，90 秒内不重复请求云端，避免每次切页都重新拉 10 个文件 */
       if (cached.ts && Date.now() - cached.ts < 90000) return Promise.resolve(DATA);
     }
-    LOADING = jgetAll(ts).catch(function () {
-      return Promise.all(ts.map(function (t) { return jget("xb-wk-" + t.tid.slice(1) + ".json").catch(function () { return null; }); }));
-    }).then(function (arr) {
+    LOADING = (force ? fetchAll(ts) : (EARLY || fetchAll(ts))).then(function (arr) {
       var ok = arr.filter(function (o) { return !!(o && o.w); }).length;
       var next = {};
       ts.forEach(function (t, i) {
@@ -493,6 +496,13 @@
     } else fb();
   }
 
+  /* 页面脚本一执行就预热周报，避免排在旬报等其他云端请求后面 */
+  (function () {
+    if (location.protocol === "file:" || LOCAL_PREVIEW || !window.BASE) return;
+    var c = readCache();
+    if (c && c.ts && Date.now() - c.ts < 90000 && c.data) return;
+    try { EARLY = fetchAll(tenders()); } catch (e) {}
+  })();
   function boot() {
     CUR.key = clampKey(ymd(thursdayNear(new Date())));
     /* 填报情况及月报页面只读取快照，不需要周报填报表格。 */
