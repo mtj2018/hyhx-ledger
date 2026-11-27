@@ -50,7 +50,7 @@
     if (!p.path) {
       return gql(p, p.ref + ":", true, init).then(function (o) {
         if (!o || !o.entries) return jr([], 200);
-        var arr = o.entries.filter(function (e) { return e.type === "blob"; }).map(function (e) {
+        var arr = o.entries.filter(function (e) { return String(e.type).toLowerCase() === "blob"; }).map(function (e) {
           return { name: e.name, path: (p.path ? p.path + "/" : "") + e.name, sha: e.oid, type: "file", size: 0 };
         });
         return jr(arr, 200);
