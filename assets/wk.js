@@ -99,6 +99,43 @@
         });
       });
   }
+  /* 一次 GraphQL 取回 10 个分标段周报，替代 10 个 Contents 请求；
+     避免浏览器 6 连接上限、GitHub 并发限流和多次 load() 叠加导致的长时间等待。 */
+  function jgetAll(ts) {
+    var q = 'query { repository(owner:"' + OWNER + '", name:"' + REPO + '") { ';
+    ts.forEach(function (t, i) {
+      q += 'f' + i + ': object(expression:"' + BR + ':data/xb-wk-' + t.tid.slice(1)
+        + '.json"){ ... on Blob { text oid } } ';
+    });
+    q += '} }';
+    return fetch("https://api.github.com/graphql", {
+      method: "POST", headers: H(true), cache: "no-store", body: JSON.stringify({ query: q })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("GraphQL HTTP " + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (j.errors && j.errors.length) throw new Error((j.errors[0] && j.errors[0].message) || "GraphQL 读取失败");
+      var repo = j.data && j.data.repository;
+      if (!repo) throw new Error("GraphQL 无数据");
+      return ts.map(function (t, i) {
+        var b = repo["f" + i];
+        if (!b || !b.text) return null;
+        if (b.oid) SHA["xb-wk-" + t.tid.slice(1) + ".json"] = b.oid;
+        try { return JSON.parse(b.text); } catch (e) { return null; }
+      });
+    });
+  }
+  var CACHE_KEY = "hyhx-wk-cache-v1";
+  function readCache() {
+    try {
+      var c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+      return c && c.data ? c : null;
+    } catch (e) { return null; }
+  }
+  function writeCache() {
+    if (location.protocol === "file:") return;
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: DATA })); } catch (e) {}
+  }
   function gitPut(files, msg) {
     var base = "https://api.github.com/repos/" + OWNER + "/" + REPO;
     return gitGet(base + "/git/ref/heads/" + BR).then(function (ref) {
@@ -125,8 +162,10 @@
     });
   }
 
+  var LOADING = null;
   function load(force) {
     if (LOADED && !force) return Promise.resolve(DATA);
+    if (LOADING && !force) return LOADING;
     var ts = tenders();
     if (location.protocol === "file:" || LOCAL_PREVIEW) {
       DATA = {};
@@ -135,19 +174,35 @@
       try { document.dispatchEvent(new CustomEvent("wk-ready")); } catch (e0f) {}
       return Promise.resolve(DATA);
     }
-    return Promise.all(ts.map(function (t) {
-      return jget("xb-wk-" + t.tid.slice(1) + ".json").catch(function () { return null; });
-    })).then(function (arr) {
-      DATA = {};
+    var cached = readCache(), cachedData = cached ? cached.data : null;
+    if (cachedData) {
+      DATA = cachedData;
+      LOADED = true;
+      try { document.dispatchEvent(new CustomEvent("wk-ready")); } catch (e0c) {}
+      /* 刚读取过的快照先直接用，90 秒内不重复请求云端，避免每次切页都重新拉 10 个文件 */
+      if (cached.ts && Date.now() - cached.ts < 90000) return Promise.resolve(DATA);
+    }
+    LOADING = jgetAll(ts).catch(function () {
+      return Promise.all(ts.map(function (t) { return jget("xb-wk-" + t.tid.slice(1) + ".json").catch(function () { return null; }); }));
+    }).then(function (arr) {
+      var ok = arr.filter(function (o) { return !!(o && o.w); }).length;
+      var next = {};
       ts.forEach(function (t, i) {
         var tid = t.tid, o = arr[i];
-        DATA[tid] = o && o.w ? o : { v: 1, tid: tid, w: {} };
-        if (!DATA[tid].w[SEED]) DATA[tid].w[SEED] = seedOf(tid);
+        next[tid] = (o && o.w) ? o : ((cachedData && cachedData[tid]) ? cachedData[tid] : { v: 1, tid: tid, w: {} });
+        if (!next[tid].w[SEED]) next[tid].w[SEED] = seedOf(tid);
       });
+      DATA = next;
       LOADED = true;
+      if (ok) writeCache();
+      LOADING = null;
       try { document.dispatchEvent(new CustomEvent("wk-ready")); } catch (e0) {}
       return DATA;
+    }, function (e) {
+      LOADING = null;
+      throw e;
     });
+    return LOADING;
   }
 
   /* ---------------- 取数 ---------------- */
@@ -411,6 +466,7 @@
           return gitPut([{ name: "xb-wk-" + n + ".json", txt: JSON.stringify(o) }], "产值周报 " + tid + " " + CUR.key);
         }).then(function () {
           markDot(tid, 1); res(true);
+          writeCache();
           try { document.dispatchEvent(new CustomEvent("wk-ready")); } catch (e1) {}
         }, function (e) {
           markDot(tid, 0, 1); flagMsg("保存失败：" + (e && e.message ? e.message : e)); res(false);
