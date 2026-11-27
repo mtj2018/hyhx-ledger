@@ -276,6 +276,8 @@
 .dz-prod-parts b{color:var(--navy);font-size:13px;font-variant-numeric:tabular-nums}
 .dz-prod-note{margin-top:7px;font-size:10.5px;color:#8C99AA;line-height:1.5}
 .dz-rate-body{padding:10px 18px 12px}
+.dz-rate-note{margin-top:9px;padding-top:7px;border-top:1px dashed #E4E9F2;font-size:10.5px;line-height:1.55;color:#8C99AA}
+.dz-rate-note b{color:var(--navy);font-variant-numeric:tabular-nums}
 .dz-narr3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .dz-narr-card{padding:0;overflow:hidden}
 .dz-narr-card-hd{padding:10px 14px;font-size:12.5px;font-weight:700;color:var(--navy);background:var(--mist);border-bottom:1px solid var(--hair)}

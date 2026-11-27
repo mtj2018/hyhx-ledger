@@ -61,6 +61,7 @@ window.__DZ_OV = {
     "jd": 0.18,
     "fj": 0
    },
+   "pctWeight": null,
    "parts": [
     {
      "label": "",
@@ -102,6 +103,7 @@ window.__DZ_OV = {
     "jd": 0,
     "fj": 0
    },
+   "pctWeight": null,
    "parts": [
     {
      "label": "",
@@ -143,6 +145,7 @@ window.__DZ_OV = {
     "jd": 0,
     "fj": 0
    },
+   "pctWeight": 0.20748797032974187,
    "parts": [
     {
      "label": "一驻地范围",
@@ -190,6 +193,7 @@ window.__DZ_OV = {
     "jd": 0,
     "fj": 0
    },
+   "pctWeight": null,
    "parts": [
     {
      "label": "",
@@ -231,6 +235,7 @@ window.__DZ_OV = {
     "jd": 0,
     "fj": 0
    },
+   "pctWeight": null,
    "parts": [
     {
      "label": "",
@@ -272,6 +277,7 @@ window.__DZ_OV = {
     "jd": 0,
     "fj": 0
    },
+   "pctWeight": null,
    "parts": [
     {
      "label": "",

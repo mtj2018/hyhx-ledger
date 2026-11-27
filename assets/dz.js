@@ -262,6 +262,9 @@
     var stake = (cur.stake || "—").replace(/\n/g, " / ");
     var upd = D.update ? '<span class="dz-upd">数据更新于' + esc(D.update) + '</span>' : "";
     var rail = Number(prod.rail) || 0, station = Number(prod.station) || 0;
+    var w1 = (cur.key === "xiantao" && cur.pctWeight != null && isFinite(cur.pctWeight)) ? cur.pctWeight : null;
+    var rateNote = (w1 == null) ? ""
+      : '<div class="dz-rate-note">仙桃综合比例：按土建1标累计产值占比 <b>' + pc(w1) + '</b> 加权，二驻地 <b>' + pc(1 - w1) + '</b></div>';
     var extraNote = (rail || station)
       ? '<div class="dz-prod-note">合计已含' + (rail ? "铁路交叉 " + wn(rail, 0) + " 万元" : "")
         + (rail && station ? "、" : "") + (station ? "加油站 " + wn(station, 0) + " 万元" : "") + '</div>'
@@ -291,7 +294,7 @@
       + donut(prodRate)
       + '</div>' + extraNote + '</div></div>'
       + '<div class="card dz-row-card"><div class="card-head"><h2>产值完成比例</h2></div>'
-      + '<div class="dz-rate-body">' + barRows(p) + '</div></div>'
+      + '<div class="dz-rate-body">' + barRows(p) + rateNote + '</div></div>'
       + '</div>'
       + '<div class="dz-narr3">'
       + narrCard("已完成", parts, "done", true)

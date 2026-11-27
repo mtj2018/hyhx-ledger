@@ -1256,19 +1256,33 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   }
   function renderJrPct() {
     var host = $("#jr-pct"); if (!host) return;
+    var host2 = $("#jr-pct2");
     var allLk = jrAllLocked(JR.city, JR.ym);
-    var rows = JRPCT.map(function (p) {
-      var v = jrGet(JR.city, JR.ym, "pct." + p.k);
-      var show = (v === undefined || v === null || String(v) === "") ? "" : fmt(Math.round(Number(v)), 0);
-      return "<tr><td>" + p.n + "</td><td class='c'><input class='pgi pgc' data-jrp='" + p.k
-        + "' value='" + show + "' placeholder='/' style='width:76px'" + (allLk ? " readonly" : "") + "><span class='jr-pcu'>%</span></td></tr>";
-    }).join("");
-    host.innerHTML = head("形象进度完成比例", "", null)
-      + '<div class="card-body" style="padding:0 0 6px">'
-      + '<table class="tbl pg-tbl pg-ctr jr-mini"><thead><tr><th>项目</th><th style="width:128px">完成比例</th></tr></thead><tbody>'
-      + rows + "</tbody></table>"
-      + '<div class="jr-pct-note' + (allLk ? " is-on" : "") + '">' + (allLk ? "<b>已锁定：</b>" : "")
-      + "各驻地办完成左侧信息提交后，完成比例将自动锁定。</div></div>";
+    function pctTable(title, keys, second) {
+      var rows = keys.map(function (p) {
+        var v = jrGet(JR.city, JR.ym, (second ? "pct2." : "pct.") + p.k);
+        var show = (v === undefined || v === null || String(v) === "") ? "" : fmt(Math.round(Number(v)), 0);
+        return "<tr><td>" + p.n + "</td><td class='c'><input class='pgi pgc' data-jrp='" + p.k
+          + "'" + (second ? " data-jrp2='1'" : "") + " value='" + show + "' placeholder='/' style='width:76px'"
+          + (allLk ? " readonly" : "") + "><span class='jr-pcu'>%</span></td></tr>";
+      }).join("");
+      return head(title, "", null)
+        + '<div class="card-body" style="padding:0 0 6px">'
+        + '<table class="tbl pg-tbl pg-ctr jr-mini"><thead><tr><th>项目</th><th style="width:128px">完成比例</th></tr></thead><tbody>'
+        + rows + "</tbody></table>"
+        + '<div class="jr-pct-note' + (allLk ? " is-on" : "") + '">' + (allLk ? "<b>已锁定：</b>" : "")
+        + "各驻地办完成左侧信息提交后，完成比例将自动锁定。</div></div>";
+    }
+    if (JR.city === "仙桃") {
+      host.innerHTML = pctTable("一驻地办形象进度完成比例", JRPCT.filter(function (p) { return p.k !== "fj"; }), false);
+      if (host2) {
+        host2.style.display = "";
+        host2.innerHTML = pctTable("二驻地办形象进度完成比例", JRPCT.filter(function (p) { return p.k !== "me"; }), true);
+      }
+    } else {
+      host.innerHTML = pctTable("形象进度完成比例", JRPCT, false);
+      if (host2) { host2.style.display = "none"; host2.innerHTML = ""; }
+    }
   }
   function jrField(path, val, lk, ph, h) {
     var own = jrOwn(JR.city, JR.ym, path);
@@ -1382,7 +1396,9 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
       if (t.classList && t.classList.contains("jr-inh")) t.classList.remove("jr-inh");
       jrSet(JR.city, JR.ym, t.dataset.jrf, t.value); return;
     }
-    if (t.dataset.jrp) { jrSet(JR.city, JR.ym, "pct." + t.dataset.jrp, t.value); }
+    if (t.dataset.jrp) {
+      jrSet(JR.city, JR.ym, (t.dataset.jrp2 ? "pct2." : "pct.") + t.dataset.jrp, t.value);
+    }
   });
   document.addEventListener("change", function (e) {
     var t = e.target;
@@ -1391,7 +1407,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
       var n = toNum(String(t.value).replace("%", ""));
       var iv = (n === null) ? "" : String(Math.round(n));
       t.value = iv;
-      jrSet(JR.city, JR.ym, "pct." + t.dataset.jrp, iv);
+      jrSet(JR.city, JR.ym, (t.dataset.jrp2 ? "pct2." : "pct.") + t.dataset.jrp, iv);
       return;
     }
     if (!t.id) return;
