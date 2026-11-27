@@ -3433,7 +3433,7 @@
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
       }).join("");
       q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计"
-        + (ctrZeroOn() ? "　清单口径：0#清单（2026.11.27）" : ""))
+        + (ctrZeroOn() ? "　0#清单" : ""))
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
         + '<th>项目</th><th style="width:118px" class="r">合同额</th>'
         + '<th style="width:114px" class="r">本月完成</th><th style="width:126px" class="r">累计完成</th>'
@@ -3650,7 +3650,7 @@
       });
       return '<div class="card seg-card seg-cmp">'
         + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
-        + '<span class="seg-sub">累计至 ' + ((WK_SNAP && WK_SNAP.key) ? WK_SNAP.key.replace(/-/g, ".") : (YM || "").replace("-", ".")) + (ctrZeroOn() ? "　清单口径：0#清单（2026.11.27）" : "") + '</span></div>'
+        + '<span class="seg-sub">累计至 ' + ((WK_SNAP && WK_SNAP.key) ? WK_SNAP.key.replace(/-/g, ".") : (YM || "").replace("-", ".")) + (ctrZeroOn() ? "　0#清单" : "") + '</span></div>'
         + '<div class="seg-opts" style="margin:8px 0 4px">'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).zlj) ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).lm) ? " on" : "") + '" data-copt="lm">含路面工程</button>'

@@ -397,7 +397,7 @@
     var note = wkData ? "（取产值周报 " + wkKeyTxt + "）" : "";
     /* 分项产值情况不再显示「2026年11月」这种月份字样，只保留标段名 */
     host.innerHTML = head("分项产值情况", (t ? t.name : "") + note
-      + (ctrMode() === "0" ? "　清单口径：0#清单（2026.11.27）" : ""))
+      + (ctrMode() === "0" ? "　0#清单" : ""))
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
       + '<th style="width:44px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none">合同额</th>'
       + '<th style="width:96px">本月完成</th><th style="width:96px">累计完成</th>'
