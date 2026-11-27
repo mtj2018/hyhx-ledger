@@ -26,7 +26,8 @@
   var ON = { zlj: false, lm: true, zja: false, zjd: false };
   /* 两套清单：c = 合同清单（原版本），0 = 0#清单（2026-11-27 套用，仅土建标段） */
   var MODE = "0";
-  try { if (localStorage.getItem("hyhx-ctr-set") === "c") MODE = "c"; } catch (e0) {}
+  /* 每次打开 A 页都默认套用 0#清单，并同步给 B 页取数 */
+  try { localStorage.setItem("hyhx-ctr-set", "0"); } catch (e0) {}
   var SET_DATE = "2026年11月27日";
   var CH = [
     [100, "临时工程"], [200, "路基工程"], [300, "路面工程"], [400, "桥涵工程"],
