@@ -607,6 +607,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .wx-mth td{border-bottom:1px solid #EEF2F8;padding:6px 4px;font-size:12.5px;color:#0F2C5C;text-align:center}
 .wx-mth tr.total td{background:#F7F9FC;font-weight:700;color:#16407F;border-bottom:0}
 .wx-mth td.mn{color:#33465F;font-weight:600;font-size:12.5px}
+.wx-mth td.mn .s{display:block;font-size:10px;font-weight:400;color:#7A8798;margin-top:1px;line-height:1.2}
 .wx-val{display:inline-flex;align-items:baseline;gap:4px}
 .wx-val b{font-size:13px;font-weight:700;color:#16407F}
 .wx-val span{font-size:11.5px;color:#7A8798}
