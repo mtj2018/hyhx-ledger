@@ -130,7 +130,7 @@
       if (isTot) {
         /* 合计行：各章节按当前清单逐列汇总（与是否含路面无关） */
         Array.prototype.forEach.call(tr.querySelectorAll("td[data-ct]"), function (c) {
-          var k = +c.getAttribute("data-ct"); c.textContent = fmt(chTot[k] || 0, decd);
+          var k = +c.getAttribute("data-ct"); c.textContent = fmt(Math.round(chTot[k] || 0), 0);
         });
         var zc0 = tr.querySelector("td.z"); if (zc0) { zc0.textContent = fmt(ztot, 0); zc0.classList.toggle("is-off", !ON.zlj); }
         var totCell = document.getElementById("ctr-t-amt"); if (totCell) totCell.textContent = fmt(total, decd);
@@ -143,14 +143,15 @@
         if (dv === 0) dash(c.td); else c.td.textContent = fmt(dv, 0);
         c.td.classList.toggle("is-0", MODE === "0" && c.has0 && dv !== 0);
         if (k === 300) c.td.classList.toggle("is-off", !ON.lm);
-        chTot[k] = (chTot[k] || 0) + dv;
+        chTot[k] = (chTot[k] || 0) + v;
       });
       var shown = 0;
       rv.cells.forEach(function (c) {
         if (c.key === 300 && !ON.lm) return;
-        shown += Math.round((MODE === "0") ? c.z : c.c);
+        shown += (MODE === "0") ? c.z : c.c;
       });
-      shown += ON.zlj ? Math.round(rv.zlj) : 0;
+      shown += ON.zlj ? rv.zlj : 0;
+      shown = Math.round(shown);
       if (amtCell) amtCell.textContent = fmt(shown, 0);
       total += shown; ztot += Math.round(rv.zlj);
     });
@@ -180,9 +181,9 @@
       var t = tr.querySelectorAll("td"); if (t.length >= 5) { jdTmp += num(t[3].textContent); jdCh += num(t[4].textContent); }
     });
     var grid = {
-      100: (chTot[100] || 0) + jaTmp + jdTmp,
-      200: chTot[200] || 0, 300: chTot[300] || 0, 400: chTot[400] || 0,
-      700: chTot[700] || 0, 800: chTot[800] || 0, 900: chTot[900] || 0,
+      100: Math.round(chTot[100] || 0) + jaTmp + jdTmp,
+      200: Math.round(chTot[200] || 0), 300: Math.round(chTot[300] || 0), 400: Math.round(chTot[400] || 0),
+      700: Math.round(chTot[700] || 0), 800: Math.round(chTot[800] || 0), 900: Math.round(chTot[900] || 0),
       ja: jaCh, jd: jdCh
     };
     var gridTot = 0;
