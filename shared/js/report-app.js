@@ -2121,7 +2121,7 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     TG.rows.forEach(function (r, i) {
       var rec = day[r.k] || {};
       var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
-      rows += "<tr>" + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
+      rows += '<tr class="dr">' + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
         + '<td class="en">' + r.en + "</td>"
         + "<td>" + tsfF(tsfDa(r), 1) + '</td><td class="z">' + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
         + "<td>" + tsfF(cums[r.k].a, 1) + "</td><td>" + tsfP(cums[r.k].a, tsfDa(r)) + "</td>"
@@ -2133,18 +2133,45 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
       + "<td>" + tsfF(t.da, 1) + '</td><td class="z">' + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
       + "<td>" + tsfF(t.db, 1) + '</td><td class="z">' + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td><td></td></tr>";
     var dn = d.replace(/-/g, ".");
-    return "<!DOCTYPE html><html><head><meta charset='utf-8'><title>土石方工程专项施工日报（" + dn + "）</title></head><body>"
-      + "<h1>" + TG.title + "</h1>"
+    var ttl = TG.title;
+    var css = ""
+      + "@page{size:A4 portrait;margin:20mm;}"
+      + "*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}"
+      + "html,body{margin:0;padding:0;background:#fff;}"
+      + "body{font-family:'Times New Roman','宋体',SimSun,serif;color:#000;}"
+      + ".pg{width:482.76pt;}"
+      + ".ttl{text-align:center;font-family:'黑体',SimHei,sans-serif;font-size:19pt;line-height:22pt;font-weight:700;}"
+      + ".meta{display:flex;justify-content:space-between;font-size:10pt;font-weight:700;line-height:14pt;margin-top:8.4pt;}"
+      + ".tb{width:482.76pt;table-layout:fixed;border-collapse:collapse;margin:1.6pt 0 0;}"
+      + ".tb th,.tb td{border:0.96pt solid #000;padding:0;margin:0;text-align:center;vertical-align:middle;"
+      + "font-weight:400;font-size:9pt;line-height:1.0;}"
+      + ".tb .h1{height:26.16pt;} .tb .h2{height:24.84pt;} .tb .h1 th:not(.grp){font-size:7.5pt;} .tb .h1 th{line-height:1.05;}"
+      + ".tb .h1 th,.tb .h2 th{font-weight:700;}"
+      + ".tb .h2 th{font-size:7.5pt;font-weight:700;}"
+      + ".tb .grp{font-size:10.5pt;font-weight:700;}"
+      + ".tb tr.dr{height:34.73pt;} .tb tr.tot{height:35.28pt;}"
+      + ".tb .nm{line-height:1.45;}"
+      + ".tb .z{background:#EBF8F7;}"
+      + ".nt{font-size:12.37pt;line-height:15.2pt;text-align:justify;text-indent:25.7pt;margin:10pt 0 0;}"
+      + ".nt b{font-weight:700;}"
+      + ".nt.n2{text-indent:25.7pt;margin-top:17.4pt;}";
+    return "<!DOCTYPE html><html><head><meta charset='utf-8'><title>土石方工程专项施工日报（" + dn + "）</title>"
+      + "<style>" + css + "</style></head><body><div class='pg'>"
+      + "<div class='ttl'>" + ttl + "</div>"
       + '<div class="meta"><span>统计日期：' + dn + '</span><span>单位：万方</span></div>'
-      + "<table><thead>"
-      + '<tr><th rowspan="2" style="width:12%">标段</th><th rowspan="2" style="width:10.2%">工程<br>内容</th>'
-      + '<th class="grp" colspan="4">整体情况</th><th class="grp" colspan="4">仅保通侧</th><th rowspan="2" style="width:9%">备注</th></tr>'
-      + '<tr><th>设计量</th><th class="z">今日完成</th><th>累计完成</th><th>比例</th>'
-      + '<th>设计量</th><th class="z">今日完成</th><th>累计完成</th><th>比例</th></tr>'
+      + "<table class='tb'><colgroup>"
+      + '<col style="width:59.64pt"><col style="width:50.16pt"><col style="width:40.68pt">'
+      + '<col style="width:41.16pt"><col style="width:41.4pt"><col style="width:41.16pt">'
+      + '<col style="width:41.4pt"><col style="width:40.56pt"><col style="width:41.28pt">'
+      + '<col style="width:40.56pt"><col style="width:44.76pt"></colgroup><thead>'
+      + '<tr class="h1"><th rowspan="2">标段</th><th rowspan="2">工程<br>内容</th>'
+      + '<th class="grp" colspan="4">整体情况</th><th class="grp" colspan="4">仅保通侧</th><th rowspan="2">备注</th></tr>'
+      + '<tr class="h2"><th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th>'
+      + '<th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th></tr>'
       + "</thead><tbody>" + rows + "</tbody></table>"
-      + '<p class="note"><b>说明：</b>' + TG.note1 + "</p>"
-      + '<p class="note n2"><b>备注：</b>' + TG.note2 + "</p>"
-      + "</body></html>";
+      + '<p class="nt"><b>说明：</b>' + TG.note1 + "</p>"
+      + '<p class="nt n2"><b>备注：</b>' + TG.note2 + "</p>"
+      + "</div></body></html>";
   }
   function tsfPdf() {
     var w = window.open("", "_blank");
