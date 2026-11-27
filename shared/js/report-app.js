@@ -323,7 +323,8 @@
     m1: 65542, m2: 17216, m3: 20067 };
   var CTR0_NET = {"t1":500206,"t2":208970,"t3":118466,"t4":182561,"t5":182822,"t6":214079,"t7":267188,"t8":177422,"t9":193910,"t10":114736};
   function ctrMode() {
-    try { return localStorage.getItem("hyhx-ctr-set") === "c" ? "c" : "0"; } catch (e0) { return "0"; }
+    /* B 页各报表「分项产值情况」固定按 0#清单取数，不随 A 页清单切换而变 */
+    return "0";
   }
   function ctrNet() { return ctrMode() === "0" ? CTR0_NET : CTR_NET; }
   /* 把逐分项的合同额按比例缩放到清单总额，保证「合计＝A页合同清单」且各分项完成比例口径一致 */

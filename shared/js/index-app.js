@@ -3106,10 +3106,8 @@
     var CTRCH0 = {"临时工程":139071,"路基工程":481166,"路面工程":264500,"桥涵工程":427421,"绿化工程":27150,"改扩建工程":161601,"集采材料到工地价":664105,"交安工程":75299,"机电工程":98982};
     var CTRALIAS = { "桥涵工程": "桥涵工程" };
     function ctrChOf(n) {
-      var k = CTRALIAS[n] || n, v = ctrZeroOn() ? CTRCH0[k] : CTRCH[k];
-      /* 优先取「合同清单」当前口径（合同清单 / 0#清单），未渲染时回落到内置值 */
-      var dyn = window.__CTR_CH;
-      if (dyn && dyn[k] !== undefined && dyn[k] !== null) v = dyn[k];
+      var k = CTRALIAS[n] || n, v = CTRCH0[k];
+      /* 形象进度口径固定为 0#清单，不随「合同清单 / 0#清单」切换而变 */
       return (v === undefined || v === null) ? null : v;
     }
     function aggOut(ym) {
@@ -3433,7 +3431,7 @@
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
       }).join("");
       q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计"
-        + (ctrZeroOn() ? "　0#清单" : ""))
+        + "　0#清单")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
         + '<th>项目</th><th style="width:118px" class="r">合同额</th>'
         + '<th style="width:114px" class="r">本月完成</th><th style="width:126px" class="r">累计完成</th>'
@@ -3505,8 +3503,7 @@
       try { return localStorage.getItem("hyhx-ctr-set") !== "c"; } catch (e) { return true; }
     }
     function segCtrOf(tid) {
-      if (window.__CTR_ROW && window.__CTR_ROW[tid]) return window.__CTR_ROW[tid];
-      return (ctrZeroOn() ? SEG_CTR0[tid] : SEG_CTR[tid]) || SEG_CTR[tid] || {};
+      return SEG_CTR0[tid] || SEG_CTR[tid] || {};
     }
     function segTender(tid) {
       var out = null;
@@ -3650,7 +3647,7 @@
       });
       return '<div class="card seg-card seg-cmp">'
         + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
-        + '<span class="seg-sub">累计至 ' + ((WK_SNAP && WK_SNAP.key) ? WK_SNAP.key.replace(/-/g, ".") : (YM || "").replace("-", ".")) + (ctrZeroOn() ? "　0#清单" : "") + '</span></div>'
+        + '<span class="seg-sub">累计至 ' + ((WK_SNAP && WK_SNAP.key) ? WK_SNAP.key.replace(/-/g, ".") : (YM || "").replace("-", ".")) + "　0#清单" + '</span></div>'
         + '<div class="seg-opts" style="margin:8px 0 4px">'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).zlj) ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).lm) ? " on" : "") + '" data-copt="lm">含路面工程</button>'
@@ -3658,9 +3655,7 @@
         + '<div class="seg-crows">' + rows + "</div></div>";
     }
     function segAmt(tid, o) {
-      /* 合同额唯一来源：A 页「合同清单」当前显示的数值（含暂列金/含路面工程开关也由清单控制） */
-      var net = window.__CTR_NET || {};
-      if (net[tid] !== undefined && isFinite(net[tid])) return net[tid];
+      /* 完成率统计固定按 0#清单合同额，不随 A 页清单切换而变 */
       var c = segCtrOf(tid), v = c.amt || 0;
       if (!o.zlj) v -= (c.zlj || 0);
       if (!o.lm) v -= (c.lm || 0);
