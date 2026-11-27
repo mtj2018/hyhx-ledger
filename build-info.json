@@ -1,0 +1,106 @@
+{
+  "build": "261127225640",
+  "generatedAt": "2026-11-27T14:56:40.782Z",
+  "assets": [
+    {
+      "file": "assets/a.cfg.js",
+      "before": 85586,
+      "after": 71525
+    },
+    {
+      "file": "assets/a.css",
+      "before": 61089,
+      "after": 54221
+    },
+    {
+      "file": "assets/b.cfg.js",
+      "before": 87533,
+      "after": 73220
+    },
+    {
+      "file": "assets/b.css",
+      "before": 63161,
+      "after": 57453
+    },
+    {
+      "file": "assets/dz-overview.js",
+      "before": 13514,
+      "after": 10981
+    },
+    {
+      "file": "assets/dz.js",
+      "before": 20761,
+      "after": 13509
+    },
+    {
+      "file": "assets/weather.js",
+      "before": 38331,
+      "after": 26855
+    },
+    {
+      "file": "assets/wk.js",
+      "before": 31232,
+      "after": 17676
+    },
+    {
+      "file": "assets/xb.css",
+      "before": 30337,
+      "after": 28313
+    },
+    {
+      "file": "assets/xb.js",
+      "before": 42848,
+      "after": 25535
+    },
+    {
+      "file": "shared/css/ui.css",
+      "before": 11617,
+      "after": 8429
+    },
+    {
+      "file": "shared/js/core/sync-core.js",
+      "before": 7200,
+      "after": 3464
+    },
+    {
+      "file": "shared/js/gate.js",
+      "before": 2531,
+      "after": 1636
+    },
+    {
+      "file": "shared/js/gh-graphql.js",
+      "before": 5921,
+      "after": 3038
+    },
+    {
+      "file": "shared/js/index-app.js",
+      "before": 215476,
+      "after": 128171
+    },
+    {
+      "file": "shared/js/legacy-index-routes.js",
+      "before": 346,
+      "after": 237
+    },
+    {
+      "file": "shared/js/pages/investment.js",
+      "before": 1534,
+      "after": 1035
+    },
+    {
+      "file": "shared/js/pages/overview.js",
+      "before": 11602,
+      "after": 6911
+    },
+    {
+      "file": "shared/js/report-app.js",
+      "before": 158820,
+      "after": 96049
+    },
+    {
+      "file": "shared/js/ui.js",
+      "before": 8320,
+      "after": 4985
+    }
+  ]
+}
