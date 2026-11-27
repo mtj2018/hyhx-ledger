@@ -721,9 +721,8 @@
     }).join("");
     host.className = "card sch-card";
     host.innerHTML = '<div class="sch-head">'
-      + '<div class="sch-head-main"><span class="sch-kicker">REPORT SCHEDULE</span>'
-      + '<h2>各报表填报时间与责任单位</h2>'
-      + '<p>按填报周期自动计算 · 默认提前 ' + SCHED_REMIND_DAYS + ' 天开始提醒</p></div>'
+      + '<div class="sch-head-main"><span class="sch-kicker">REPORT REMINDER</span>'
+      + '<h2>信息填报提醒</h2></div>'
       + '<div class="sch-head-side"><div class="sch-today"><span>今天</span><b>' + dstr(today) + "</b></div>"
       + '<div class="sch-legend">' + legend + "</div></div></div>"
       + '<div class="sch-table-wrap"><table class="sch-tbl"><colgroup><col style="width:8%"><col style="width:31%">'
@@ -755,21 +754,25 @@
       if (!g) { g = { jl: x.jl, list: [] }; groups.push(g); }
       g.list.push(x);
     });
-    var ths = ["标段", "土石方日报", "产值周报", "工程旬报", "工程月报", "形象进度图", "航拍视频"];
-    var cards = groups.map(function (g) {
-      var rows = g.list.map(function (x) {
-        return '<div class="cnt-r"><span class="cnt-seg">' + x.nm + "</span>"
-          + x.c.map(function (v) { return "<span>" + (v || "—") + "</span>"; }).join("") + "</div>";
-      }).join("");
-      return '<div class="cnt-item"><div class="cnt-badge"><b>' + g.jl + "</b>"
-        + '<span>驻地办 · ' + g.list.length + " 个标段</span></div>"
-        + '<div class="cnt-tb"><div class="cnt-r cnt-rhd">'
-        + ths.map(function (h) { return "<span>" + h + "</span>"; }).join("")
-        + "</div>" + rows + "</div></div>";
-    }).join("");
+    var ths = ["土石方日报", "产值周报", "工程旬报", "工程月报", "形象进度图", "航拍视频"];
+    var rows = "";
+    groups.forEach(function (g) {
+      g.list.forEach(function (x, ri) {
+        rows += '<tr class="' + (ri === 0 ? "cnt-gstart" : "") + '">';
+        if (ri === 0) {
+          rows += '<td class="cnt-grp" rowspan="' + g.list.length + '"><b>' + g.jl + "</b><span>" + g.list.length + " 个标段</span></td>";
+        }
+        rows += '<td class="cnt-seg">' + x.nm + "</td>";
+        x.c.forEach(function (v) { rows += "<td>" + (v || "—") + "</td>"; });
+        rows += "</tr>";
+      });
+    });
     host.innerHTML = '<div class="card-head"><h2>各报表对接人</h2>'
-      + '<span class="hint">按监理单位分组 · 监理为驻地办对接人</span></div>'
-      + '<div class="card-body" style="padding:0"><div class="cnt-grid">' + cards + "</div></div>";
+      + '<span class="hint">按驻地办分组</span></div>'
+      + '<div class="card-body cnt-body"><table class="cnt-tbl"><thead><tr>'
+      + '<th>驻地办</th><th>标段</th>'
+      + ths.map(function (h) { return "<th>" + h + "</th>"; }).join("")
+      + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
   }
 
   function renderStatus() {
@@ -798,47 +801,32 @@
       return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td>"
         + cells + '<td class="c">' + status + "</td></tr>";
     }).join("");
-    var sum = BASE.tenders.filter(function (t) {
-      var lk = lkOf(t.tid, mth);
-      var kinds = ["shape", "out", "ppl"];
-      if (BASE.regions && BASE.regions[t.tid]) kinds.push("reg");
-      return kinds.every(function (k) { return !!lk[k]; });
-    }).length;
     var ths = ['<th style="width:46px" class="c">序号</th>', '<th class="nmc">标段</th>',
                '<th style="width:92px" class="c">形象进度</th>', '<th style="width:82px" class="c">产值</th>',
                '<th style="width:82px" class="c">人员</th>', '<th style="width:96px" class="c">分地市州</th>',
                '<th style="width:104px" class="c">状态</th>'].join("");
     host.innerHTML = '<div class="card-head"><h2>工程月报填报情况</h2><span class="hint">'
-      + dstr(d) + "　已填报 " + sum + " / " + BASE.tenders.length + " 个标段</span></div>"
+      + dstr(d) + "</span></div>"
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
       + ths + "</thead><tbody>" + rows + "</tbody></table></div>";
     renderStatusJr(ymof(stPeriod(28)));
     renderWkStatus();
+    renderXbStatus();
     try { syncStatusCols(); } catch (eC) {}
   }
-  /* 右列（地市州月报 + 产值周报）总高与左侧工程月报卡对齐 */
+  /* 右列（地市州月报 + 各报表对接人）总高与左侧工程月报卡对齐 */
   function syncStatusCols() {
-    var st = $("#pg-st"), jr = $("#jr-st"), wk = $("#wk-st");
-    if (!st || !jr || !wk) return;
+    var st = $("#pg-st"), col = $("#pg-col-r");
+    if (!st || !col) return;
+    if (window.innerWidth <= 980) { col.style.height = ""; return; }
     var H = st.offsetHeight; if (!H) return;
-    var b1 = jr.querySelector(".card-body"), b2 = wk.querySelector(".card-body");
-    if (!b1 || !b2) return;
-    b1.style.height = ""; b2.style.height = "";
-    b1.style.overflowY = ""; b2.style.overflowY = "";
-    var gap = 12;
-    var total = jr.offsetHeight + gap + wk.offsetHeight;
-    var extra = H - total;          /* 右列比左卡矮多少，补到产值周报卡上 */
-    var h2 = b2.offsetHeight + extra;
-    b2.style.height = (extra > 0 ? h2 : b2.offsetHeight + extra) + "px";
-    b2.style.overflowY = (b2.scrollHeight > b2.clientHeight) ? "auto" : "hidden";
-    b1.style.overflowY = (b1.scrollHeight > b1.clientHeight) ? "auto" : "hidden";
+    col.style.height = H + "px";
   }
   window.addEventListener("resize", function () { try { syncStatusCols(); } catch (eR) {} });
   function renderStatusJr(mth) {
     var host = $("#jr-st");
     if (!host) return;
     if (!mth) mth = ymof(stPeriod(28));
-    var valid = mth >= BASE.months[0];
     function mark(on) {
       return on ? '<span style="color:#2E9159;font-weight:600">✓</span>' : '<span style="color:#C7CDD8">—</span>';
     }
@@ -855,15 +843,8 @@
         + '<td class="c">' + (all ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
           : '<span class="pg-st-no"><span class="pg-st-dot"></span>未提交</span>') + "</td></tr>";
     }).join("");
-    var done = JRCITY.filter(function (c) {
-      var leadOk = (c === "仙桃")
-        ? (jrLocked(c, mth, "lead") && jrLocked(c, mth, "lead2"))
-        : jrLocked(c, mth, "lead");
-      return leadOk && jrLocked(c, mth, "me") && jrLocked(c, mth, "fj");
-    }).length;
     var d = stPeriod(28);
-    host.innerHTML = '<div class="card-head"><h2>地市州月报填报情况</h2><span class="hint">' + dstr(d) + "　"
-      + (valid ? "已提交 " + done + " / " + JRCITY.length + " 个地市州" : "该月早于 " + BASE.months[0] + "，无需填报") + "</span></div>"
+    host.innerHTML = '<div class="card-head"><h2>地市州月报填报情况</h2><span class="hint">' + dstr(d) + "</span></div>"
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
       + '<th style="width:44px" class="c">序号</th><th style="width:88px" class="nmc">地市州</th>'
       + '<th class="c">土建驻地办</th><th class="c">机电驻点办</th><th class="c">房建驻地办</th>'
@@ -895,13 +876,44 @@
         + '<td class="c">' + audit + "</td>"
         + '<td class="c">' + status + "</td></tr>";
     }).join("");
-    var done = ts.filter(function (t) { return s.rows[t.tid] && s.rows[t.tid].lk; }).length;
-    host.innerHTML = '<div class="card-head"><h2>产值周报填报情况</h2><span class="hint">' + dstr(dthu) + "（周四）　已提交 "
-      + done + " / " + ts.length + " 个土建标段</span></div>"
-      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-      + '<th style="width:46px" class="c">序号</th><th class="nmc">标段</th>'
-      + '<th style="width:120px" class="c">施工单位填报</th><th style="width:112px" class="c">驻地办审核</th>'
-      + '<th style="width:104px" class="c">填报状态</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+    host.innerHTML = '<div class="card-head"><h2>产值周报填报情况</h2><span class="hint">' + dstr(dthu) + "（周四）</span></div>"
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-mini-tbl"><thead><tr>'
+      + '<th style="width:9%" class="c">序号</th><th style="width:27%" class="nmc">标段</th>'
+      + '<th style="width:22%" class="c">施工单位填报</th><th style="width:21%" class="c">驻地办审核</th>'
+      + '<th style="width:21%" class="c">填报状态</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+  }
+  /* ③ 工程旬报填报情况（10 个土建标段，取最近一期） */
+  function renderXbStatus() {
+    var host = $("#xb-st");
+    if (!host) return;
+    var now = new Date();
+    var d = xunPrev(now) || xunNext(now);
+    if (ymof(d) < BASE.months[0]) d = xunNext(now);
+    var key = schedKey(d);
+    var ready = !!(window.__XB && window.__XB.ready && window.__XB.ready());
+    var ts = BASE.tenders.filter(function (t) { return /^t\d+$/.test(t.tid); });
+    function mark(on) {
+      return on ? '<span style="color:#2E9159;font-weight:600">✓</span>'
+        : '<span style="color:#C7CDD8">—</span>';
+    }
+    var rows = ts.map(function (t, i) {
+      var st = (ready && window.__XB.state) ? window.__XB.state(t.tid, key) : null;
+      var sub = !!(st && st.sub), sup = !!(st && st.sup);
+      var status = !st
+        ? '<span class="pg-st-read">读取中</span>'
+        : st.state === 3 ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已完成</span>'
+        : st.state === 2 ? '<span class="pg-st-wait"><span class="pg-st-dot"></span>待复核</span>'
+        : '<span class="pg-st-no"><span class="pg-st-dot"></span>未填报</span>';
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td>"
+        + '<td class="c">' + mark(sub) + "</td>"
+        + '<td class="c">' + mark(sup) + "</td>"
+        + '<td class="c">' + status + "</td></tr>";
+    }).join("");
+    host.innerHTML = '<div class="card-head"><h2>工程旬报填报情况</h2><span class="hint">' + dstr(d) + "</span></div>"
+      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-mini-tbl"><thead><tr>'
+      + '<th style="width:9%" class="c">序号</th><th style="width:27%" class="nmc">标段</th>'
+      + '<th style="width:22%" class="c">施工单位填报</th><th style="width:21%" class="c">驻地办审核</th>'
+      + '<th style="width:21%" class="c">填报状态</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
   }
   function parseYmd(k) { var a = String(k).split("-"); return new Date(+a[0], +a[1] - 1, +a[2]); }
   if ($("#st-month")) {
@@ -912,9 +924,9 @@
     try { renderOut(); } catch (eO) {}
     renderStatus();
   });
-  /* 旬报数据就绪后，刷新顶部提醒状态 */
+  /* 旬报数据就绪后，刷新整页填报状态（含旬报卡） */
   document.addEventListener("xb-ready", function () {
-    if (onPage("status")) { try { renderSched(); } catch (eX) {} }
+    if (onPage("status")) { try { renderStatus(); } catch (eX) {} }
   });
 
   /* ================= 地市州月报 ================= */

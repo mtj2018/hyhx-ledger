@@ -142,6 +142,16 @@
   window.__XB = {
     ready: function () { return LOADED; },
     load: load,
+    state: function (tid, k) {
+      if (!LOADED) return null;
+      var id = +String(tid).replace(/^t/, "");
+      var r = DATA[id] && DATA[id].x ? DATA[id].x[k] : null;
+      return {
+        sub: !!(r && r.sub),
+        sup: !!(r && r.sup),
+        state: r ? (r.sup ? 3 : (r.sub ? 2 : 1)) : 1
+      };
+    },
     done: function (k) {
       if (!LOADED) return null;
       var n = 0;
