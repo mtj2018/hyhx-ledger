@@ -5,7 +5,8 @@ var BASE = {"months":["2026-11","2026-12","2027-01","2027-02","2027-03","2027-04
 /* GitHub Contents API GET → GraphQL 读取桥
    REST contents 读取与写入共用 5000/h 配额，页面多次刷新会把读取配额耗尽；
    GraphQL 有独立配额，读取私有数据仓时统一走 GraphQL，写入仍走 REST。
-   对上层保持 Contents API 的 JSON 形状（content/base64、sha、目录数组）。 */
+   对上层保持 Contents API 的 JSON 形状（content/base64、sha、目录数组）。
+   目录与文件统一用 Tree/Blob 联合查询判断，避免把 /contents/data 误当文件。 */
 (function () {
   if (window.__ghGraphqlBridge) return;
   window.__ghGraphqlBridge = 1;
@@ -29,10 +30,8 @@ var BASE = {"months":["2026-11","2026-12","2027-01","2027-02","2027-03","2027-04
   function jr(o, status) {
     return new Response(JSON.stringify(o), { status: status || 200, headers: { "Content-Type": "application/json" } });
   }
-  function gql(p, expr, tree, init) {
-    var q = tree
-      ? 'query { repository(owner:' + JSON.stringify(p.owner) + ', name:' + JSON.stringify(p.repo) + ') { object(expression:' + JSON.stringify(expr) + ') { ... on Tree { entries { name type oid } } } } }'
-      : 'query { repository(owner:' + JSON.stringify(p.owner) + ', name:' + JSON.stringify(p.repo) + ') { object(expression:' + JSON.stringify(expr) + ') { ... on Blob { oid text } } } }';
+  function gql(p, expr, init) {
+    var q = 'query { repository(owner:' + JSON.stringify(p.owner) + ', name:' + JSON.stringify(p.repo) + ') { object(expression:' + JSON.stringify(expr) + ') { ... on Tree { entries { name type oid } } ... on Blob { oid text } } } }';
     var headers = new Headers((init && init.headers) || {});
     headers.set("Content-Type", "application/json");
     return orig("https://api.github.com/graphql", { method: "POST", headers: headers, body: JSON.stringify({ query: q }) })
@@ -50,23 +49,23 @@ var BASE = {"months":["2026-11","2026-12","2027-01","2027-02","2027-03","2027-04
     var method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
     var p = parseContents(url);
     if (!p || method !== "GET") return orig(input, init);
+    var expr = p.ref + ":" + p.path;
 
-    if (!p.path) {
-      return gql(p, p.ref + ":", true, init).then(function (o) {
-        if (!o || !o.entries) return jr([], 200);
+    return gql(p, expr, init).then(function (o) {
+      if (!o) return jr({ message: "Not Found" }, 404);
+      if (o.entries) {
         var arr = o.entries.filter(function (e) { return String(e.type).toLowerCase() === "blob"; }).map(function (e) {
           return { name: e.name, path: (p.path ? p.path + "/" : "") + e.name, sha: e.oid, type: "file", size: 0 };
         });
         return jr(arr, 200);
-      }).catch(function (e) { return jr({ message: e.message || "read failed" }, e.status || 403); });
-    }
-
-    return gql(p, p.ref + ":" + p.path, false, init).then(function (o) {
-      if (!o || o.text == null) return jr({ message: "Not Found" }, 404);
-      return jr({
-        name: p.path.split("/").pop(), path: p.path, sha: o.oid,
-        size: String(o.text).length, encoding: "base64", content: b64(o.text), type: "file"
-      }, 200);
+      }
+      if (o.text != null) {
+        return jr({
+          name: p.path.split("/").pop(), path: p.path, sha: o.oid,
+          size: String(o.text).length, encoding: "base64", content: b64(o.text), type: "file"
+        }, 200);
+      }
+      return jr({ message: "Not Found" }, 404);
     }).catch(function (e) { return jr({ message: e.message || "read failed" }, e.status || 403); });
   };
 })();
