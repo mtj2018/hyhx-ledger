@@ -315,16 +315,26 @@
   }
 
   /* ---------- 产值 ---------- */
-  /* 合同额唯一来源：A 页「合同清单」（与清单默认显示口径一致：不含暂列金、含路面工程） */
+  /* 合同额唯一来源：A 页「合同清单」（与清单默认显示口径一致：不含暂列金、含路面工程）
+     两套口径：合同清单（原版）/ 0#清单（2026-11-27 套用，仅土建标段，缺项沿用合同金额） */
   var CTR_NET = { t1: 513187, t2: 244414, t3: 127643, t4: 167211, t5: 175537,
     t6: 193325, t7: 251746, t8: 166054, t9: 189754, t10: 113456,
     j1: 12774, j2: 19647, j3: 13170, j4: 17512, j5: 13903,
     m1: 65542, m2: 17216, m3: 20067 };
+  var CTR0_NET = { t1: 500205.5, t2: 208970.337877, t3: 118465.609407, t4: 182560.883692,
+    t5: 182822.033419, t6: 214079.47229, t7: 267187.91, t8: 177421.839229,
+    t9: 193909.546834, t10: 114736.407668,
+    j1: 12774, j2: 19647, j3: 13170, j4: 17512, j5: 13903,
+    m1: 65542, m2: 17216, m3: 20067 };
+  function ctrMode() {
+    try { return localStorage.getItem("hyhx-ctr-set") === "0" ? "0" : "c"; } catch (e0) { return "c"; }
+  }
+  function ctrNet() { return ctrMode() === "0" ? CTR0_NET : CTR_NET; }
   /* 把逐分项的合同额按比例缩放到清单总额，保证「合计＝A页合同清单」且各分项完成比例口径一致 */
   function outCtrAlloc(t) {
     var base = 0, i, arr = [];
     t.out.forEach(function (r) { base += (r.contract || 0); });
-    var tot = (CTR_NET[CUR.tid] !== undefined) ? CTR_NET[CUR.tid] : base;
+    var tot = (ctrNet()[CUR.tid] !== undefined) ? ctrNet()[CUR.tid] : base;
     if (!base || !tot) return t.out.map(function (r) { return { c: (r.contract || 0), tot: tot || base }; });
     var acc = 0;
     for (i = 0; i < t.out.length; i++) {
@@ -344,7 +354,7 @@
     if (notStarted(t)) { host.innerHTML = soonHead("分项产值情况", subTitle(t)); return; }
     var tot = { contract: 0, mon: 0, cum: 0 };
     var alloc = outCtrAlloc(t);
-    tot.contract = alloc.length ? alloc[0].tot : CTR_NET[CUR.tid] || 0;
+    tot.contract = alloc.length ? alloc[0].tot : ctrNet()[CUR.tid] || 0;
     /* 产值周报（截至当月 19 日 23:00 的最新一期）自动带入 */
     var wkData = null, wkKeyTxt = "";
     try {
@@ -386,7 +396,8 @@
       + '<td class="r" style="display:none" data-opcttot="1">' + (tot.contract ? pct(tot.cum / tot.contract) : "") + "</td></tr>";
     var note = wkData ? "（取产值周报 " + wkKeyTxt + "）" : "";
     /* 分项产值情况不再显示「2026年11月」这种月份字样，只保留标段名 */
-    host.innerHTML = head("分项产值情况", (t ? t.name : "") + note)
+    host.innerHTML = head("分项产值情况", (t ? t.name : "") + note
+      + (ctrMode() === "0" ? "　清单口径：0#清单（2026.11.27）" : ""))
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-ctr"><thead><tr>'
       + '<th style="width:44px">序号</th><th class="nmc" style="min-width:86px">项目</th><th style="width:88px;display:none">合同额</th>'
       + '<th style="width:96px">本月完成</th><th style="width:96px">累计完成</th>'
@@ -2801,6 +2812,12 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
       else { delete r0[field]; if (field === "lk") r0.lk = 0; }
     });
   }
+
+  /* A 页切换合同清单 / 0#清单后，B 页同步重算分项产值 */
+  window.addEventListener("storage", function (e) {
+    if (e.key !== "hyhx-ctr-set") return;
+    try { renderOut(); } catch (e9) {}
+  });
 
   if (onPage("daily")) { tsfBoot(); tsfRenderAll(); }
   if (onPage("monthly")) renderAll();

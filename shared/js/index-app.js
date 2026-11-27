@@ -3102,9 +3102,14 @@
     /* ---- 汇总：产值 ---- */
     /* 合同额只读：直接取「合同清单」各章节合同额（万元），不再人工录入 */
     var CTRCH = {"临时工程":134232,"路基工程":504818,"路面工程":241476,"桥涵工程":448090,"绿化工程":27150,"改扩建工程":174747,"集采材料到工地价":616468,"交安工程":75299,"机电工程":98982};
+    /* 0#清单（2026-11-27 套用）：土建按 0#，交安/机电不变；土建缺项已按合同金额回填 */
+    var CTRCH0 = {"临时工程":139070.768855,"路基工程":481166.163161,"路面工程":264499.679955,"桥涵工程":427420.940073,"绿化工程":27150.152017,"改扩建工程":161600.809497,"集采材料到工地价":664105.026858,"交安工程":75299,"机电工程":98982};
     var CTRALIAS = { "桥涵工程": "桥涵工程" };
     function ctrChOf(n) {
-      var k = CTRALIAS[n] || n, v = CTRCH[k];
+      var k = CTRALIAS[n] || n, v = ctrZeroOn() ? CTRCH0[k] : CTRCH[k];
+      /* 优先取「合同清单」当前口径（合同清单 / 0#清单），未渲染时回落到内置值 */
+      var dyn = window.__CTR_CH;
+      if (dyn && dyn[k] !== undefined && dyn[k] !== null) v = dyn[k];
       return (v === undefined || v === null) ? null : v;
     }
     function aggOut(ym) {
@@ -3416,6 +3421,10 @@
     /* 展示用名称：集采材料到工地价 → 集采材料（合计口径仍按原行名归集） */
     function outLabel(n) { return n === "集采材料到工地价" ? "集采材料" : n; }
     function renderOut() {
+      if (!renderOut.__ctr) {
+        renderOut.__ctr = 1;
+        document.addEventListener("ctr-changed", function () { try { renderOut(); } catch (e8) {} });
+      }
       var rows = aggOut(YM).map(function (r) {
         return "<tr" + (r.name === "合计" ? ' class="total"' : "") + ">" + '<td class="nmc">' + outLabel(r.name) + "</td>"
           + '<td class="r">' + fmt(r.contract, 0) + "</td>"
@@ -3423,7 +3432,8 @@
           + '<td class="r">' + fmt(r.cum, 0) + "</td>"
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
       }).join("");
-      q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计")
+      q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计"
+        + (ctrZeroOn() ? "　清单口径：0#清单（2026.11.27）" : ""))
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
         + '<th>项目</th><th style="width:118px" class="r">合同额</th>'
         + '<th style="width:114px" class="r">本月完成</th><th style="width:126px" class="r">累计完成</th>'
@@ -3488,6 +3498,16 @@
     var SEG_TEN = ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"];
     /* 合同额：取「合同清单」各章节金额（万元） */
     var SEG_CTR = {"t1": {"amt": 539259, "zlj": 26072, "lj": 103402, "qh": 102057, "lm": 61049, "lh": 7016, "jc": 148869}, "t2": {"amt": 257748, "zlj": 13334, "lj": 29175, "qh": 102165, "lm": 0, "lh": 1129, "jc": 90341}, "t3": {"amt": 135061, "zlj": 7418, "lj": 39048, "qh": 28659, "lm": 0, "lh": 1414, "jc": 40541}, "t4": {"amt": 177118, "zlj": 9907, "lj": 43476, "qh": 16843, "lm": 34867, "lh": 1932, "jc": 47008}, "t5": {"amt": 185962, "zlj": 10425, "lj": 46913, "qh": 47231, "lm": 0, "lh": 1566, "jc": 58485}, "t6": {"amt": 203745, "zlj": 10420, "lj": 43860, "qh": 27096, "lm": 42860, "lh": 1129, "jc": 61014}, "t7": {"amt": 265310, "zlj": 13564, "lj": 53657, "qh": 42331, "lm": 54488, "lh": 3182, "jc": 60885}, "t8": {"amt": 176634, "zlj": 10580, "lj": 56532, "qh": 47795, "lm": 0, "lh": 2114, "jc": 35268}, "t9": {"amt": 200344, "zlj": 10590, "lj": 43673, "qh": 12691, "lm": 48212, "lh": 3177, "jc": 56503}, "t10": {"amt": 120065, "zlj": 6609, "lj": 45082, "qh": 21222, "lm": 0, "lh": 4491, "jc": 17554}};
+    /* 0#清单（2026-11-27 套用）：仅土建标段，缺项已按合同清单金额回填 */
+    var SEG_CTR0 = {"t1":{"amt":526277.5,"zlj":26072,"lj":93691.5,"qh":113465.6,"lm":62893.9,"lh":7016,"jc":148262.9},"t2":{"amt":222304.337877,"zlj":13334,"lj":21754.34671,"qh":84152.60104,"lm":0,"lh":1129.453537,"jc":78716.18964},"t3":{"amt":125883.609407,"zlj":7418,"lj":30377.696377,"qh":24504.625105,"lm":0,"lh":1413.688945,"jc":47326.249313},"t4":{"amt":192467.883692,"zlj":9907,"lj":40595.175934,"qh":9405.261186,"lm":49765.545708,"lh":1932.009535,"jc":61931.442949},"t5":{"amt":193247.033419,"zlj":10425,"lj":45017.758754,"qh":49892.6185382,"lm":0,"lh":1566,"jc":64345.400175},"t6":{"amt":224499.47229,"zlj":10420,"lj":42351.477775,"qh":28329.489736,"lm":42099.326931,"lh":1129,"jc":80008.141777},"t7":{"amt":280751.91,"zlj":13564,"lj":53605,"qh":43140.36,"lm":61087.38,"lh":3182,"jc":68181.02},"t8":{"amt":188001.839229,"zlj":10580,"lj":62865.660077,"qh":43843,"lm":0,"lh":2114,"jc":41397.244146},"t9":{"amt":204499.546834,"zlj":10590,"lj":45057.4475336,"qh":10906.704468,"lm":48653.527316,"lh":3177,"jc":56313.088858},"t10":{"amt":121345.407668,"zlj":6609,"lj":45850.1,"qh":19780.68,"lm":0,"lh":4491,"jc":17623.35}};
+    function ctrZeroOn() {
+      if (window.__CTR_MODE) return window.__CTR_MODE === "0";
+      try { return localStorage.getItem("hyhx-ctr-set") === "0"; } catch (e) { return false; }
+    }
+    function segCtrOf(tid) {
+      if (window.__CTR_ROW && window.__CTR_ROW[tid]) return window.__CTR_ROW[tid];
+      return (ctrZeroOn() ? SEG_CTR0[tid] : SEG_CTR[tid]) || SEG_CTR[tid] || {};
+    }
     function segTender(tid) {
       var out = null;
       BASE.tenders.forEach(function (x) { if (x.tid === tid) out = x; });
@@ -3630,7 +3650,7 @@
       });
       return '<div class="card seg-card seg-cmp">'
         + '<div class="seg-hd"><span class="seg-nm">土建标段合同完成对比</span>'
-        + '<span class="seg-sub">累计至 ' + ((WK_SNAP && WK_SNAP.key) ? WK_SNAP.key.replace(/-/g, ".") : (YM || "").replace("-", ".")) + '</span></div>'
+        + '<span class="seg-sub">累计至 ' + ((WK_SNAP && WK_SNAP.key) ? WK_SNAP.key.replace(/-/g, ".") : (YM || "").replace("-", ".")) + (ctrZeroOn() ? "　清单口径：0#清单（2026.11.27）" : "") + '</span></div>'
         + '<div class="seg-opts" style="margin:8px 0 4px">'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).zlj) ? " on" : "") + '" data-copt="zlj">含暂列金</button>'
         + '<button type="button" class="seg-opt' + (((window.__CTR_STATE || SEG_CMP).lm) ? " on" : "") + '" data-copt="lm">含路面工程</button>'
@@ -3641,7 +3661,7 @@
       /* 合同额唯一来源：A 页「合同清单」当前显示的数值（含暂列金/含路面工程开关也由清单控制） */
       var net = window.__CTR_NET || {};
       if (net[tid] !== undefined && isFinite(net[tid])) return net[tid];
-      var c = SEG_CTR[tid] || {}, v = c.amt || 0;
+      var c = segCtrOf(tid), v = c.amt || 0;
       if (!o.zlj) v -= (c.zlj || 0);
       if (!o.lm) v -= (c.lm || 0);
       return v;
@@ -3714,7 +3734,7 @@
       var h = segCmpCard();
       SEG_TEN.forEach(function (tid) {
         var t = segTender(tid); if (!t) return;
-        var ctr = SEG_CTR[tid] || {}, o = segOpt(tid);
+        var ctr = segCtrOf(tid), o = segOpt(tid);
         var amt = segAmt(tid, o), cum = segCumAll(t, o);
         var rate = amt ? cum / amt : 0;
         h += '<div class="card seg-card" data-tid="' + tid + '">'
