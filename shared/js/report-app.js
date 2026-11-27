@@ -704,15 +704,15 @@
     var mPrev = schedPrev(20, now), mNext = schedNext(20, now);
     var jPrev = schedPrev(28, now), jNext = schedNext(28, now);
     var items = [
-      { kind: "wk", nm: "产值周报", cycle: "每周四", prev: wkPrev, next: wkNext, dueToday: schedSameDay(wkPrev, today) },
-      { kind: "xb", nm: "工程旬报", cycle: "每月 10 / 20 / 月末", prev: xPrev, next: xNext, dueToday: schedSameDay(xNext, today) },
-      { kind: "month", nm: "工程月报", cycle: "每月 20 日", prev: mPrev, next: mNext, dueToday: schedSameDay(mNext, today) },
-      { kind: "jr", nm: "地市州月报", cycle: "每月 28 日", prev: jPrev, next: jNext, dueToday: schedSameDay(jNext, today) }
+      { kind: "wk", nm: "产值周报", prev: wkPrev, next: wkNext, dueToday: schedSameDay(wkPrev, today) },
+      { kind: "xb", nm: "工程旬报", prev: xPrev, next: xNext, dueToday: schedSameDay(xNext, today) },
+      { kind: "month", nm: "工程月报", prev: mPrev, next: mNext, dueToday: schedSameDay(mNext, today) },
+      { kind: "jr", nm: "地市州月报", prev: jPrev, next: jNext, dueToday: schedSameDay(jNext, today) }
     ];
     var rows = items.map(function (it, i) {
       var st = schedState(it.kind, it.prev, it.next, it.dueToday, today);
       return '<tr class="sch-row sch-row-' + st.k + '"><td class="c sch-idx">' + pad2(i + 1) + "</td>"
-        + '<td><div class="sch-name">' + it.nm + '</div><div class="sch-cycle">' + it.cycle + "</div></td>"
+        + '<td class="c"><div class="sch-name">' + it.nm + "</div></td>"
         + '<td class="c"><span class="sch-when">' + dstr(st.date) + "</span></td>"
         + '<td class="c">' + schedFlag(st) + "</td></tr>";
     }).join("");
@@ -733,46 +733,173 @@
 
   /* 各报表对接人（来源：项目对接人表格；监理按标段合并显示） */
   var CNT = [
-    { nm: "土建1标", jl: "万达", c: ["刘迅", "南赛花", "南赛花", "南赛花", "刘迅", "南赛花"] },
-    { nm: "土建2标", jl: "魏代全", c: ["王磊", "钟玉鸣", "张强", "徐曼榕", "王斌", "张爽"] },
-    { nm: "土建3标", jl: "魏代全", c: ["郑尧尧", "曹泽飞", "曹泽飞", "曹泽飞", "郑尧尧", "曾小帆"] },
-    { nm: "土建4标", jl: "魏代全", c: ["张思梦", "张思梦", "张思梦", "张思梦", "杨飞", "杨飞"] },
-    { nm: "土建5标", jl: "谢明钰", c: ["李定洋", "李定洋", "李定洋", "李定洋", "李定洋", "李定洋"] },
-    { nm: "土建6标", jl: "谢明钰", c: ["吴俊", "吴俊", "吴俊", "吴俊", "吴俊", "田发"] },
-    { nm: "土建7标", jl: "李艳君", c: ["闫继坤", "呙境阳", "呙境阳", "呙境阳", "呙境阳", "呙境阳"] },
-    { nm: "土建8标", jl: "李艳君", c: ["彭万恒", "彭万恒", "彭万恒", "彭万恒", "彭万恒", "彭万恒"] },
-    { nm: "土建9标", jl: "崔清柱", c: ["汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛"] },
-    { nm: "土建10标", jl: "崔清柱", c: ["牛雍", "牛雍", "牛雍", "牛雍", "李闯", "李闯"] }
+    { nm: "土建1标", gid: 1, jl: "万达", c: ["刘迅", "南赛花", "南赛花", "南赛花", "刘迅", "南赛花"] },
+    { nm: "土建2标", gid: 2, jl: "魏代全", c: ["王磊", "钟玉鸣", "张强", "徐曼榕", "王斌", "张爽"] },
+    { nm: "土建3标", gid: 2, jl: "魏代全", c: ["郑尧尧", "曹泽飞", "曹泽飞", "曹泽飞", "郑尧尧", "曾小帆"] },
+    { nm: "土建4标", gid: 2, jl: "魏代全", c: ["张思梦", "张思梦", "张思梦", "张思梦", "杨飞", "杨飞"] },
+    { nm: "土建5标", gid: 3, jl: "谢明钰", c: ["李定洋", "李定洋", "李定洋", "李定洋", "李定洋", "李定洋"] },
+    { nm: "土建6标", gid: 3, jl: "谢明钰", c: ["吴俊", "吴俊", "吴俊", "吴俊", "吴俊", "田发"] },
+    { nm: "土建7标", gid: 4, jl: "李艳君", c: ["闫继坤", "呙境阳", "呙境阳", "呙境阳", "呙境阳", "呙境阳"] },
+    { nm: "土建8标", gid: 4, jl: "李艳君", c: ["彭万恒", "彭万恒", "彭万恒", "彭万恒", "彭万恒", "彭万恒"] },
+    { nm: "土建9标", gid: 5, jl: "崔清柱", c: ["汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛", "汪洪涛"] },
+    { nm: "土建10标", gid: 5, jl: "崔清柱", c: ["牛雍", "牛雍", "牛雍", "牛雍", "李闯", "李闯"] }
   ];
-  function renderContacts() {
-    var host = $("#pg-cnt");
-    if (!host) return;
+  var CNT_EDIT = false, CNT_LOADED = false, CNT_LOADING = false, CNT_DIRTY = false;
+  var CNT_LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.8" y="10.4" width="14.4" height="9.8" rx="2.2"/><path d="M8 10.4V7.6a4 4 0 0 1 8 0v2.8"/></g></svg>';
+  var CNT_OPEN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.8" y="10.4" width="14.4" height="9.8" rx="2.2"/><path d="M8 10.4V7.6a4 4 0 0 1 7.5-1.3"/></g></svg>';
+  function cntEsc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function cntClean(v) { return String(v == null ? "" : v).replace(/[\r\n\t]/g, " ").trim().slice(0, 12); }
+  function cntGroups() {
     var groups = [];
     CNT.forEach(function (x) {
       var g = null;
-      groups.forEach(function (y) { if (y.jl === x.jl) g = y; });
-      if (!g) { g = { jl: x.jl, list: [] }; groups.push(g); }
+      groups.forEach(function (y) { if (y.gid === x.gid) g = y; });
+      if (!g) { g = { gid: x.gid, jl: x.jl, list: [] }; groups.push(g); }
       g.list.push(x);
     });
+    return groups;
+  }
+  function cntSerial() {
+    var c = {}, g = {};
+    CNT.forEach(function (x) { c[x.nm] = x.c.map(cntClean); });
+    cntGroups().forEach(function (x) { g[x.gid] = cntClean(x.jl); });
+    return { c: c, g: g };
+  }
+  function cntApply(v) {
+    if (!v) return;
+    CNT.forEach(function (x) {
+      var a = v.c && v.c[x.nm];
+      if (a && a.length === 6) { for (var i = 0; i < 6; i++) x.c[i] = cntClean(a[i]); }
+      if (v.g && v.g[x.gid] != null) x.jl = cntClean(v.g[x.gid]);
+    });
+  }
+  function cntLoad() {
+    if (CNT_LOADED || CNT_LOADING) return;
+    if (!ONLINE) { CNT_LOADED = true; return; }
+    CNT_LOADING = true;
+    ghGet("xt-contacts.json").then(function (res) {
+      if (res && res.obj && res.obj.v) cntApply(res.obj.v);
+      CNT_LOADED = true;
+    }).catch(function () {
+      CNT_LOADED = true;
+    }).then(function () {
+      CNT_LOADING = false;
+      if (!CNT_EDIT) renderContacts();
+    });
+  }
+  function cntSave() {
+    var payload = { v: cntSerial(), ts: Date.now() };
+    if (!ONLINE) return Promise.resolve("local");
+    function mergeContacts(latest, local) {
+      var out = latest && typeof latest === "object" ? JSON.parse(JSON.stringify(latest)) : {};
+      out.v = out.v || {};
+      out.v.c = local.v.c;
+      out.v.g = local.v.g;
+      out.ts = local.ts;
+      return out;
+    }
+    return ghGet("xt-contacts.json").then(function (cur) {
+      return cur.sha ? ghPut("xt-contacts.json", payload, mergeContacts) : ghCreateFile("xt-contacts.json", payload);
+    }).then(function () {
+      return ghGet("xt-contacts.json");
+    }).then(function (back) {
+      var got = back && back.obj && back.obj.v ? back.obj.v : null;
+      if (!got || JSON.stringify(got.c) !== JSON.stringify(payload.v.c)
+        || JSON.stringify(got.g) !== JSON.stringify(payload.v.g)) throw new Error("写入后核对不一致");
+      return "cloud";
+    });
+  }
+  function cntBindLock() {
+    var btn = $("#cnt-lock");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      if (!CNT_EDIT) {
+        bxPop(btn, '是否修改 <span class="p-seg">“各报表对接人”</span> 中的人员姓名？'
+          + '<div style="margin-top:4px;color:#6B7A8F;font-size:12px">驻地办名称、六类报表对接人均可编辑。</div>',
+          function () {
+            CNT_EDIT = true;
+            CNT_DIRTY = false;
+            renderContacts();
+          });
+        return;
+      }
+      if (!CNT_DIRTY) { CNT_EDIT = false; renderContacts(); return; }
+      bxPop(btn, "是否保存修改并锁定？", function () {
+        btn.disabled = true;
+        cntSave().then(function () {
+          CNT_EDIT = false;
+          CNT_DIRTY = false;
+          renderContacts();
+        }).catch(function (e) {
+          btn.disabled = false;
+          window.alert("人员姓名保存失败：" + ((e && e.message) || e) + "\n请检查网络后再次点锁重试。");
+        });
+      });
+    });
+  }
+  function renderContacts() {
+    var host = $("#pg-cnt");
+    if (!host) return;
+    if (!CNT_LOADED) cntLoad();
+    var groups = cntGroups();
     var ths = ["土石方日报", "产值周报", "工程旬报", "工程月报", "形象进度图", "航拍视频"];
     var rows = "";
     groups.forEach(function (g) {
       g.list.forEach(function (x, ri) {
-        rows += '<tr class="' + (ri === 0 ? "cnt-gstart" : "") + '">';
+        var cls = ri === 0 ? "cnt-gstart" : "";
+        if (ri === g.list.length - 1) cls += " cnt-gend";
+        rows += '<tr class="' + cls.trim() + '">';
         if (ri === 0) {
-          rows += '<td class="cnt-grp" rowspan="' + g.list.length + '"><b>' + g.jl + "</b><span>" + g.list.length + " 个标段</span></td>";
+          if (CNT_EDIT) {
+            rows += '<td class="cnt-grp" rowspan="' + g.list.length + '"><input class="cnt-in cnt-in-grp" data-gid="'
+              + g.gid + '" value="' + cntEsc(g.jl) + '" maxlength="12" aria-label="驻地办名称"></td>';
+          } else {
+            rows += '<td class="cnt-grp" rowspan="' + g.list.length + '"><b>' + cntEsc(g.jl) + "</b></td>";
+          }
         }
-        rows += '<td class="cnt-seg">' + x.nm + "</td>";
-        x.c.forEach(function (v) { rows += "<td>" + (v || "—") + "</td>"; });
+        rows += '<td class="cnt-seg">' + cntEsc(x.nm) + "</td>";
+        x.c.forEach(function (v, ci) {
+          if (CNT_EDIT) {
+            rows += '<td><input class="cnt-in" data-seg="' + cntEsc(x.nm) + '" data-ci="' + ci
+              + '" value="' + cntEsc(v) + '" maxlength="12" aria-label="' + cntEsc(x.nm + " " + ths[ci]) + '"></td>';
+          } else {
+            rows += "<td>" + (cntClean(v) ? cntEsc(cntClean(v)) : "—") + "</td>";
+          }
+        });
         rows += "</tr>";
       });
     });
     host.innerHTML = '<div class="card-head"><h2>各报表对接人</h2>'
-      + '<span class="hint">按驻地办分组</span></div>'
+      + '<span class="hint">' + (CNT_EDIT ? "编辑中 · 点锁保存" : "按驻地办分组") + "</span>"
+      + '<button id="cnt-lock" class="cnt-lock' + (CNT_EDIT ? " on" : "") + '" type="button" title="'
+      + (CNT_EDIT ? "保存并锁定" : "修改人员姓名") + '" aria-label="'
+      + (CNT_EDIT ? "保存并锁定人员姓名" : "修改人员姓名") + '">'
+      + (CNT_EDIT ? CNT_OPEN_SVG : CNT_LOCK_SVG) + "</button></div>"
       + '<div class="card-body cnt-body"><table class="cnt-tbl"><thead><tr>'
       + '<th>驻地办</th><th>标段</th>'
       + ths.map(function (h) { return "<th>" + h + "</th>"; }).join("")
       + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+    cntBindLock();
+    var body = host.querySelector(".cnt-body");
+    if (body && CNT_EDIT) {
+      body.querySelectorAll(".cnt-in-grp").forEach(function (inp) {
+        inp.addEventListener("input", function () {
+          var gid = +this.getAttribute("data-gid"), val = cntClean(this.value);
+          CNT.forEach(function (x) { if (x.gid === gid) x.jl = val; });
+          CNT_DIRTY = true;
+        });
+      });
+      body.querySelectorAll(".cnt-in[data-ci]").forEach(function (inp) {
+        inp.addEventListener("input", function () {
+          var seg = this.getAttribute("data-seg"), ci = +this.getAttribute("data-ci"), val = cntClean(this.value);
+          CNT.forEach(function (x) { if (x.nm === seg) x.c[ci] = val; });
+          CNT_DIRTY = true;
+        });
+      });
+    }
   }
 
   function renderStatus() {
@@ -867,20 +994,18 @@
       var o = s.rows[t.tid] || {};
       var filled = !!o.filled, lk = !!o.lk;
       var mark = filled ? '<span style="color:#2E9159;font-weight:600">✓</span>' : '<span style="color:#C7CDD8">—</span>';
-      var audit = lk ? '<span style="color:#2E9159;font-weight:600">✓</span>' : '<span style="color:#C7CDD8">—</span>';
       var status = lk ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已提交</span>'
         : filled ? '<span class="pg-st-no"><span class="pg-st-dot"></span>待提交</span>'
         : '<span class="pg-st-no"><span class="pg-st-dot"></span>未填报</span>';
-      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td>"
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="c">' + t.name + "</td>"
         + '<td class="c">' + mark + "</td>"
-        + '<td class="c">' + audit + "</td>"
         + '<td class="c">' + status + "</td></tr>";
     }).join("");
-    host.innerHTML = '<div class="card-head"><h2>产值周报填报情况</h2><span class="hint">' + dstr(dthu) + "（周四）</span></div>"
+    host.innerHTML = '<div class="card-head"><h2>产值周报填报情况</h2><span class="hint">' + dstr(dthu) + "</span></div>"
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-mini-tbl"><thead><tr>'
-      + '<th style="width:9%" class="c">序号</th><th style="width:27%" class="nmc">标段</th>'
-      + '<th style="width:22%" class="c">施工单位填报</th><th style="width:21%" class="c">驻地办审核</th>'
-      + '<th style="width:21%" class="c">填报状态</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+      + '<th style="width:9%" class="c">序号</th><th style="width:31%" class="c">标段</th>'
+      + '<th style="width:30%" class="c">施工单位填报</th><th style="width:30%" class="c">填报状态</th>'
+      + '</tr></thead><tbody>' + rows + "</tbody></table></div>";
   }
   /* ③ 工程旬报填报情况（10 个土建标段，取最近一期） */
   function renderXbStatus() {
@@ -904,14 +1029,14 @@
         : st.state === 3 ? '<span class="pg-st-ok"><span class="pg-st-dot"></span>已完成</span>'
         : st.state === 2 ? '<span class="pg-st-wait"><span class="pg-st-dot"></span>待复核</span>'
         : '<span class="pg-st-no"><span class="pg-st-dot"></span>未填报</span>';
-      return '<tr><td class="c">' + (i + 1) + '</td><td class="nmc">' + t.name + "</td>"
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="c">' + t.name + "</td>"
         + '<td class="c">' + mark(sub) + "</td>"
         + '<td class="c">' + mark(sup) + "</td>"
         + '<td class="c">' + status + "</td></tr>";
     }).join("");
     host.innerHTML = '<div class="card-head"><h2>工程旬报填报情况</h2><span class="hint">' + dstr(d) + "</span></div>"
       + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl pg-mini-tbl"><thead><tr>'
-      + '<th style="width:9%" class="c">序号</th><th style="width:27%" class="nmc">标段</th>'
+      + '<th style="width:9%" class="c">序号</th><th style="width:27%" class="c">标段</th>'
       + '<th style="width:22%" class="c">施工单位填报</th><th style="width:21%" class="c">驻地办审核</th>'
       + '<th style="width:21%" class="c">填报状态</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
   }
@@ -1324,7 +1449,12 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     var r = anchor.getBoundingClientRect();
     var top = r.bottom + window.scrollY + 8, left = r.left + window.scrollX - 8;
     var w = p.offsetWidth || 240;
-    if (left + w > window.innerWidth - 12) left = Math.max(12, window.innerWidth - w - 12);
+    var arrow = 22;
+    if (left + w > window.innerWidth - 12) {
+      left = Math.max(12, window.innerWidth - w - 12);
+      arrow = Math.max(16, Math.min(w - 20, r.left + r.width / 2 - left - 5));
+    }
+    p.style.setProperty("--bx-arrow", arrow + "px");
     if (r.bottom + p.offsetHeight + 20 > window.innerHeight) top = r.top + window.scrollY - p.offsetHeight - 8;
     p.style.top = top + "px"; p.style.left = left + "px";
     function close() { p.remove(); document.removeEventListener("click", out, true); document.removeEventListener("keydown", esc); }
@@ -2562,6 +2692,55 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     }
     return attempt();
   }
+  /* 云端新建分文件必须走 Git Data API；Contents API 直接新建会 404 */
+  function ghApi(p) {
+    return "https://api.github.com/repos/" + GH.owner + "/" + GH.repo + p;
+  }
+  function ghJsonReq(method, p, body) {
+    var opt = {
+      method: method,
+      headers: {
+        "Authorization": "Bearer " + GH.token,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      }
+    };
+    if (body !== undefined) opt.body = JSON.stringify(body);
+    return ghFetch(ghApi(p), opt).then(function (r) {
+      if (r.ok) return r.json();
+      return r.text().then(function (txt) {
+        var err = new Error("GitHub " + method + " " + p + " HTTP " + r.status + (txt ? " " + txt.slice(0, 90) : ""));
+        err.status = r.status;
+        err.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
+        throw err;
+      });
+    });
+  }
+  function ghCreateFile(name, obj) {
+    var path = GH.dir + "/" + name;
+    return ghJsonReq("GET", "/git/ref/heads/" + GH.branch).then(function (ref) {
+      var parent = ref.object.sha;
+      return ghJsonReq("GET", "/git/commits/" + parent).then(function (commit) {
+        return ghJsonReq("POST", "/git/blobs", {
+          content: ghB64(JSON.stringify(obj)),
+          encoding: "base64"
+        }).then(function (blob) {
+          return ghJsonReq("POST", "/git/trees", {
+            base_tree: commit.tree.sha,
+            tree: [{ path: path, mode: "100644", type: "blob", sha: blob.sha }]
+          });
+        }).then(function (tree) {
+          return ghJsonReq("POST", "/git/commits", {
+            message: "contacts " + new Date().toISOString(),
+            tree: tree.sha,
+            parents: [parent]
+          });
+        }).then(function (nc) {
+          return ghJsonReq("PATCH", "/git/refs/heads/" + GH.branch, { sha: nc.sha });
+        }).then(function () { return true; });
+      });
+    });
+  }
 /* =======================================================================
    分文件同步层 v2（P0 + P1 + P2）
    - 每个标段 / 每个城市 / 基础数各一个 gist 文件，写入互不覆盖
@@ -2933,3 +3112,4 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
   if (ONLINE) { bxSync("busy", "正在读取云端…"); pullCloud(); }
   else { bxSync("warn", "本机只读模式 · 未连云端"); }
 })();
+

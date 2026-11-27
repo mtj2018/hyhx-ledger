@@ -731,6 +731,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .gd-tbl th{padding:9px 12px;border-bottom:1px solid var(--line);background:var(--mist);color:var(--navy);
   font-size:12px;font-weight:600;letter-spacing:.04em;text-align:center;white-space:nowrap}
 .gd-tbl td{padding:12px;border-bottom:1px solid var(--hair);vertical-align:top;font-size:13px;line-height:1.6}
+.gd-tbl td:first-child{text-align:center}
 .gd-tbl tr:last-child td{border-bottom:0}
 .gd-name{font-size:14px;font-weight:700;color:var(--navy);line-height:1.4}
 .gd-kind{display:inline-block;margin-top:6px;padding:1px 6px;border:1px solid #DCE8FF;border-radius:2px;
@@ -800,7 +801,7 @@ td.nmc{white-space:nowrap;font-size:12px}
 .sch-table-wrap{overflow-x:auto;background:#fff}
 .sch-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
 .sch-tbl th{padding:10px 14px;background:#F4F7FC;border-bottom:1px solid #DFE6F2;color:#27446F;
-  font-size:12px;font-weight:600;letter-spacing:.05em;text-align:center;white-space:nowrap}
+  font-size:13.2px;font-weight:600;letter-spacing:.05em;text-align:center;white-space:nowrap}
 .sch-tbl td{padding:14px 16px;border-bottom:1px solid #EDF1F7;vertical-align:middle;font-size:13.5px;line-height:1.5}
 .sch-tbl td.c{text-align:center}
 .sch-tbl tbody tr:last-child td{border-bottom:0}
@@ -869,21 +870,34 @@ td.nmc{white-space:nowrap;font-size:12px}
 
 /* 各报表对接人：紧凑矩阵表，按驻地办合并单元格 */
 .cnt-body{padding:0}
+#pg-cnt .card-head{align-items:center;gap:8px}
+.cnt-lock{flex:0 0 auto;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
+  padding:0;border:1px solid #D8E2EE;border-radius:3px;background:#FFFFFF;color:#71839A;cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s}
+.cnt-lock:hover{border-color:#B9CBE2;color:#16407F;background:#F7FAFF}
+.cnt-lock.on{border-color:#AFC8EA;background:#EDF4FF;color:#16407F}
+.cnt-lock:disabled{opacity:.55;cursor:wait}
+.cnt-lock svg{display:block;width:14px;height:14px}
+.cnt-in{width:100%;box-sizing:border-box;padding:1px 3px;border:1px solid #EFE6C6;border-radius:2px;
+  background:#FFFDF0;color:#16407F;font-family:inherit;font-size:10.3px;line-height:1.35;text-align:center;outline:none}
+.cnt-in:focus{background:#FFF7D4;border-color:#D9C77A;box-shadow:inset 0 -2px 0 #2F6FEB}
+.cnt-in-grp{font-size:10.6px;font-weight:700;color:#16407F}
 .cnt-tbl{width:100%;height:100%;border-collapse:collapse;table-layout:fixed}
 .cnt-tbl th{padding:7px 2px;background:#F4F7FC;border-bottom:1px solid #DFE6F2;color:#5B6B82;
   font-size:9.8px;font-weight:600;line-height:1.25;text-align:center;white-space:normal}
-.cnt-tbl th:nth-child(1){width:14%}
+.cnt-tbl th:nth-child(1){width:14%;background:#E7F1FD;color:#16407F}
 .cnt-tbl th:nth-child(2){width:15%}
 .cnt-tbl th:nth-child(n+3){width:11.833%}
 .cnt-tbl td{padding:5px 2px;border-bottom:1px solid #EEF2F8;text-align:center;
   font-size:10.8px;line-height:1.3;color:#33414F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cnt-tbl td.cnt-grp{padding:4px 3px;background:#F1F6FE;border-right:1px solid #E3EAF5;
+.cnt-tbl td.cnt-grp{padding:4px 3px;background:#EAF2FD;border-right:1px solid #CAD9EC;border-bottom:0;
   color:#16407F;font-weight:700;line-height:1.2;white-space:normal}
-.cnt-grp b{display:block;font-size:10.8px;font-weight:700}
+.cnt-grp b{display:block;font-size:11.2px;font-weight:700}
 .cnt-grp span{display:block;margin-top:1px;color:#8390A2;font-size:8.8px;font-weight:400}
 .cnt-tbl td.cnt-seg{font-size:10.8px;font-weight:600;color:#16407F}
-.cnt-tbl tr.cnt-gstart td{border-top:1px solid #E2E9F4}
-.cnt-tbl tr.cnt-gstart:first-child td{border-top:0}
+.cnt-tbl tr.cnt-gstart td{border-top:1px solid #5F87B5;box-shadow:none;background-image:none}
+.cnt-tbl tr.cnt-gstart:first-child td{border-top:0;box-shadow:none;background-image:none}
+.cnt-tbl tr.cnt-gend td{border-bottom:0}
 .cnt-tbl tbody tr:hover td{background:#FAFCFF}
 .cnt-tbl tbody tr:hover td.cnt-grp{background:#EDF4FE}
 
@@ -907,12 +921,19 @@ td.nmc{white-space:nowrap;font-size:12px}
   #wk-st .pg-tbl tbody td,#xb-st .pg-tbl tbody td{border:0;padding:0;text-align:left;line-height:1.5}
   #wk-st .pg-tbl tbody td:nth-child(1),#xb-st .pg-tbl tbody td:nth-child(1){grid-column:1;grid-row:1/3;color:#8A99AD;font-size:11.5px}
   #wk-st .pg-tbl tbody td:nth-child(2),#xb-st .pg-tbl tbody td:nth-child(2){grid-column:2;grid-row:1;font-weight:700;color:#0F2C5C}
-  #wk-st .pg-tbl tbody td:nth-child(3),#xb-st .pg-tbl tbody td:nth-child(3){grid-column:2;grid-row:2;justify-self:start;font-size:11px}
-  #wk-st .pg-tbl tbody td:nth-child(4),#xb-st .pg-tbl tbody td:nth-child(4){grid-column:2;grid-row:2;justify-self:end;font-size:11px;padding-right:4px}
-  #wk-st .pg-tbl tbody td:nth-child(3)::before,#xb-st .pg-tbl tbody td:nth-child(3)::before{content:"施工 ";color:#8795A8;font-size:10px}
-  #wk-st .pg-tbl tbody td:nth-child(4)::before,#xb-st .pg-tbl tbody td:nth-child(4)::before{content:"驻地办 ";color:#8795A8;font-size:10px}
-  #wk-st .pg-tbl tbody td:nth-child(5),#xb-st .pg-tbl tbody td:nth-child(5){grid-column:3;grid-row:1/3;justify-self:end}
+  /* 产值周报：序号 / 标段 / 施工填报 / 状态 */
+  #wk-st .pg-tbl tbody td:nth-child(3){grid-column:2;grid-row:2;justify-self:start;font-size:11px}
+  #wk-st .pg-tbl tbody td:nth-child(3)::before{content:"施工 ";color:#8795A8;font-size:10px}
+  #wk-st .pg-tbl tbody td:nth-child(4){grid-column:3;grid-row:1/3;justify-self:end}
+  /* 工程旬报：序号 / 标段 / 施工填报 / 驻地办审核 / 状态 */
+  #xb-st .pg-tbl tbody td:nth-child(3){grid-column:2;grid-row:2;justify-self:start;font-size:11px}
+  #xb-st .pg-tbl tbody td:nth-child(4){grid-column:2;grid-row:2;justify-self:end;font-size:11px;padding-right:4px}
+  #xb-st .pg-tbl tbody td:nth-child(3)::before{content:"施工 ";color:#8795A8;font-size:10px}
+  #xb-st .pg-tbl tbody td:nth-child(4)::before{content:"驻地办 ";color:#8795A8;font-size:10px}
+  #xb-st .pg-tbl tbody td:nth-child(5){grid-column:3;grid-row:1/3;justify-self:end}
 }
 @media (max-width:560px){
   #wk-st .pg-tbl,#xb-st .pg-tbl{min-width:0!important}
 }
+
+
