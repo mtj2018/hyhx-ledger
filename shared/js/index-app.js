@@ -2008,22 +2008,22 @@
       other: [["其他费", 5823, 723]] },
     { k: "xiantao", city: "仙桃市", seg: "", invest: 1235100, gsJ: 941019, htJ: 799318, htAll: 1093388,
       months: FA_TAGS,
-      jian: [["土建1标", 21737, 39097], ["土建2标", 13745, 64410], ["土建3标", 14081, 61688],
-             ["土建4标", 11065, 45114], ["机电1标", 0, 0], ["交安1标", 0, 0], ["交安2标", 0, 0], ["房建3标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
+      jian: [["土建1标", 21737, 39097], ["土建2标", 13745, 64410, 257748], ["土建3标", 14081, 61688, 135061],
+             ["土建4标", 11065, 45114, 177118], ["机电1标", 0, 0], ["交安1标", 0, 0], ["交安2标", 0, 0], ["房建3标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
       ord: [0, 1, 2, 3, 4, 5, 6, 9, 7, 8],
       other: [["其他费", 30857, 3748]] },
     { k: "qianjiang", city: "潜江市", seg: "", invest: 662700, gsJ: 497652, htJ: 428825, htAll: 593921,
       months: FA_TAGS,
-      jian: [["土建5标", 22930, 47910], ["土建6标", 19040, 46078], ["机电1标", 0, 0], ["交安3标", 0, 0], ["房建4标(估)", 0, 0]],
+      jian: [["土建5标", 22930, 47910, 185962], ["土建6标", 19040, 46078, 203745], ["机电1标", 0, 0], ["交安3标", 0, 0, 13620], ["房建4标(估)", 0, 0]],
       other: [["其他费", 28248, 1743]] },
     { k: "jingzhou", city: "荆州市", seg: "", invest: 802400, gsJ: 571778, htJ: 499897, htAll: 730537,
       months: FA_TAGS,
-      jian: [["土建7标", 25438, 33443], ["土建8标", 32067, 53970], ["机电2标", 0, 0], ["交安4标", 0, 0], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
+      jian: [["土建7标", 25438, 33443, 265310], ["土建8标", 32067, 53970, 176634], ["机电2标", 0, 0, 17816], ["交安4标", 0, 0, 18112], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["房建1标", 0, 0]],
       ord: [0, 1, 3, 2, 6, 4, 5],
       other: [["其他费", 47271, 29890]] },
     { k: "yichang", city: "宜昌市", seg: "", invest: 798500, gsJ: 552056, htJ: 380001, htAll: 626492,
       months: FA_TAGS,
-      jian: [["土建9标", 8745, 59585], ["土建10标", 8337, 47370], ["机电3标", 0, 0], ["交安5标", 0, 0], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["加油站", 0, 0]],
+      jian: [["土建9标", 8745, 59585, 200344], ["土建10标", 8337, 47370, 120065], ["机电3标", 0, 0, 20777], ["交安5标", 0, 0, 14383], ["房建5标(估)", 0, 0], ["铁路交叉", 0, 0], ["加油站", 0, 0]],
       ord: [0, 1, 3, 2, 4, 6, 5],
       other: [["其他费", 42980, 9755]] }
   ];
@@ -2038,12 +2038,9 @@
     return d == null ? null : d;
   }
   function faHtBand(c) {
-    var v, i, s = 0, has = false;
-    if (c.months) {
-      for (i = 0; i < c.jian.length; i++) { v = faRowHt(c, i); if (v != null) { s += v; has = true; } }
-      return has ? s : c.htJ;
-    }
-    v = faGet("fah_" + c.k + "_b");
+    /* 建安费合同额汇总沿用已核定的分地市州合同额（c.htJ）；
+       标段行内金额仅作展示与剩余投资测算，不再逐行相加，避免与已核定的汇总口径重复。 */
+    var v = faGet("fah_" + c.k + "_b");
     return v == null ? c.htJ : v;
   }
   function faHtOther(c) {
@@ -2211,9 +2208,9 @@
 
     return '<div class="fa-panel card" id="fa-p-sum" style="padding:0;overflow:hidden">'
       + '<div class="kpi">'
-      + '<div><div class="k">投资总额</div><div class="v"><span id="fa-kpi-inv">' + fmt(tx.inv) + '</span><span class="u">万元</span></div><div class="sub">六地市州合计</div></div>'
+      + '<div><div class="k">投资总额</div><div class="v"><span id="fa-kpi-inv">' + fmt(tx.inv) + '</span><span class="u">万元</span></div></div>'
       + '<div><div class="k">截至上年末报送</div><div class="v">' + fmt(tx.p) + '<span class="u">万元</span></div><div class="sub" id="fa-kpi-presub">占投资总额 ' + pctTxt(tx.p / tx.inv) + '</div></div>'
-      + '<div><div class="k">本年已报送</div><div class="v"><span id="fa-kpi-cu">' + fmt(tx.cu) + '</span><span class="u">万元</span></div><div class="sub">2026 年（含 11、12 月录入）</div></div>'
+      + '<div><div class="k">本年已报送</div><div class="v"><span id="fa-kpi-cu">' + fmt(tx.cu) + '</span><span class="u">万元</span></div><div class="sub">数据统计至 10 月</div></div>'
       + '<div><div class="k">累计报送</div><div class="v"><span id="fa-kpi-cum">' + fmt(tx.t) + '</span><span class="u">万元</span></div>'
       + '<div class="sub" id="fa-kpi-sub">占投资总额 ' + pctTxt(tx.t / tx.inv) + '</div></div>'
       + '</div>'
@@ -3404,7 +3401,7 @@
           + '<td class="c">' + f(g.cum) + "</td>"
           + '<td class="c">' + (g.total ? pct(g.cum / g.total) : "") + "</td></tr>";
       }).join("");
-      q("#pg-shape").innerHTML = head("形象进度完成情况汇总表", YM.replace("-", " 年 ") + " 月　全项目",
+      q("#pg-shape").innerHTML = head("形象进度完成情况汇总表", YM.replace("-", " 年 ") + " 月",
           '<button class="pg-xls" id="pg-xls" type="button">导出 Excel</button>')
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
         + '<th style="width:5.5%" class="c">序号</th><th style="width:19%">工程名称</th><th style="width:10%" class="c">单位</th>'
@@ -3430,8 +3427,7 @@
           + '<td class="r">' + fmt(r.cum, 0) + "</td>"
           + '<td class="r">' + (r.contract ? pct(r.cum / r.contract) : "") + "</td></tr>";
       }).join("");
-      q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月　全项目合计"
-        + "　0#清单")
+      q("#pg-out").innerHTML = head("合同额完成情况（万元）", YM.replace("-", " 年 ") + " 月")
         + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
         + '<th>项目</th><th style="width:118px" class="r">合同额</th>'
         + '<th style="width:114px" class="r">本月完成</th><th style="width:126px" class="r">累计完成</th>'

@@ -89,7 +89,7 @@ textarea:focus-visible,
 }
 
 .nav-item:not(.is-on):hover {
-  padding-left: 18px;
+  padding-left: 20px;
 }
 
 .rail .nav-jump {
@@ -107,11 +107,12 @@ textarea:focus-visible,
   text-decoration: none;
   border-radius: 0 0 var(--ui-radius-md) var(--ui-radius-md);
   box-shadow: 0 3px 14px rgba(15, 44, 92, .05);
-  transition: background-color .16s ease, border-color .16s ease;
+  transition: background-color .16s ease, border-color .16s ease, padding-left .16s ease;
 }
 
 .rail .nav-jump:hover {
   border-color: #B8C8DE;
+  padding-left: 20px;
 }
 
 .card {
@@ -400,7 +401,18 @@ textarea:focus-visible,
   }
 
   .rail .nav-jump {
-    display: none;
+    display: flex;
+    margin-top: 8px;
+    padding: 12px 14px;
+    border-radius: var(--ui-radius-sm);
+  }
+
+  .rail nav .nav-item span {
+    transition: transform .16s ease;
+  }
+
+  .rail nav .nav-item:not(.is-on):hover span {
+    transform: translateX(4px);
   }
 
   .nav-item:not(.is-on):hover {
@@ -506,14 +518,14 @@ textarea:focus-visible,
   }
 }
 
-/* 2026-11-26: 导航是同一张卡，末项与其它项同样式，只在卡片底部收圆角 */
+/* 导航卡片顶部收圆角，末项底部保持直角 */
 @media (min-width: 981px) {
   .rail nav {
     border-bottom: 1px solid var(--line);
-    border-radius: var(--ui-radius-md);
+    border-radius: var(--ui-radius-md) var(--ui-radius-md) 0 0;
   }
   .rail nav .nav-tail {
-    border-radius: 0 0 var(--ui-radius-md) var(--ui-radius-md);
+    border-radius: 0;
     border-bottom: 0;
   }
 }

@@ -1,4 +1,6 @@
-/* A 页 · 地市州管理：数据全部取自 B 页工程旬报（只取云端最新一期，累计口径） */
+/* A 页 · 地市州管理
+   总览：固化《汉宜改扩建项目投资完成情况一览表（监理月报）》数据（window.__DZ_OV）
+   形象进度：数据全部取自 B 页工程旬报（只取云端最新一期，累计口径） */
 (function () {
   "use strict";
   var OWNER = "mtj2018", REPO = "hyhx-ledger-data", DIR = "data", BR = "main";
@@ -21,6 +23,7 @@
     { city: "宜昌", t1: null, segs: [9, 10], label: "土建9、10标" }
   ];
   var DATA = {}, LOADED = false;
+  var TAB = "overview", CITY = "wuhan";
 
   function $(s) { return document.querySelector(s); }
   function hdr() { return { "Authorization": "Bearer " + TOKEN, "Accept": "application/vnd.github+json" }; }
@@ -98,7 +101,169 @@
     var y = k.slice(0, 4), mo = +k.slice(5, 7), dd = +k.slice(8, 10);
     return y + " 年 " + mo + " 月 " + dd + " 日 · 第" + ((mo - 1) * 3 + (dd <= 10 ? 1 : dd <= 20 ? 2 : 3)) + "旬";
   }
-  function render() {
+
+  /* ---------- 总览 ---------- */
+  function esc(t) {
+    return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function wn(v, d) {
+    if (v === null || v === undefined || !isFinite(v)) return "—";
+    var n = Number(v);
+    var dec = d === undefined ? (Math.abs(n - Math.round(n)) > 1e-6 ? 2 : 0) : d;
+    return n.toLocaleString("zh-CN", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+  function pc(v) {
+    if (v === null || v === undefined || !isFinite(v)) return "—";
+    return (v * 100).toFixed(1) + "%";
+  }
+  function pctOrDash(a, b) {
+    return (a !== null && a !== undefined && b) ? a / b : null;
+  }
+  function pars(t) {
+    var s = esc(t || "").split("\n");
+    s = s.filter(function (x) { return x.trim() !== ""; });
+    if (!s.length) return "<p>—</p>";
+    return s.map(function (x) { return "<p>" + x + "</p>"; }).join("");
+  }
+  function catOf(part) {
+    var o = { tj: 0, ja: 0, jd: 0, fj: 0 };
+    (part.prod || []).forEach(function (r) {
+      if (/^土建/.test(r.name)) o.tj += +r.v || 0;
+      else if (/^交安/.test(r.name)) o.ja += +r.v || 0;
+      else if (/^机电/.test(r.name)) o.jd += +r.v || 0;
+      else if (/^房建/.test(r.name)) o.fj += +r.v || 0;
+    });
+    return o;
+  }
+  function barRows(p) {
+    var rows = [["路基工程", p.lj], ["桥梁工程", p.ql], ["路面工程", p.lm], ["交安工程", p.ja], ["机电工程", p.jd], ["房建工程", p.fj]];
+    return '<div class="dz-bars"><div class="bhd"><span>产值完成比例</span><span>按形象进度口径</span></div><div class="dz-bars-grid">'
+      + rows.map(function (r) {
+        var v = r[1];
+        var w = (v && isFinite(v)) ? Math.max(0, Math.min(100, v * 100)) : 0;
+        return '<div class="dz-brow"><span class="k">' + r[0] + '</span><span class="tr"><i style="width:' + w.toFixed(2)
+          + '%"></i></span><span class="p">' + pc(v) + '</span></div>';
+      }).join("") + '</div></div>';
+  }
+  function prodTable(part) {
+    var rows = (part.prod || []).map(function (r) {
+      return '<tr><td>' + esc(r.name) + '</td><td>' + wn(r.v, 0) + '</td></tr>';
+    }).join("");
+    return '<table class="dz-prod"><thead><tr><th>标段</th><th>建安费产值（万元）</th></tr></thead><tbody>'
+      + rows + '<tr><td>合计</td><td>' + wn(part.prodTotal, 0) + '</td></tr></tbody></table>';
+  }
+  function catChips(part) {
+    var c = catOf(part);
+    return '<div class="dz-cats">'
+      + '<div class="dz-cat"><div class="k">土建</div><div class="v">' + wn(c.tj, 0) + '</div></div>'
+      + '<div class="dz-cat"><div class="k">交安</div><div class="v">' + wn(c.ja, 0) + '</div></div>'
+      + '<div class="dz-cat"><div class="k">机电</div><div class="v">' + wn(c.jd, 0) + '</div></div>'
+      + '<div class="dz-cat"><div class="k">房建</div><div class="v">' + wn(c.fj, 0) + '</div></div>'
+      + '</div>';
+  }
+  function narr(part) {
+    return '<div class="dz-narr">'
+      + '<div class="dz-narr-box"><div class="h">已完成</div>' + pars(part.done) + '</div>'
+      + '<div class="dz-narr-box"><div class="h">下一步计划</div>' + pars(part.next) + '</div>'
+      + '<div class="dz-narr-box"><div class="h">亟需解决的问题</div>' + pars(part.issue) + '</div>'
+      + '</div>';
+  }
+  function partBlock(part, idx) {
+    var label = part.label || "建安费产值";
+    return '<div class="dz-part">'
+      + '<div class="dz-part-hd"><b>' + esc(label) + '</b>'
+      + (part.stake ? '<em>段面 ' + esc(part.stake.replace(/\n/g, " / ")) + '</em>' : '')
+      + '<span class="sum">产值合计 <b>' + wn(part.prodTotal, 0) + '</b> 万元</span></div>'
+      + catChips(part) + prodTable(part) + narr(part) + '</div>';
+  }
+  function cityPanel(c) {
+    var b = c.budget || {}, p = c.pct || {};
+    return '<div class="dz-city-panel" id="dz-city-panel">'
+      + '<div class="dz-city-hd"><div><div class="nm">' + esc(c.name) + '</div>'
+      + '<div class="meta">段面桩号：<b>' + esc((c.stake || "—").replace(/\n/g, "　/　")) + '</b></div></div>'
+      + '<div class="len"><b>' + wn(c.length, 1) + '</b>公里</div></div>'
+      + '<div class="dz-city-kpis">'
+      + '<div class="dz-city-kpi"><div class="k">概算总投资</div><div class="v">' + wn(b.gs, 0) + '<small>万元</small></div></div>'
+      + '<div class="dz-city-kpi"><div class="k">实际合同额</div><div class="v">' + wn(b.sj, 0) + '<small>万元</small></div></div>'
+      + '<div class="dz-city-kpi"><div class="k">概算完成</div><div class="v">' + wn(b.gsDone, 0) + '<small>万元</small></div></div>'
+      + '<div class="dz-city-kpi"><div class="k">固定资产</div><div class="v">' + wn(b.fixed, 0) + '<small>万元</small></div></div>'
+      + '<div class="dz-city-kpi"><div class="k">实际完成</div><div class="v">' + wn(b.actualDone, 0) + '<small>万元</small></div></div>'
+      + '</div>'
+      + '<div class="dz-city-body">'
+      + '<div class="dz-city-note"><div class="lb">项目概况</div>' + pars(c.overview) + '</div>'
+      + (c.parts || []).map(partBlock).join("")
+      + '<div style="margin-top:14px">' + barRows(p) + '</div>'
+      + '</div></div>';
+  }
+  function renderOv() {
+    var host = $("#dz-body"); if (!host) return;
+    var D = window.__DZ_OV;
+    if (!D) { host.innerHTML = '<div class="xb-loading">总览数据未加载</div>'; return; }
+    var t = D.total || {}, tb = t.budget || {};
+    var k = [
+      ["概算总投资", wn(tb.gs, 0), "万元"],
+      ["实际合同额", wn(tb.sj, 0), "万元"],
+      ["概算完成", wn(tb.gsDone, 0), "万元"],
+      ["固定资产", wn(tb.fixed, 0), "万元"],
+      ["实际完成", wn(tb.actualDone, 0), "万元"],
+      ["段面长度", wn(t.length, 1), "公里"]
+    ];
+    var cmp = (D.cities || []).map(function (c, i) {
+      var b = c.budget || {};
+      return '<tr><td>' + (i + 1) + '</td><td class="nm">' + esc(c.name) + '</td>'
+        + '<td>' + wn(c.length, 1) + '</td>'
+        + '<td>' + wn(b.gs, 0) + '</td>'
+        + '<td>' + wn(b.sj, 0) + '</td>'
+        + '<td>' + wn(b.gsDone, 0) + '</td>'
+        + '<td>' + wn(b.fixed, 0) + '</td>'
+        + '<td>' + wn(b.actualDone, 0) + '</td>'
+        + '<td>' + pc(pctOrDash(b.fixed, b.gs)) + '</td>'
+        + '<td>' + wn(c.prod ? c.prod.total : 0, 0) + '</td></tr>';
+    }).join("");
+    cmp += '<tr class="total"><td>—</td><td class="nm">合计</td><td>' + wn(t.length, 1) + '</td>'
+      + '<td>' + wn(tb.gs, 0) + '</td><td>' + wn(tb.sj, 0) + '</td><td>' + wn(tb.gsDone, 0) + '</td>'
+      + '<td>' + wn(tb.fixed, 0) + '</td><td>' + wn(tb.actualDone, 0) + '</td>'
+      + '<td>' + pc(pctOrDash(tb.fixed, tb.gs)) + '</td><td>' + wn(t.prod ? t.prod.total : 0, 0) + '</td></tr>';
+
+    var cur = null;
+    (D.cities || []).some(function (c) { if (c.key === CITY) { cur = c; return true; } return false; });
+    if (!cur) { cur = D.cities[0]; CITY = cur.key; }
+
+    var switches = '<div class="dz-city-switch">' + (D.cities || []).map(function (c) {
+      return '<button type="button" class="dz-city-btn' + (c.key === CITY ? ' on' : '') + '" data-city="' + c.key + '">' + esc(c.name) + '</button>';
+    }).join("") + '</div>';
+
+    host.innerHTML = '<div class="dz-ov">'
+      + '<div class="dz-ov-hero">'
+      + '<div class="dz-ov-hero-hd"><div><div class="t">' + esc(D.title) + '</div>'
+      + '<div class="s">按地市州汇总 · 数据全部固化 · 单位：万元</div></div>'
+      + '<div class="upd">更新时间 ' + esc(D.update) + '</div></div>'
+      + '<div class="dz-ov-kpis">' + k.map(function (x) {
+        return '<div class="dz-ov-kpi"><div class="k">' + x[0] + '</div><div class="v">' + x[1]
+          + '<small>' + x[2] + '</small></div></div>';
+      }).join("") + '</div>'
+      + '<div class="dz-ov-sec" style="padding:0 18px 18px"><div class="dz-ov-sec-hd"><h3>地市州投资完成情况对比</h3><span>点击下方城市查看详细形象进度与问题清单</span></div>'
+      + '<div style="overflow:auto"><table class="dz-ov-tbl"><thead><tr>'
+      + '<th style="width:44px">序号</th><th style="width:80px">地市州</th><th>段面长度<br>（公里）</th>'
+      + '<th>概算<br>（万元）</th><th>实际合同额<br>（万元）</th><th>概算完成<br>（万元）</th>'
+      + '<th>固定资产<br>（万元）</th><th>实际完成<br>（万元）</th><th>固定资产<br>占概算</th><th>建安费产值<br>（万元）</th>'
+      + '</tr></thead><tbody>' + cmp + '</tbody></table></div></div>'
+      + '</div>'
+      + '<div class="dz-ov-sec"><div class="dz-ov-sec-hd"><h3>分地市州详情</h3><span>共 ' + (D.cities || []).length + ' 个地市州（仙桃含一、二驻地范围）</span></div>'
+      + switches + cityPanel(cur) + '</div>'
+      + '</div>';
+
+    Array.prototype.forEach.call(host.querySelectorAll(".dz-city-btn"), function (b) {
+      b.addEventListener("click", function () {
+        CITY = b.getAttribute("data-city");
+        renderOv();
+      });
+    });
+  }
+
+  /* ---------- 形象进度（旬报） ---------- */
+  function renderShape() {
     var host = $("#dz-body"); if (!host) return;
     if (!LOADED) { host.innerHTML = '<div class="xb-loading">正在读取旬报数据…</div>'; return; }
     var ks = keys();
@@ -123,10 +288,30 @@
     h += "</div>";
     host.innerHTML = h;
   }
+
+  function paintTabs() {
+    Array.prototype.forEach.call(document.querySelectorAll(".dz-tab"), function (b) {
+      var on = b.getAttribute("data-dz") === TAB;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-current", on ? "true" : "false");
+    });
+    var bar = $("#dz-bar"); if (bar) bar.style.display = (TAB === "shape") ? "flex" : "none";
+  }
+  function render() {
+    paintTabs();
+    if (TAB === "shape") renderShape(); else renderOv();
+  }
   function boot() {
     if (!$("#view-dz")) return;
-    load().then(function () { render(); });
+    Array.prototype.forEach.call(document.querySelectorAll(".dz-tab"), function (b) {
+      b.addEventListener("click", function () {
+        TAB = b.getAttribute("data-dz") || "overview";
+        render();
+      });
+    });
+    render();
+    load().then(function () { if (TAB === "shape") render(); });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
-  window.__dzReload = function () { load(); return load().then(render); };
+  window.__dzReload = function () { LOADED = false; return load().then(function () { if (TAB === "shape") render(); return DATA; }); };
 })();
