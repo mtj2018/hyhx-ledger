@@ -24,7 +24,6 @@
     var n = Math.round((+v) * 100) / 100;
     return n.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
   }
-  function num(v) { return Math.round((+v || 0) * 100) / 100; }
   function clampKey(k) { return k < MIN ? MIN : (k > MAX ? MAX : k); }
 
   /* ---------------- 周四序列 / 周号 ---------------- */
@@ -236,7 +235,7 @@
       + '<select class="pg-sel wk-day" id="wk-d">' + ds.map(function (k) {
         return '<option value="' + k + '"' + (k === CUR.key ? " selected" : "") + ">" + parseInt(k.slice(8, 10), 10) + " 日 · 第" + cnW(wkOf(k)) + "周</option>";
       }).join("") + "</select>"
-      + '<span class="xb-note">只填「本周完成」，允许填负数修正前几周多报/错报</span>';
+      + '<span class="xb-note">只填「本周完成」，仅限整数，允许填负数修正前几周多报/错报</span>';
     $("#wk-y").onchange = pickY;
     $("#wk-m").onchange = pickM;
     $("#wk-d").onchange = function () { if (this.value) CUR.key = this.value; render(); };
@@ -263,7 +262,7 @@
         + '<td class="wk-prev">' + fmt(cum[i] - q[i]) + "</td>"
         + '<td class="wk-q">' + (lk
           ? '<span class="wk-qv">' + fmt(q[i]) + "</span>"
-          : '<input type="text" inputmode="decimal" data-wkq="' + tid + "|" + i + '" value="' + (q[i] === 0 ? "" : q[i]) + '" placeholder="0">') + "</td>"
+          : '<input type="text" inputmode="numeric" pattern="-?[0-9]*" autocomplete="off" data-wkq="' + tid + "|" + i + '" value="' + (q[i] === 0 ? "" : q[i]) + '" placeholder="0">') + "</td>"
         + '<td class="wk-cum" data-wkcum="' + tid + "|" + i + '">' + fmt(cum[i]) + "</td></tr>";
     }).join("");
     var qs = 0, cs = 0;
@@ -281,7 +280,7 @@
       + '<div class="wk-hd"><b>' + t.name + '</b><em>' + tag + '</em>'
       + '<span class="wk-dot" data-wkdot="' + tid + '"></span>'
       + '<button type="button" class="wk-sub' + (lk ? " on" : "") + '" data-wksub="' + tid + '">' + (lk ? "解锁" : "提交") + "</button></div>"
-      + '<div class="wk-body"><div class="wk-tbwrap"><table class="wk-tbl"><thead><tr><th>项目</th><th>上周末完成</th><th>本周完成</th><th>累计完成</th></tr></thead><tbody>'
+      + '<div class="wk-body"><div class="wk-tbwrap"><table class="wk-tbl"><thead><tr><th>项目</th><th>上期末完成</th><th>本周完成</th><th>累计完成</th></tr></thead><tbody>'
       + body + "</tbody></table></div>" + txtBox + "</div></div>";
   }
 
@@ -298,13 +297,34 @@
   function bind() {
     var host = $("#wk-body"); if (!host) return;
     host.querySelectorAll("[data-wkq]").forEach(function (inp) {
+      inp._dec = false;
+      inp.onkeydown = function (e) {
+        if (e.key === "." || e.key === "．" || e.key === "。") {
+          e.preventDefault();
+          if (String(inp.value || "").replace(/[^0-9]/g, "") !== "") inp._dec = true;
+          return false;
+        }
+        if (/^[0-9]$/.test(e.key) && inp._dec) { e.preventDefault(); return false; }
+        if (e.key === "Backspace" || e.key === "Delete" || e.key === "Escape") inp._dec = false;
+      };
       inp.oninput = function () {
         var p = inp.getAttribute("data-wkq").split("|"), tid = p[0], i = +p[1];
         var r = rec(tid, CUR.key);
         var oldQ = r.q[i] || 0;
         var basePrev = (r.cum[i] || 0) - oldQ;
-        var v = parseFloat(inp.value);
-        r.q[i] = isFinite(v) ? num(v) : 0;
+        /* 只允许整数：小数点在输入阶段拦截，粘贴时截断到小数点前 */
+        var raw = String(inp.value || "");
+        var dot = raw.search(/[.．。]/);
+        if (dot >= 0) {
+          raw = raw.slice(0, dot);
+          if (raw.replace(/[^0-9]/g, "") !== "") inp._dec = true;
+        }
+        var neg = raw.charAt(0) === "-";
+        var digits = raw.replace(/[^0-9]/g, "");
+        var clean = (neg ? "-" : "") + digits;
+        if (inp.value !== clean) inp.value = clean;
+        var v = parseInt(clean, 10);
+        r.q[i] = isFinite(v) ? v : 0;
         r.cum[i] = basePrev + r.q[i];
         var cellv = host.querySelector('[data-wkcum="' + tid + "|" + i + '"]');
         if (cellv) cellv.textContent = fmt(r.cum[i]);
