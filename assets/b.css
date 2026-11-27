@@ -712,3 +712,62 @@ td.nmc{white-space:nowrap;font-size:12px}
 .pg-col-r > .card{display:flex;flex-direction:column;min-height:0;margin:0}
 .pg-col-r > .card > .card-body{flex:1 1 auto;min-height:0;overflow:auto}
 #wk-st .pg-tbl th,#wk-st .pg-tbl td{padding-top:3px;padding-bottom:3px}
+
+/* ---------- 计划合同部信息数据填报指南（状态页底部） ---------- */
+.gd-card{margin-top:16px;margin-bottom:0}
+.gd-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 18px 12px;
+  border-bottom:1px solid var(--line);background:linear-gradient(90deg,#F7FAFF 0%,#FFFFFF 68%)}
+.gd-hd-t{min-width:0}
+.gd-head h2{font-size:15px;font-weight:700;color:var(--navy);letter-spacing:.03em}
+.gd-head h2:before{content:"";display:inline-block;width:3px;height:13px;background:var(--navy);margin-right:9px;vertical-align:-1px}
+.gd-hd-t p{font-size:12px;color:var(--muted);line-height:1.6;margin-top:4px}
+.gd-entry{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;padding:7px 13px;border-radius:3px;
+  background:#16407F;color:#fff;font-size:12.5px;font-weight:600;letter-spacing:.04em;text-decoration:none;
+  box-shadow:0 1px 3px rgba(22,64,127,.22);transition:background .15s,box-shadow .15s}
+.gd-entry:hover{background:#1F5AA8;box-shadow:0 2px 6px rgba(22,64,127,.3)}
+.gd-entry i{font-style:normal;font-size:13px;line-height:1;opacity:.88}
+.gd-body{padding:12px 18px 16px}
+.gd-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.gd-tbl th{padding:9px 12px;border-bottom:1px solid var(--line);background:var(--mist);color:var(--navy);
+  font-size:12px;font-weight:600;letter-spacing:.04em;text-align:center;white-space:nowrap}
+.gd-tbl td{padding:12px;border-bottom:1px solid var(--hair);vertical-align:top;font-size:13px;line-height:1.6}
+.gd-tbl tr:last-child td{border-bottom:0}
+.gd-name{font-size:14px;font-weight:700;color:var(--navy);line-height:1.4}
+.gd-kind{display:inline-block;margin-top:6px;padding:1px 6px;border:1px solid #DCE8FF;border-radius:2px;
+  background:#EEF4FF;color:#2F5FA8;font-size:10.5px;line-height:1.6;letter-spacing:.03em}
+.gd-time{font-size:13px;font-weight:600;color:#15233B;line-height:1.5}
+.gd-unit{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.55}
+.gd-flow{list-style:none;counter-reset:gdstep}
+.gd-flow li{position:relative;padding-left:21px;margin-bottom:4px;color:#33405A;font-size:12.6px;line-height:1.6}
+.gd-flow li:last-child{margin-bottom:0}
+.gd-flow li:before{counter-increment:gdstep;content:counter(gdstep);position:absolute;left:0;top:2px;
+  width:14px;height:14px;border-radius:50%;background:#EEF3FA;border:1px solid #D5E0F0;
+  color:#31527F;font-size:9.5px;font-weight:700;line-height:12px;text-align:center}
+.gd-flow b{font-weight:600;color:var(--navy)}
+.gd-note{border-left:2px solid #E7ECF5;padding-left:9px;color:var(--muted);font-size:12px;line-height:1.7}
+.gd-subnote{margin-top:7px;border-left-color:#F0F2F7;color:#7A8592}
+.gd-tips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 12px;
+  margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.gd-tip{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border:1px solid #EDF1F7;background:#FAFBFD}
+.gd-tipno{flex:0 0 auto;color:#2F6FEB;font-size:11px;font-weight:700;line-height:1.7;letter-spacing:.02em}
+.gd-tip p{color:#5F6B7A;font-size:11.8px;line-height:1.65}
+@media (max-width:900px){
+  .gd-head{align-items:flex-start;flex-wrap:wrap;gap:10px}
+  .gd-body{padding:0 14px 14px}
+  .gd-tbl thead{display:none}
+  .gd-tbl,.gd-tbl tbody,.gd-tbl tr,.gd-tbl td{display:block}
+  .gd-tbl tr{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:2px 14px;
+    padding:12px 0;border-bottom:1px solid var(--hair)}
+  .gd-tbl tr:last-child{border-bottom:0}
+  .gd-tbl td{padding:0;border:0}
+  .gd-tbl td:nth-child(3){grid-column:1/-1;margin-top:7px}
+  .gd-tbl td:nth-child(4){grid-column:1/-1;margin-top:5px}
+  .gd-tips{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .gd-head{padding:13px 12px 11px}
+  .gd-entry{padding:6px 11px}
+  .gd-tbl tr{grid-template-columns:1fr}
+  .gd-tbl td:nth-child(2){margin-top:3px}
+  .gd-name{font-size:13.5px}
+}

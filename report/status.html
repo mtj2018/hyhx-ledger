@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="../assets/b.cfg.js?v=261127103047"></script>
+<script src="../assets/b.cfg.js?v=261127103716"></script>
 <script>
 (function () {
-  var BUILD = "261127103047";
+  var BUILD = "261127103716";
   if (!BUILD || (location.protocol !== "http:" && location.protocol !== "https:")) return;
   var verUrl = (location.pathname.indexOf("/report/") >= 0 ? "../ver.json" : "ver.json") + "?t=" + Date.now();
   fetch(verUrl, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
@@ -20,9 +20,9 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>数据填报情况 · 沪渝高速改扩建工程</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="../assets/b.css?v=261127103047">
-<link rel="stylesheet" href="../assets/xb.css?v=261127103047">
-<link rel="stylesheet" href="../shared/css/ui.css?v=261127103047">
+<link rel="stylesheet" href="../assets/b.css?v=261127103716">
+<link rel="stylesheet" href="../assets/xb.css?v=261127103716">
+<link rel="stylesheet" href="../shared/css/ui.css?v=261127103716">
 </head>
 <body data-page="status" data-view="status">
 <header class="top">
@@ -60,11 +60,150 @@
         </div>
       </div>
       <div class="card pg-cnt-card" id="pg-cnt"></div>
+      <div class="card gd-card" id="pg-guide">
+        <div class="gd-head">
+          <div class="gd-hd-t">
+            <h2>计划合同部信息数据填报指南</h2>
+            <p>6 类报表的填报时间、责任单位与工作流程 · 已由系统自动取数的项目无需重复填写</p>
+          </div>
+          <a class="gd-entry" href="regions.html" target="_blank" rel="noopener" title="打开计划合同部数据填报平台">
+            <span>进入填报入口</span><i>↗</i>
+          </a>
+        </div>
+        <div class="gd-body">
+          <table class="gd-tbl">
+            <colgroup>
+              <col style="width:14%">
+              <col style="width:16%">
+              <col style="width:38%">
+              <col style="width:32%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>填报类型</th>
+                <th>填报时间 / 责任单位</th>
+                <th>工作流程</th>
+                <th>填报说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="gd-name">土石方日报</div><span class="gd-kind">按日</span></td>
+                <td>
+                  <div class="gd-time">每日 20:00 前</div>
+                  <div class="gd-unit">各土建施工单位</div>
+                </td>
+                <td>
+                  <ol class="gd-flow">
+                    <li>按日填报土石方完成数量</li>
+                    <li>核对数据无误后点击“提交”</li>
+                  </ol>
+                </td>
+                <td><p class="gd-note">按日更新，当日 20:00 前完成填报。</p></td>
+              </tr>
+              <tr>
+                <td><div class="gd-name">产值周报</div><span class="gd-kind">产值类</span></td>
+                <td>
+                  <div class="gd-time">每周四 · 20:00 前</div>
+                  <div class="gd-unit">各土建施工单位</div>
+                </td>
+                <td>
+                  <ol class="gd-flow">
+                    <li><b>施工单位</b>提交离线版产值周报明细</li>
+                    <li><b>驻地办</b>审核并确认金额</li>
+                    <li><b>施工单位</b>按确认金额在线填报；土建 2 标、8 标同步填报文字周报</li>
+                    <li><b>驻地办</b>汇总确认后的离线明细，发送计划合同部陈虎</li>
+                  </ol>
+                </td>
+                <td>
+                  <p class="gd-note">产值以周报为唯一口径，其余产值类数据不再单独填报；按合同清单类型划分，不再将集采拆分至路基、路面、桥涵。</p>
+                  <p class="gd-note gd-subnote">后期将不定期收集需施工单位、驻地办签字确认的产值周报明细。</p>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="gd-name">工程旬报</div><span class="gd-kind">形象进度类</span></td>
+                <td>
+                  <div class="gd-time">每月 10 / 20 / 30 日</div>
+                  <div class="gd-unit">各土建施工单位</div>
+                </td>
+                <td>
+                  <ol class="gd-flow">
+                    <li><b>施工单位</b>在线填报本旬完成数量并提交</li>
+                    <li><b>驻地办</b>审核数据、确认是否存在滞后项目后提交；数据有误可退回修改</li>
+                  </ol>
+                </td>
+                <td><p class="gd-note">按形象进度（完成数量）填报，与产值周报口径相互独立。</p></td>
+              </tr>
+              <tr>
+                <td><div class="gd-name">工程月报</div><span class="gd-kind">综合</span></td>
+                <td>
+                  <div class="gd-time">每月 20 日</div>
+                  <div class="gd-unit">所有施工单位（含机电、交安标段）</div>
+                </td>
+                <td>
+                  <ol class="gd-flow">
+                    <li><b>施工单位</b>在线填报相关数据并提交</li>
+                    <li><b>土建驻地办</b>另行收集文字月报、影像资料，汇总后发送计划合同部陈虎</li>
+                  </ol>
+                </td>
+                <td>
+                  <p class="gd-note">自 12 月起，机电 2–3 标、交安 2–5 标纳入在线填报；土建标段分项产值自动提取最近一期产值周报金额，无需重复填写。</p>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="gd-name">地市州月报</div><span class="gd-kind">按地市州</span></td>
+                <td>
+                  <div class="gd-time">每月 28 日</div>
+                  <div class="gd-unit">所有驻地办</div>
+                </td>
+                <td>
+                  <ol class="gd-flow">
+                    <li>收集辖区信息</li>
+                    <li>按地市州分别填报对应数据</li>
+                  </ol>
+                </td>
+                <td><p class="gd-note">产值完成情况自动提取工程月报金额，确保口径一致，无需另行填报。</p></td>
+              </tr>
+              <tr>
+                <td><div class="gd-name">晴雨表</div><span class="gd-kind">自动</span></td>
+                <td>
+                  <div class="gd-time">／</div>
+                  <div class="gd-unit">无需人工填报</div>
+                </td>
+                <td>
+                  <ol class="gd-flow">
+                    <li>系统自动识别天气，并汇总当月雨雪天气情况</li>
+                  </ol>
+                </td>
+                <td><p class="gd-note">该项日报取消，以晴雨表自动汇总数据为准。</p></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="gd-tips">
+            <div class="gd-tip">
+              <span class="gd-tipno">01</span>
+              <p>平台部署于境外服务器，访问时可能略有卡顿。点击“提交”后，请待按钮变为“锁定”状态再关闭网页。</p>
+            </div>
+            <div class="gd-tip">
+              <span class="gd-tipno">02</span>
+              <p>已提交内容支持自行解锁修改，填报有误可随时更正，无需担心锁定后无法调整。</p>
+            </div>
+            <div class="gd-tip">
+              <span class="gd-tipno">03</span>
+              <p>设计量、累计完成等基础数据由系统自动统计；如发现最新一期数据有误，请联系计划合同部陈虎修正。</p>
+            </div>
+            <div class="gd-tip">
+              <span class="gd-tipno">04</span>
+              <p>以上未提及的报表，如专项旬报，仍采用在线表格的填报方式。</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 </div>
-<script src="../shared/js/report-app.js?v=261127103047"></script>
-<script src="../assets/wk.js?v=261127103047"></script>
-<script src="../shared/js/ui.js?v=261127103047"></script>
+<script src="../shared/js/report-app.js?v=261127103716"></script>
+<script src="../assets/wk.js?v=261127103716"></script>
+<script src="../shared/js/ui.js?v=261127103716"></script>
 </body>
 </html>
