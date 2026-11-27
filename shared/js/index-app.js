@@ -3502,7 +3502,7 @@
     var SEG_CTR0 = {"t1":{"amt":526279,"zlj":26072,"lj":93692,"qh":113466,"lm":62894,"lh":7016,"jc":148263},"t2":{"amt":222304,"zlj":13334,"lj":21754,"qh":84153,"lm":0,"lh":1129,"jc":78716},"t3":{"amt":125884,"zlj":7418,"lj":30378,"qh":24505,"lm":0,"lh":1414,"jc":47326},"t4":{"amt":192468,"zlj":9907,"lj":40595,"qh":9405,"lm":49766,"lh":1932,"jc":61931},"t5":{"amt":193247,"zlj":10425,"lj":45018,"qh":49893,"lm":0,"lh":1566,"jc":64345},"t6":{"amt":224498,"zlj":10420,"lj":42351,"qh":28329,"lm":42099,"lh":1129,"jc":80008},"t7":{"amt":280751,"zlj":13564,"lj":53605,"qh":43140,"lm":61087,"lh":3182,"jc":68181},"t8":{"amt":188002,"zlj":10580,"lj":62866,"qh":43843,"lm":0,"lh":2114,"jc":41397},"t9":{"amt":204500,"zlj":10590,"lj":45057,"qh":10907,"lm":48654,"lh":3177,"jc":56313},"t10":{"amt":121346,"zlj":6609,"lj":45850,"qh":19781,"lm":0,"lh":4491,"jc":17623}};
     function ctrZeroOn() {
       if (window.__CTR_MODE) return window.__CTR_MODE === "0";
-      try { return localStorage.getItem("hyhx-ctr-set") === "0"; } catch (e) { return false; }
+      try { return localStorage.getItem("hyhx-ctr-set") !== "c"; } catch (e) { return true; }
     }
     function segCtrOf(tid) {
       if (window.__CTR_ROW && window.__CTR_ROW[tid]) return window.__CTR_ROW[tid];
