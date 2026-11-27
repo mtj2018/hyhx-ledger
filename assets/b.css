@@ -899,3 +899,20 @@ td.nmc{white-space:nowrap;font-size:12px}
   .pg-top-grid,.pg-bottom-grid{grid-template-columns:1fr}
   #pg-sched{grid-column:auto}
 }
+
+/* 窄屏：产值周报 / 工程旬报两张 mini 表改为两行卡片式，避免末尾状态列被挤出 */
+@media (max-width:560px){
+  #wk-st .pg-tbl thead,#xb-st .pg-tbl thead{display:none}
+  #wk-st .pg-tbl tbody tr,#xb-st .pg-tbl tbody tr{display:grid;grid-template-columns:24px minmax(0,1fr) 76px;grid-template-rows:auto auto;align-items:center;padding:7px 10px;border-bottom:1px solid #EDF1F7}
+  #wk-st .pg-tbl tbody td,#xb-st .pg-tbl tbody td{border:0;padding:0;text-align:left;line-height:1.5}
+  #wk-st .pg-tbl tbody td:nth-child(1),#xb-st .pg-tbl tbody td:nth-child(1){grid-column:1;grid-row:1/3;color:#8A99AD;font-size:11.5px}
+  #wk-st .pg-tbl tbody td:nth-child(2),#xb-st .pg-tbl tbody td:nth-child(2){grid-column:2;grid-row:1;font-weight:700;color:#0F2C5C}
+  #wk-st .pg-tbl tbody td:nth-child(3),#xb-st .pg-tbl tbody td:nth-child(3){grid-column:2;grid-row:2;justify-self:start;font-size:11px}
+  #wk-st .pg-tbl tbody td:nth-child(4),#xb-st .pg-tbl tbody td:nth-child(4){grid-column:2;grid-row:2;justify-self:end;font-size:11px;padding-right:4px}
+  #wk-st .pg-tbl tbody td:nth-child(3)::before,#xb-st .pg-tbl tbody td:nth-child(3)::before{content:"施工 ";color:#8795A8;font-size:10px}
+  #wk-st .pg-tbl tbody td:nth-child(4)::before,#xb-st .pg-tbl tbody td:nth-child(4)::before{content:"驻地办 ";color:#8795A8;font-size:10px}
+  #wk-st .pg-tbl tbody td:nth-child(5),#xb-st .pg-tbl tbody td:nth-child(5){grid-column:3;grid-row:1/3;justify-self:end}
+}
+@media (max-width:560px){
+  #wk-st .pg-tbl,#xb-st .pg-tbl{min-width:0!important}
+}
