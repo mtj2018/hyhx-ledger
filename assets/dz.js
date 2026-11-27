@@ -120,11 +120,14 @@
   function pctOrDash(a, b) {
     return (a !== null && a !== undefined && b) ? a / b : null;
   }
-  function pars(t) {
+  function pars(t, boldCats) {
     var s = esc(t || "").split("\n");
     s = s.filter(function (x) { return x.trim() !== ""; });
     if (!s.length) return "<p>—</p>";
-    return s.map(function (x) { return "<p>" + x + "</p>"; }).join("");
+    return s.map(function (x) {
+      if (boldCats) x = x.replace(/(土建|交安|机电|房建)(?=：|:)/g, "<b>$1</b>");
+      return "<p>" + x + "</p>";
+    }).join("");
   }
   function catOf(part) {
     var o = { tj: 0, ja: 0, jd: 0, fj: 0 };
@@ -138,13 +141,13 @@
   }
   function barRows(p) {
     var rows = [["路基工程", p.lj], ["桥梁工程", p.ql], ["路面工程", p.lm], ["交安工程", p.ja], ["机电工程", p.jd], ["房建工程", p.fj]];
-    return '<div class="dz-bars"><div class="bhd"><span>产值完成比例</span><span>按形象进度口径</span></div><div class="dz-bars-grid">'
+    return '<div class="dz-bars-grid">'
       + rows.map(function (r) {
         var v = r[1];
         var w = (v && isFinite(v)) ? Math.max(0, Math.min(100, v * 100)) : 0;
         return '<div class="dz-brow"><span class="k">' + r[0] + '</span><span class="tr"><i style="width:' + w.toFixed(2)
           + '%"></i></span><span class="p">' + pc(v) + '</span></div>';
-      }).join("") + '</div></div>';
+      }).join("") + '</div>';
   }
   function prodTable(part) {
     var rows = (part.prod || []).map(function (r) {
@@ -196,67 +199,110 @@
       + '<div style="margin-top:14px">' + barRows(p) + '</div>'
       + '</div></div>';
   }
+  function citySwitches(cities, curKey) {
+    return (cities || []).map(function (c) {
+      return '<button type="button" class="dz-city-btn' + (c.key === curKey ? ' on' : '') + '" data-city="' + c.key + '" aria-pressed="' + (c.key === curKey ? 'true' : 'false') + '">' + esc(c.name) + '</button>';
+    }).join("");
+  }
+  function metricCard(k, v, rate, rateLabel) {
+    var val = (v === null || v === undefined || !isFinite(v)) ? "—" : wn(v, 0) + "<small>万元</small>";
+    var rt = (rate === null || rate === undefined || !isFinite(rate))
+      ? '<span class="mut">' + (rateLabel || "暂不统计") + '</span>'
+      : '<b>' + pc(rate) + '</b><span>' + rateLabel + '</span>';
+    return '<article class="ov-metric dz-metric">'
+      + '<div class="dz-metric-k">' + k + '</div>'
+      + '<div class="dz-metric-v">' + val + '</div>'
+      + '<div class="dz-metric-r">' + rt + '</div>'
+      + '</article>';
+  }
+  function dualMetric(b) {
+    return '<article class="ov-metric dz-metric dz-metric-dual">'
+      + '<div class="dz-dual-row"><span class="k">概算总投资</span><span class="v">' + wn(b.gs, 0) + '<small>万元</small></span></div>'
+      + '<div class="dz-dual-row"><span class="k">实际合同额</span><span class="v">' + wn(b.sj, 0) + '<small>万元</small></span></div>'
+      + '</article>';
+  }
+  function donut(rate) {
+    var v = (rate !== null && rate !== undefined && isFinite(rate)) ? Math.max(0, Math.min(1, rate)) : 0;
+    var arc = v * 100;
+    return '<div class="dz-donut" role="img" aria-label="建安费产值完成比例 ' + pc(rate) + '">'
+      + '<svg viewBox="0 0 36 36" aria-hidden="true">'
+      + '<circle class="dz-donut-bg" cx="18" cy="18" r="15.9155"></circle>'
+      + '<circle class="dz-donut-fg" cx="18" cy="18" r="15.9155" transform="rotate(-90 18 18)" pathLength="100"'
+      + ' stroke-dasharray="' + arc.toFixed(2) + ' ' + (100 - arc).toFixed(2) + '"></circle>'
+      + '</svg>'
+      + '<div class="dz-donut-t"><b>' + pc(rate) + '</b><span>占建安合同额</span></div>'
+      + '</div>';
+  }
+  function prodLine(c) {
+    var p = c.prod || {};
+    var bits = [
+      ["土建", p.tj], ["交安", p.ja], ["机电", p.jd], ["房建", p.fj]
+    ].filter(function (x) { return x[1] !== null && x[1] !== undefined; });
+    return bits.map(function (x) {
+      return '<span>' + x[0] + ' <b>' + wn(x[1], 0) + '</b></span>';
+    }).join("");
+  }
+  function narrCard(title, parts, field, boldCats) {
+    var body = (parts || []).map(function (p) {
+      var sub = parts.length > 1 && p.label ? '<div class="dz-narr-sub">' + esc(p.label) + '</div>' : '';
+      return sub + pars(p[field], boldCats);
+    }).join("");
+    return '<div class="card dz-narr-card"><div class="dz-narr-card-hd">' + title + '</div>'
+      + '<div class="dz-narr-card-bd">' + body + '</div></div>';
+  }
   function renderOv() {
     var host = $("#dz-body"); if (!host) return;
     var D = window.__DZ_OV;
     if (!D) { host.innerHTML = '<div class="xb-loading">总览数据未加载</div>'; return; }
-    var t = D.total || {}, tb = t.budget || {};
-    var k = [
-      ["概算总投资", wn(tb.gs, 0), "万元"],
-      ["实际合同额", wn(tb.sj, 0), "万元"],
-      ["概算完成", wn(tb.gsDone, 0), "万元"],
-      ["固定资产", wn(tb.fixed, 0), "万元"],
-      ["实际完成", wn(tb.actualDone, 0), "万元"],
-      ["段面长度", wn(t.length, 1), "公里"]
-    ];
-    var cmp = (D.cities || []).map(function (c, i) {
-      var b = c.budget || {};
-      return '<tr><td>' + (i + 1) + '</td><td class="nm">' + esc(c.name) + '</td>'
-        + '<td>' + wn(c.length, 1) + '</td>'
-        + '<td>' + wn(b.gs, 0) + '</td>'
-        + '<td>' + wn(b.sj, 0) + '</td>'
-        + '<td>' + wn(b.gsDone, 0) + '</td>'
-        + '<td>' + wn(b.fixed, 0) + '</td>'
-        + '<td>' + wn(b.actualDone, 0) + '</td>'
-        + '<td>' + pc(pctOrDash(b.fixed, b.gs)) + '</td>'
-        + '<td>' + wn(c.prod ? c.prod.total : 0, 0) + '</td></tr>';
-    }).join("");
-    cmp += '<tr class="total"><td>—</td><td class="nm">合计</td><td>' + wn(t.length, 1) + '</td>'
-      + '<td>' + wn(tb.gs, 0) + '</td><td>' + wn(tb.sj, 0) + '</td><td>' + wn(tb.gsDone, 0) + '</td>'
-      + '<td>' + wn(tb.fixed, 0) + '</td><td>' + wn(tb.actualDone, 0) + '</td>'
-      + '<td>' + pc(pctOrDash(tb.fixed, tb.gs)) + '</td><td>' + wn(t.prod ? t.prod.total : 0, 0) + '</td></tr>';
-
     var cur = null;
     (D.cities || []).some(function (c) { if (c.key === CITY) { cur = c; return true; } return false; });
     if (!cur) { cur = D.cities[0]; CITY = cur.key; }
+    var b = cur.budget || {}, p = cur.pct || {}, parts = cur.parts || [], prod = cur.prod || {};
+    var prodRate = pctOrDash(prod.total, b.jianHt);
+    var stake = (cur.stake || "—").replace(/\n/g, " / ");
+    var upd = D.update ? '<span class="dz-upd">数据更新于' + esc(D.update) + '</span>' : "";
+    var rail = Number(prod.rail) || 0, station = Number(prod.station) || 0;
+    var extraNote = (rail || station)
+      ? '<div class="dz-prod-note">合计已含' + (rail ? "铁路交叉 " + wn(rail, 0) + " 万元" : "")
+        + (rail && station ? "、" : "") + (station ? "加油站 " + wn(station, 0) + " 万元" : "") + '</div>'
+      : "";
 
-    var switches = '<div class="dz-city-switch">' + (D.cities || []).map(function (c) {
-      return '<button type="button" class="dz-city-btn' + (c.key === CITY ? ' on' : '') + '" data-city="' + c.key + '">' + esc(c.name) + '</button>';
-    }).join("") + '</div>';
-
-    host.innerHTML = '<div class="dz-ov">'
-      + '<div class="dz-ov-hero">'
-      + '<div class="dz-ov-hero-hd"><div><div class="t">' + esc(D.title) + '</div>'
-      + '<div class="s">按地市州汇总 · 数据全部固化 · 单位：万元</div></div>'
-      + '<div class="upd">更新时间 ' + esc(D.update) + '</div></div>'
-      + '<div class="dz-ov-kpis">' + k.map(function (x) {
-        return '<div class="dz-ov-kpi"><div class="k">' + x[0] + '</div><div class="v">' + x[1]
-          + '<small>' + x[2] + '</small></div></div>';
-      }).join("") + '</div>'
-      + '<div class="dz-ov-sec" style="padding:0 18px 18px"><div class="dz-ov-sec-hd"><h3>地市州投资完成情况对比</h3><span>点击下方城市查看详细形象进度与问题清单</span></div>'
-      + '<div style="overflow:auto"><table class="dz-ov-tbl"><thead><tr>'
-      + '<th style="width:44px">序号</th><th style="width:80px">地市州</th><th>段面长度<br>（公里）</th>'
-      + '<th>概算<br>（万元）</th><th>实际合同额<br>（万元）</th><th>概算完成<br>（万元）</th>'
-      + '<th>固定资产<br>（万元）</th><th>实际完成<br>（万元）</th><th>固定资产<br>占概算</th><th>建安费产值<br>（万元）</th>'
-      + '</tr></thead><tbody>' + cmp + '</tbody></table></div></div>'
+    host.innerHTML = '<div class="dz-ov2">'
+      + '<section class="ov-dashboard dz-dash" aria-label="地市州总览">'
+      + '<div class="ov-summary dz-hero">'
+      + '<div class="dz-hero-top"><h2>' + esc(cur.name) + upd + '</h2>'
+      + '<div class="dz-hero-len"><b>' + wn(cur.length, 1) + '</b> 公里</div></div>'
+      + '<div class="dz-hero-stake">段面桩号　<b>' + esc(stake) + '</b></div>'
+      + '<div class="dz-hero-desc">' + pars(cur.overview) + '</div>'
+      + '<div class="dz-city-switch dz-hero-switch">' + citySwitches(D.cities, CITY) + '</div>'
       + '</div>'
-      + '<div class="dz-ov-sec"><div class="dz-ov-sec-hd"><h3>分地市州详情</h3><span>共 ' + (D.cities || []).length + ' 个地市州（仙桃含一、二驻地范围）</span></div>'
-      + switches + cityPanel(cur) + '</div>'
+      + '<div class="ov-metrics dz-metrics">'
+      + dualMetric(b)
+      + metricCard("概算完成", b.gsDone, null, "暂不统计")
+      + metricCard("固定资产完成", b.fixed, pctOrDash(b.fixed, b.gs), "占概算")
+      + metricCard("实际完成", b.actualDone, pctOrDash(b.actualDone, b.sj), "占合同额")
+      + '</div></section>'
+      + '<div class="dz-row2">'
+      + '<div class="card dz-row-card"><div class="card-head"><h2>建安费产值</h2></div>'
+      + '<div class="dz-prod-main"><div class="dz-prod-top">'
+      + '<div class="dz-prod-left"><div class="dz-prod-amount">' + wn(prod.total, 0) + '<small>万元</small></div>'
+      + '<div class="dz-jian-ht">建安费合同额 <b>' + wn(b.jianHt, 0) + '</b> 万元</div>'
+      + '<div class="dz-prod-cats">' + prodLine(cur) + '</div></div>'
+      + donut(prodRate)
+      + '</div>' + extraNote + '</div></div>'
+      + '<div class="card dz-row-card"><div class="card-head"><h2>产值完成比例</h2></div>'
+      + '<div class="dz-rate-body">' + barRows(p) + '</div></div>'
+      + '</div>'
+      + '<div class="dz-narr3">'
+      + narrCard("已完成", parts, "done", true)
+      + narrCard("下一步计划", parts, "next", true)
+      + narrCard("亟需解决的问题", parts, "issue", false)
+      + '</div>'
       + '</div>';
 
-    Array.prototype.forEach.call(host.querySelectorAll(".dz-city-btn"), function (b) {
-      b.addEventListener("click", function () {
-        CITY = b.getAttribute("data-city");
+    Array.prototype.forEach.call(host.querySelectorAll(".dz-city-btn"), function (btn) {
+      btn.addEventListener("click", function () {
+        CITY = btn.getAttribute("data-city");
         renderOv();
       });
     });
@@ -290,7 +336,7 @@
   }
 
   function paintTabs() {
-    Array.prototype.forEach.call(document.querySelectorAll(".dz-tab"), function (b) {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-dz]"), function (b) {
       var on = b.getAttribute("data-dz") === TAB;
       b.classList.toggle("on", on);
       b.setAttribute("aria-current", on ? "true" : "false");
@@ -303,7 +349,7 @@
   }
   function boot() {
     if (!$("#view-dz")) return;
-    Array.prototype.forEach.call(document.querySelectorAll(".dz-tab"), function (b) {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-dz]"), function (b) {
       b.addEventListener("click", function () {
         TAB = b.getAttribute("data-dz") || "overview";
         render();
