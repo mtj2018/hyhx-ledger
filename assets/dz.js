@@ -355,11 +355,16 @@
     Array.prototype.forEach.call(document.querySelectorAll("[data-dz]"), function (b) {
       b.addEventListener("click", function () {
         TAB = b.getAttribute("data-dz") || "overview";
-        render();
+        if (TAB === "shape" && !LOADED) {
+          render();
+          load().then(function () { if (TAB === "shape") render(); });
+        } else {
+          render();
+        }
       });
     });
     render();
-    load().then(function () { if (TAB === "shape") render(); });
+    if (TAB === "shape") load().then(function () { if (TAB === "shape") render(); });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
   window.__dzReload = function () { LOADED = false; return load().then(function () { if (TAB === "shape") render(); return DATA; }); };
