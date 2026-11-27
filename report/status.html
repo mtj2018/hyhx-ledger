@@ -5,20 +5,90 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>数据填报已迁移 · 沪渝高速改扩建工程</title>
-<meta http-equiv="refresh" content="0;url=https://hyhx-ledger.pages.dev/report/status">
-<script>
-(function () {
-  var target = "https://hyhx-ledger.pages.dev/report/status" + location.search + location.hash;
-  location.replace(target);
-})();
-</script>
+<meta http-equiv="refresh" content="4;url=https://hyhx-ledger.pages.dev/report/status">
 <style>
-  body{margin:0;padding:32px 20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;background:#f5f7fb;color:#1f2d3d}
-  a{color:#0f5bd6}
+  :root{--navy:#17324d;--blue:#1f64d8;--line:#dfe7f2;--muted:#66788c;--soft:#f4f7fc}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:
+    radial-gradient(circle at 15% 10%,#e8f0ff 0,transparent 34%),
+    radial-gradient(circle at 85% 90%,#eef4ff 0,transparent 38%),
+    #f5f7fb;color:var(--navy);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
+  .card{width:min(580px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;
+    box-shadow:0 18px 50px rgba(23,50,77,.12);padding:34px 32px 28px}
+  .brand{font-size:12px;letter-spacing:.14em;color:var(--muted)}
+  h1{margin:12px 0 10px;font-size:27px;line-height:1.35;letter-spacing:-.01em}
+  .lead{margin:0;font-size:15px;line-height:1.8;color:#43566b}
+  .lead b{color:var(--navy)}
+  .count{display:flex;align-items:baseline;gap:7px;margin:22px 0 8px}
+  #count{font-size:58px;font-weight:800;line-height:1;color:var(--blue);font-variant-numeric:tabular-nums}
+  .unit{font-size:15px;color:var(--muted)}
+  .bar{height:6px;border-radius:999px;background:#e8eef8;overflow:hidden}
+  .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#4d8df7,#1f64d8);
+    transform-origin:left center;border-radius:999px}
+  .dest{margin-top:24px;padding:16px 18px;background:var(--soft);border:1px solid var(--line);border-radius:14px}
+  .dest .k{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .dest a{color:var(--blue);text-decoration:none;font-weight:600;word-break:break-all;line-height:1.6}
+  .dest a:hover{text-decoration:underline}
+  .actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 20px;
+    border-radius:11px;background:var(--blue);color:#fff;text-decoration:none;font-size:14px;font-weight:600;
+    box-shadow:0 6px 14px rgba(31,100,216,.24)}
+  .btn:hover{background:#1855bd}
+  .hint{margin:0;font-size:13px;line-height:1.7;color:var(--muted)}
+  .rule{margin:24px 0 18px;border:0;border-top:1px solid var(--line)}
+  .foot{font-size:12px;line-height:1.7;color:#8291a3}
+  @media (max-width:520px){.card{padding:28px 22px 24px}h1{font-size:23px}#count{font-size:50px}}
 </style>
 </head>
 <body>
-  <p>数据填报已迁移至 Cloudflare：<a href="https://hyhx-ledger.pages.dev/report/status">https://hyhx-ledger.pages.dev/report/status</a></p>
-  <p>如果没有自动跳转，请点击上面的链接。</p>
+  <main class="card">
+    <div class="brand">沪渝高速改扩建工程 · 数据填报</div>
+    <h1>数据填报已迁移</h1>
+    <p class="lead">本页是<b>旧地址</b>，<b>3 秒后</b>会自动进入新的数据填报页面。</p>
+
+    <div class="count" aria-live="polite"><span id="count">3</span><span class="unit">秒后进入新页面</span></div>
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+
+    <div class="dest">
+      <div class="k">以后请直接访问并收藏这个地址，不要再使用旧链接：</div>
+      <a id="new-link" href="https://hyhx-ledger.pages.dev/report/status">https://hyhx-ledger.pages.dev/report/status</a>
+    </div>
+
+    <div class="actions">
+      <a class="btn" id="go" href="https://hyhx-ledger.pages.dev/report/status">立即进入新页面</a>
+      <p class="hint">如果已收藏旧地址，请删除旧收藏，改为收藏上面的新地址。</p>
+    </div>
+
+    <hr class="rule">
+    <div class="foot">本页仅用于旧链接过渡，数据和填报功能均已迁移至新页面。</div>
+  </main>
+
+<script>
+(function () {
+  var BASE = "https://hyhx-ledger.pages.dev/report/status";
+  var target = BASE + location.search + location.hash;
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var link = document.getElementById("new-link");
+  var go = document.getElementById("go");
+  if (link) link.href = target;
+  if (go) go.href = target;
+
+  var end = Date.now() + 3000;
+  function tick() {
+    var left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+    var ratio = Math.max(0, Math.min(1, (end - Date.now()) / 3000));
+    if (count) count.textContent = String(left);
+    if (bar) bar.style.transform = "scaleX(" + ratio + ")";
+    if (Date.now() >= end) {
+      location.replace(target);
+      return;
+    }
+    setTimeout(tick, 200);
+  }
+  tick();
+})();
+</script>
 </body>
 </html>
