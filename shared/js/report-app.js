@@ -2971,13 +2971,22 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     var base = cloneRep(BASE0), ts = Date.now(), locals = {};
     /* 先把本页要写的文件拍成快照：一次提交内的内容恒定，避免重试时读到半路修改 */
     names.forEach(function (n) { locals[n] = buildFile(n, ts); });
-    var jobs = names.map(function (n) {
-      return ghPut(n, locals[n], function (cloudObj, localObj) {
+    var jobs = [];
+    names.forEach(function (n) {
+      jobs.push({ n: n, p: ghPut(n, locals[n], function (cloudObj, localObj) {
         return recombine(n, cloudObj, localObj, base);
-      }).then(function () { return { ok: n }; }, function (e) { return { bad: n, err: e }; });
+      }) });
     });
-    return Promise.all(jobs).then(function (res) {
-      var bad = res.filter(function (x) { return x && x.bad; }).map(function (x) { return x.bad; });
+    /* 逐文件串行写：避免一次并发打满 GitHub Contents API，也避免同一人的多次保存在服务端乱序。 */
+    var chain = Promise.resolve(), results = [];
+    jobs.forEach(function (j) {
+      chain = chain.then(function () {
+        return j.p.then(function () { results.push({ ok: j.n }); },
+          function (e) { results.push({ bad: j.n, err: e }); });
+      });
+    });
+    return chain.then(function () {
+      var bad = results.filter(function (x) { return x && x.bad; }).map(function (x) { return x.bad; });
       if (!bad.length) { clearPend(names); snap(); tsfSync("ok", ts); return true; }
       if (round < 3) return doPushFiles(bad.concat(pendNames()), round + 1);
       pushFailed(bad, "写入冲突未收敛");

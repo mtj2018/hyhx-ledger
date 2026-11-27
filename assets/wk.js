@@ -10,6 +10,9 @@
   var SEED = "2026-11-19";           /* 现有「分项产值情况」数据作为 11.19 的累计 */
   var MIN = "2026-11-19", MAX = "2029-12-31";
   var DATA = {}, SHA = {}, LOADED = false, CUR = { key: "" }, TM = {}, GRID_READY = 0;
+  /* 打开页面时或每次成功写入后的云端基线；只用于判断“本页改了哪些字段”，
+     写云端时永远以最新读取结果为底，避免 90 秒缓存把别人刚填的数据覆盖掉。 */
+  var SNAP = {};
   var LOCAL_PREVIEW = location.hostname === "127.0.0.1" || location.hostname === "localhost";
   var PH = {
     t2: "填写仙桃城区高架桥主要形象完成情况",
@@ -139,6 +142,20 @@
   }
   function gitPut(files, msg) {
     var base = "https://api.github.com/repos/" + OWNER + "/" + REPO;
+    function fail(label, r, txt) {
+      var e = new Error(label + " HTTP " + r.status + (txt ? " " + String(txt).slice(0, 90) : ""));
+      e.status = r.status;
+      e.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
+      return e;
+    }
+    function jreq(url, opt, label) {
+      return fetch(url, opt).then(function (r) {
+        return r.text().then(function (txt) {
+          if (!r.ok) throw fail(label, r, txt);
+          try { return JSON.parse(txt); } catch (e) { throw new Error(label + " 返回非 JSON"); }
+        });
+      });
+    }
     return gitGet(base + "/git/ref/heads/" + BR).then(function (ref) {
       return gitGet(base + "/git/commits/" + ref.object.sha).then(function (cm) {
         var parent = ref.object.sha, base_tree = cm.tree.sha;
@@ -147,18 +164,26 @@
           if (i >= files.length) return Promise.resolve();
           var f = files[i++];
           var body = JSON.stringify({ content: btoa(unescape(encodeURIComponent(f.txt))), encoding: "base64" });
-          return fetch(base + "/git/blobs", { method: "POST", headers: H(true), body: body })
-            .then(function (r) { return r.json().then(function (j) { if (!j.sha) throw new Error("blob 失败"); entries.push({ path: "data/" + f.name, mode: "100644", type: "blob", sha: j.sha }); return step(); }); });
+          return jreq(base + "/git/blobs", { method: "POST", headers: H(true), body: body }, "blob")
+            .then(function (j) {
+              if (!j.sha) throw new Error("blob 失败");
+              entries.push({ path: "data/" + f.name, mode: "100644", type: "blob", sha: j.sha });
+              return step();
+            });
         }
         return step().then(function () {
-          return fetch(base + "/git/trees", { method: "POST", headers: H(true), body: JSON.stringify({ base_tree: base_tree, tree: entries }) });
-        }).then(function (r) { return r.json(); }).then(function (tree) {
+          return jreq(base + "/git/trees", { method: "POST", headers: H(true), body: JSON.stringify({ base_tree: base_tree, tree: entries }) }, "tree");
+        }).then(function (tree) {
           if (!tree.sha) throw new Error("tree 失败");
-          return fetch(base + "/git/commits", { method: "POST", headers: H(true), body: JSON.stringify({ message: msg, tree: tree.sha, parents: [parent] }) });
-        }).then(function (r) { return r.json(); }).then(function (c) {
+          return jreq(base + "/git/commits", { method: "POST", headers: H(true), body: JSON.stringify({ message: msg, tree: tree.sha, parents: [parent] }) }, "commit");
+        }).then(function (c) {
           if (!c.sha) throw new Error("commit 失败");
-          return fetch(base + "/git/refs/heads/" + BR, { method: "PATCH", headers: H(true), body: JSON.stringify({ sha: c.sha, force: false }) });
-        }).then(function (r) { if (!r.ok) throw new Error("移动分支失败 " + r.status); return true; });
+          return fetch(base + "/git/refs/heads/" + BR, { method: "PATCH", headers: H(true), body: JSON.stringify({ sha: c.sha, force: false }) })
+            .then(function (r) {
+              if (!r.ok) return r.text().then(function (txt) { throw fail("移动分支失败", r, txt); });
+              return true;
+            });
+        });
       });
     });
   }
@@ -168,6 +193,94 @@
       return Promise.all(ts.map(function (t) { return jget("xb-wk-" + t.tid.slice(1) + ".json").catch(function () { return null; }); }));
     });
   }
+
+  /* ---------------- 并发安全写入 ---------------- */
+  function clone(o) { try { return JSON.parse(JSON.stringify(o)); } catch (e) { return {}; } }
+  function eq(a, b) {
+    if (a === b) return true;
+    if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    var ka = Object.keys(a), kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    for (var i = 0; i < ka.length; i++) if (!eq(a[ka[i]], b[ka[i]])) return false;
+    return true;
+  }
+  /* 只把“本页相对打开时基线变化过的叶子值”合到云端最新对象；
+     两个人改同一标段的不同格子时，各格互不覆盖；同一格则后写者生效。 */
+  function mergeVal(latest, local, base) {
+    if (Array.isArray(local)) {
+      var out = Array.isArray(latest) ? latest.slice() : [];
+      var b = Array.isArray(base) ? base : [];
+      for (var i = 0; i < local.length; i++) {
+        if (i >= b.length || !eq(local[i], b[i])) {
+          out[i] = (local[i] && typeof local[i] === "object") ? mergeVal(out[i], local[i], b[i]) : local[i];
+        } else if (out[i] === undefined) out[i] = local[i];
+      }
+      return out;
+    }
+    if (local && typeof local === "object") {
+      var obj = (latest && typeof latest === "object" && !Array.isArray(latest)) ? clone(latest) : {};
+      var bb = (base && typeof base === "object" && !Array.isArray(base)) ? base : {};
+      Object.keys(local).forEach(function (k) {
+        if (!(k in bb) || !eq(local[k], bb[k])) {
+          obj[k] = (local[k] && typeof local[k] === "object") ? mergeVal(obj[k], local[k], bb[k]) : local[k];
+        } else if (obj[k] === undefined) obj[k] = local[k];
+      });
+      return obj;
+    }
+    if (base !== undefined && eq(local, base) && latest !== undefined) return latest;
+    return local;
+  }
+  function prevKeyIn(w, key) {
+    var ks = Object.keys(w || {}).filter(function (x) { return x < key; }).sort();
+    return ks.length ? ks[ks.length - 1] : "";
+  }
+  /* 本周累计 = 上一期累计 + 本周完成；合并后按合并结果重算，避免两个人各改一格时累计口径打架。 */
+  function recalcWk(o, key) {
+    var r = o && o.w && o.w[key];
+    if (!r || r.seed) return;
+    var p = prevKeyIn(o.w, key), pc = (p && o.w[p] && o.w[p].cum) ? o.w[p].cum : [];
+    r.cum = (r.q || []).map(function (v, i) {
+      return (pc[i] === undefined ? 0 : (+pc[i] || 0)) + (+v || 0);
+    });
+  }
+  function snapAll() {
+    SNAP = {};
+    Object.keys(DATA).forEach(function (tid) { SNAP[tid] = clone(DATA[tid]); });
+  }
+  function conflict(msg) { var e = new Error(msg); e.conflict = true; return e; }
+  function wait(ms) { return new Promise(function (res) { setTimeout(res, ms); }); }
+  function commitWeek(tid, name, local, key) {
+    var round = 0;
+    function attempt() {
+      round++;
+      return jget(name).then(function (latest) {
+        var base = SNAP[tid] || { v: 1, tid: tid, w: {} };
+        var merged = mergeVal(latest || { v: 1, tid: tid, w: {} }, local, base);
+        if (!merged.w) merged.w = {};
+        recalcWk(merged, key);
+        return gitPut([{ name: name, txt: JSON.stringify(merged) }], "产值周报 " + tid + " " + key).then(function () {
+          return jget(name).then(function (back) {
+            if (!eq(merged, back)) throw conflict("写入后核对不一致");
+            /* 写入期间用户可能又改了下一格，保留这些新改动，不被刚写回的版本冲掉 */
+            var cur = DATA[tid] || merged;
+            var next = mergeVal(merged, cur, local);
+            recalcWk(next, key);
+            DATA[tid] = next;
+            SNAP[tid] = clone(merged);
+            return true;
+          });
+        });
+      }).catch(function (e) {
+        var msg = String((e && e.message) || e);
+        var retryable = (e && e.conflict) || /HTTP (409|412|422|429|5)|移动分支失败 (409|412|422|429|5)|请求超时|AbortError|Timeout|Failed to fetch|NetworkError/.test(msg);
+        if (round < 4 && retryable) return wait(300 * round).then(attempt);
+        throw e;
+      });
+    }
+    return attempt();
+  }
+
   function load(force) {
     if (LOADED && !force) return Promise.resolve(DATA);
     if (LOADING && !force) return LOADING;
@@ -176,6 +289,7 @@
       DATA = {};
       ts.forEach(function (t) { DATA[t.tid] = { v: 1, tid: t.tid, w: {} }; DATA[t.tid].w[SEED] = seedOf(t.tid); });
       LOADED = true;
+      snapAll();
       try { document.dispatchEvent(new CustomEvent("wk-ready")); } catch (e0f) {}
       return Promise.resolve(DATA);
     }
@@ -183,6 +297,7 @@
     if (cachedData) {
       DATA = cachedData;
       LOADED = true;
+      snapAll();
       try { document.dispatchEvent(new CustomEvent("wk-ready")); } catch (e0c) {}
       /* 刚读取过的快照先直接用，90 秒内不重复请求云端，避免每次切页都重新拉 10 个文件 */
       if (cached.ts && Date.now() - cached.ts < 90000) return Promise.resolve(DATA);
@@ -197,6 +312,7 @@
       });
       DATA = next;
       LOADED = true;
+      snapAll();
       if (ok) writeCache();
       LOADING = null;
       try { document.dispatchEvent(new CustomEvent("wk-ready")); } catch (e0) {}
@@ -214,6 +330,7 @@
     if (!o.w[key]) {
       var p = prevKey(key), pv = p ? o.w[p] : null;
       o.w[key] = { q: (pv ? pv.cum : seedOf(tid).cum).map(function () { return 0; }), cum: (pv ? pv.cum : seedOf(tid).cum).slice(), txt: "", ts: key, lk: 0 };
+      if (SNAP[tid] && SNAP[tid].w && !SNAP[tid].w[key]) SNAP[tid].w[key] = clone(o.w[key]);
     }
     return o.w[key];
   }
@@ -465,8 +582,10 @@
         var o = DATA[tid]; if (!o) { res(false); return; }
         o.ts = Date.now();
         if (location.protocol === "file:" || LOCAL_PREVIEW) { flagMsg("本机预览模式，改动不上传云端"); res(false); return; }
+        var local = clone(o), key = CUR.key;
+        /* 写入串行：同一页面连续改多个格子时，后一次等前一次完成，避免自己跟自己抢分支。 */
         QL = QL.then(function () {
-          return gitPut([{ name: "xb-wk-" + n + ".json", txt: JSON.stringify(o) }], "产值周报 " + tid + " " + CUR.key);
+          return commitWeek(tid, "xb-wk-" + n + ".json", local, key);
         }).then(function () {
           markDot(tid, 1); res(true);
           writeCache();

@@ -49,6 +49,9 @@
     { id: "z5", nm: "五驻地办", sub: "土建9、10标", tids: [9, 10] }
   ];
   var DATA = {}, SHA = {}, LOADED = false, CUR = { zb: "z1", xun: "" }, CONFIRM = {}, TM = {};
+  /* 打开页面时 / 每次成功写入后的云端基线，仅用于识别本页改动过的字段 */
+  var SNAP = {}, XBQL = Promise.resolve();
+  var XB_CACHE_KEY = "hyhx-xb-cache-v1";
   var LOCAL_PREVIEW = location.hostname === "127.0.0.1" || location.hostname === "localhost";
   var ST = { 1: { t: "待施工单位填报", c: "s1" }, 2: { t: "待监理单位复核", c: "s2" }, 3: { t: "已完成（监理已提交）", c: "s3" } };
 
@@ -88,7 +91,7 @@
   }
   function jget(name) {
     return fetch(api(name), { headers: hdr(), cache: "no-store" }).then(function (r) {
-      if (r.status === 404) return null;
+      if (r.status === 404) { delete SHA[name]; return null; }
       if (!r.ok) throw new Error("读取 HTTP " + r.status);
       return r.json().then(function (j) {
         var txt = decodeURIComponent(escape(atob(String(j.content || "").replace(/\s+/g, ""))));
@@ -97,21 +100,136 @@
       });
     });
   }
-  function jput(name, obj) {
-    var payload = { message: "xunbao " + name, content: btoa(unescape(encodeURIComponent(JSON.stringify(obj)))) };
-    if (SHA[name]) payload.sha = SHA[name];
-    return fetch(api(name), {
-      method: "PUT",
-      headers: { "Authorization": "Bearer " + TOKEN, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error("写入 " + r.status); if (j.content) SHA[name] = j.content.sha; return true; }); });
+  function clone(o) { try { return JSON.parse(JSON.stringify(o)); } catch (e) { return {}; } }
+  function eq(a, b) {
+    if (a === b) return true;
+    if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    var ka = Object.keys(a), kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    for (var i = 0; i < ka.length; i++) if (!eq(a[ka[i]], b[ka[i]])) return false;
+    return true;
+  }
+  function mergeVal(latest, local, base) {
+    if (Array.isArray(local)) {
+      var out = Array.isArray(latest) ? latest.slice() : [];
+      var b = Array.isArray(base) ? base : [];
+      for (var i = 0; i < local.length; i++) {
+        if (i >= b.length || !eq(local[i], b[i])) {
+          out[i] = (local[i] && typeof local[i] === "object") ? mergeVal(out[i], local[i], b[i]) : local[i];
+        } else if (out[i] === undefined) out[i] = local[i];
+      }
+      return out;
+    }
+    if (local && typeof local === "object") {
+      var obj = (latest && typeof latest === "object" && !Array.isArray(latest)) ? clone(latest) : {};
+      var bb = (base && typeof base === "object" && !Array.isArray(base)) ? base : {};
+      Object.keys(local).forEach(function (k) {
+        if (!(k in bb) || !eq(local[k], bb[k])) {
+          obj[k] = (local[k] && typeof local[k] === "object") ? mergeVal(obj[k], local[k], bb[k]) : local[k];
+        } else if (obj[k] === undefined) obj[k] = local[k];
+      });
+      return obj;
+    }
+    if (base !== undefined && eq(local, base) && latest !== undefined) return latest;
+    return local;
+  }
+  function prevKeyIn(x, key) {
+    var ks = Object.keys(x || {}).filter(function (k) { return k < key; }).sort();
+    return ks.length ? ks[ks.length - 1] : "";
+  }
+  /* 累计完成 = 上一旬累计 + 本旬完成；只重算本次写入的当期，历史旬的累计保持云端原值。 */
+  function recalcXb(o, key) {
+    var d = key && o && o.x ? o.x[key] : null;
+    if (!d || !d.edited) return;
+    var p = prevKeyIn(o.x, key), pc = (p && o.x[p] && o.x[p].cum) ? o.x[p].cum : [];
+    d.cum = (d.q || []).map(function (v, i) {
+      return (pc[i] === undefined ? 0 : (+pc[i] || 0)) + (+v || 0);
+    });
+  }
+  function conflict(msg) { var e = new Error(msg); e.conflict = true; return e; }
+  function wait(ms) { return new Promise(function (res) { setTimeout(res, ms); }); }
+  function jputMerged(name, local, tid, key) {
+    var round = 0;
+    function attempt() {
+      round++;
+      return jget(name).then(function (latest) {
+        var base = SNAP[tid] || { v: 1, tid: tid, x: {} };
+        var merged = mergeVal(latest || { v: 1, tid: tid, x: {} }, local, base);
+        if (!merged.x) merged.x = {};
+        recalcXb(merged, key);
+        var payload = { message: "xunbao " + name, content: btoa(unescape(encodeURIComponent(JSON.stringify(merged)))) };
+        /* 每次写入前都刚重读过，SHA 一定是最新的；避免拿页面打开时的旧 SHA 直接 PUT */
+        if (SHA[name]) payload.sha = SHA[name];
+        return fetch(api(name), {
+          method: "PUT",
+          headers: { "Authorization": "Bearer " + TOKEN, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          if (!r.ok) {
+            return r.text().then(function (txt) {
+              var e = new Error("写入 HTTP " + r.status + (txt ? " " + txt.slice(0, 90) : ""));
+              e.status = r.status;
+              e.conflict = (r.status === 409 || r.status === 412 || r.status === 422);
+              throw e;
+            });
+          }
+          return r.json();
+        }).then(function () {
+          return jget(name).then(function (back) {
+            if (!eq(merged, back)) throw conflict("写入后核对不一致");
+            var cur = DATA[tid] || merged;
+            var next = mergeVal(merged, cur, local);
+            recalcXb(next, key);
+            DATA[tid] = next;
+            SNAP[tid] = clone(merged);
+            return true;
+          });
+        });
+      }).catch(function (e) {
+        var msg = String((e && e.message) || e);
+        var retryable = (e && e.conflict) || /HTTP (409|412|422|429|5)|请求超时|AbortError|Timeout|Failed to fetch|NetworkError/.test(msg);
+        if (round < 4 && retryable) return wait(300 * round).then(attempt);
+        throw e;
+      });
+    }
+    return attempt();
+  }
+  function readCache() {
+    if (location.protocol === "file:") return null;
+    try {
+      var c = JSON.parse(localStorage.getItem(XB_CACHE_KEY) || "null");
+      return c && c.data ? c : null;
+    } catch (e) { return null; }
+  }
+  function writeCache() {
+    if (location.protocol === "file:") return;
+    try { localStorage.setItem(XB_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: DATA })); } catch (e) {}
   }
   function load(force) {
     if (LOADED && !force) return Promise.resolve(DATA);
     var names = TENDERS.map(function (t, i) { return "xt-xb-" + (i + 1) + ".json"; });
-    return Promise.all(names.map(function (n) { return jget(n).catch(function () { return null; }); })).then(function (arr) {
-      DATA = {}; arr.forEach(function (o, i) { if (o) DATA[i + 1] = o; });
+    var cached = readCache(), cachedData = cached ? cached.data : null;
+    if (cachedData && !force) {
+      DATA = clone(cachedData);
       LOADED = true;
+      SNAP = {};
+      Object.keys(DATA).forEach(function (tid) { SNAP[tid] = clone(DATA[tid]); });
+      try { document.dispatchEvent(new CustomEvent("xb-ready")); } catch (e0c) {}
+      /* 10 个旬报文件首屏读取成本较高，60 秒内先用本机快照展示；
+         写云端时仍会逐个重读最新文件，不会拿缓存当写入基线。 */
+      if (cached.ts && Date.now() - cached.ts < 60000) return Promise.resolve(DATA);
+    }
+    return Promise.all(names.map(function (n) { return jget(n).catch(function () { return null; }); })).then(function (arr) {
+      DATA = {};
+      arr.forEach(function (o, i) {
+        var old = cachedData && cachedData[i + 1];
+        if (o || old) DATA[i + 1] = o || old;
+      });
+      LOADED = true;
+      SNAP = {};
+      Object.keys(DATA).forEach(function (tid) { SNAP[tid] = clone(DATA[tid]); });
+      writeCache();
       try { document.dispatchEvent(new CustomEvent("xb-ready")); } catch (e0) {}
       return DATA;
     });
@@ -129,7 +247,13 @@
   function rec(tid, k) {
     var o = DATA[tid] || (DATA[tid] = { v: 1, tid: tid, x: {} });
     if (!o.x) o.x = {};
-    if (!o.x[k]) o.x[k] = { q: ITEMS.map(function () { return 0; }), cum: ITEMS.map(function () { return 0; }), red: [], sub: 0, sup: 0, ts: k };
+    if (!o.x[k]) {
+      o.x[k] = { q: ITEMS.map(function () { return 0; }), cum: ITEMS.map(function () { return 0; }), red: [], sub: 0, sup: 0, ts: k };
+      if (SNAP[tid]) {
+        if (!SNAP[tid].x) SNAP[tid].x = {};
+        if (!SNAP[tid].x[k]) SNAP[tid].x[k] = clone(o.x[k]);
+      }
+    }
     return o.x[k];
   }
   function prevCum(tid, k) {
@@ -394,7 +518,12 @@
       inp.oninput = function () {
         var a = inp.getAttribute("data-xbc").split("|"), k = CUR.xun || todayKey();
         var c = DATA[1].c || (DATA[1].c = {}), ck = c[k] || (c[k] = {});
+        if (SNAP[1]) {
+          if (!SNAP[1].c) SNAP[1].c = {};
+          if (!SNAP[1].c[k]) SNAP[1].c[k] = clone(ck);
+        }
         var ar = ck[a[0]] || (ck[a[0]] = []);
+        if (SNAP[1] && SNAP[1].c && SNAP[1].c[k] && !SNAP[1].c[k][a[0]]) SNAP[1].c[k][a[0]] = clone(ar);
         var v = parseFloat(inp.value); ar[+a[1]] = isFinite(v) ? v : "";
         var pcell = pane.querySelector('[data-xbcpct="' + a[0] + "|" + a[1] + '"]');
         var dv = DMAP[a[0]][+a[1]];
@@ -460,14 +589,18 @@
           !(cur.q || []).some(function (v) { return +v; }));
         if (blank) { res(true); return; }
         if (location.protocol === "file:" || LOCAL_PREVIEW) { flagMsg("本机预览模式，改动不上传云端"); res(false); return; }
-        /* 手工改过的旬：累计 = 上旬累计 + 本旬，写回前重算，保证 A 页读到正确的累计 */
-        Object.keys(obj.x || {}).forEach(function (kk) {
-          var d = obj.x[kk]; if (!d || !d.edited) return;
-          var p = prevCum(tid, kk);
+        /* 只重算当前旬：历史旬的累计是已固化结果，不能被重算改写 */
+        var d = obj.x && obj.x[k];
+        if (d && d.edited) {
+          var p = prevCum(tid, k);
           d.cum = (d.q || []).map(function (v, i) { return (p ? (+p[i] || 0) : 0) + (+v || 0); });
-        });
-        jput("xt-xb-" + tid + ".json", obj).then(function () { res(true); },
-          function (e) { flagMsg("保存失败：" + e.message); res(false); });
+        }
+        var local = clone(obj);
+        /* 按标段串行写入；写入时会重读最新对象，只合成本页改过的字段 */
+        XBQL = XBQL.then(function () {
+          return jputMerged("xt-xb-" + tid + ".json", local, tid, k);
+        }).then(function () { res(true); },
+          function (e) { flagMsg("保存失败：" + (e && e.message ? e.message : e)); res(false); });
       }, now ? 0 : 900);
     });
   }
