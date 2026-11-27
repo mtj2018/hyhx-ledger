@@ -2120,59 +2120,95 @@ var JRCFG = BASE.jr || { cities: [], cityMap: {}, contracts: {}, tenders: {} };
     var d = TS.sel, cums = tsfCums(d), t = tsfTotals(d, cums), day = DB.tsf[d] || {}, rows = "";
     TG.rows.forEach(function (r, i) {
       var rec = day[r.k] || {};
-      var rs = (r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm) ? ' rowspan="2"' : "";
+      var pair = r.nm && TG.rows[i + 1] && !TG.rows[i + 1].nm;
+      var rs = pair ? ' rowspan="2"' : "";
+      var second = !r.nm && TG.rows[i - 1] && TG.rows[i - 1].nm;
       rows += '<tr class="dr">' + (r.nm ? '<td class="nm"' + rs + ">" + tsfNm(r.nm) + "</td>" : "")
         + '<td class="en">' + r.en + "</td>"
-        + "<td>" + tsfF(tsfDa(r), 1) + '</td><td class="z">' + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
-        + "<td>" + tsfF(cums[r.k].a, 1) + "</td><td>" + tsfP(cums[r.k].a, tsfDa(r)) + "</td>"
-        + "<td>" + tsfF(tsfDb(r), 1) + '</td><td class="z">' + tsfF(rec.b === undefined ? 0 : rec.b, 2) + "</td>"
-        + "<td>" + tsfF(cums[r.k].b, 1) + "</td><td>" + tsfP(cums[r.k].b, tsfDb(r)) + "</td>"
-        + '<td class="tag">' + r.tag + "</td></tr>";
+        + '<td class="n">' + tsfF(tsfDa(r), 1) + '</td><td class="n z">' + tsfF(rec.a === undefined ? 0 : rec.a, 2) + "</td>"
+        + '<td class="n">' + tsfF(cums[r.k].a, 1) + '</td><td class="n">' + tsfP(cums[r.k].a, tsfDa(r)) + "</td>"
+        + '<td class="n">' + tsfF(tsfDb(r), 1) + '</td><td class="n z">' + tsfF(rec.b === undefined ? 0 : rec.b, 2) + "</td>"
+        + '<td class="n">' + tsfF(cums[r.k].b, 1) + '</td><td class="n">' + tsfP(cums[r.k].b, tsfDb(r)) + "</td>"
+        + (second ? "" : '<td class="tag"' + (pair ? rs : "") + ">" + r.tag + "</td>") + "</tr>";
     });
     rows += '<tr class="tot"><td class="nm" colspan="2">合计</td>'
-      + "<td>" + tsfF(t.da, 1) + '</td><td class="z">' + tsfF(t.a, 2) + "</td><td>" + tsfF(t.ca, 1) + "</td><td>" + tsfP(t.ca, t.da) + "</td>"
-      + "<td>" + tsfF(t.db, 1) + '</td><td class="z">' + tsfF(t.b, 2) + "</td><td>" + tsfF(t.cb, 1) + "</td><td>" + tsfP(t.cb, t.db) + "</td><td></td></tr>";
+      + '<td class="n">' + tsfF(t.da, 1) + '</td><td class="n z">' + tsfF(t.a, 2) + '</td><td class="n">' + tsfF(t.ca, 1) + '</td><td class="n">' + tsfP(t.ca, t.da) + "</td>"
+      + '<td class="n">' + tsfF(t.db, 1) + '</td><td class="n z">' + tsfF(t.b, 2) + '</td><td class="n">' + tsfF(t.cb, 1) + '</td><td class="n">' + tsfP(t.cb, t.db) + "</td><td class=\"tag\"></td></tr>";
     var dn = d.replace(/-/g, ".");
     var ttl = TG.title;
+    /* 说明段按基准 PDF 的三行排：首行缩进 2 字，二、三行顶格，字距微调使右端齐平 */
+    var n1 = TG.note1, n1a = n1.indexOf("仅包含主线"), n1b = n1.indexOf("桥跨），填挖量"), nts;
+    if (n1a > -1 && n1b > n1a) {
+      nts = '<p class="nt l1"><b>说明：</b>' + n1.slice(0, n1a + 3) + "</p>"
+        + '<p class="nt l2">' + n1.slice(n1a + 3, n1b + 4) + "</p>"
+        + '<p class="nt l3">' + n1.slice(n1b + 4) + "</p>";
+    } else {
+      nts = '<p class="nt l1" style="left:2.4pt;white-space:normal;width:470.3pt;text-align:justify;text-indent:25pt">说明：' + n1 + "</p>";
+    }
+    /* 表格线条用 SVG 画 0.48pt 细线，避免浏览器把 CSS 边框量化成 0.75pt */
+    var g = "";
+    var vx = [0, 84.8, 141.12, 197.44, 253.76, 310.08, 366.4, 422.72, 479.04, 535.36, 591.68, 641.76];
+    vx.forEach(function (x, i) {
+      var y0 = (i >= 3 && i <= 9) ? 41.12 : 0;
+      var y1 = i === 1 ? 600.32 : 646.72;
+      g += '<line x1="' + x + '" y1="' + y0 + '" x2="' + x + '" y2="' + y1 + '"/>';
+    });
+    var hy = [0, 41.12, 82.24];
+    for (var n = 1; n <= 12; n++) hy.push(+(82.24 + n * 47.04).toFixed(2));
+    hy.forEach(function (y) {
+      var x0 = y === 41.12 ? 141.12 : 0;
+      var x1 = (y === 41.12 || y === 82.24) ? 592.32 : (y === 552.64 ? 591.68 : 641.76);
+      g += '<line x1="' + x0 + '" y1="' + y + '" x2="' + x1 + '" y2="' + y + '"/>';
+    });
     var css = ""
-      + "@page{size:A4 portrait;margin:20mm;}"
+      + "@page{size:A4 portrait;margin:0;}"
       + "*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}"
       + "html,body{margin:0;padding:0;background:#fff;}"
-      + "body{font-family:'Times New Roman','宋体',SimSun,serif;color:#000;}"
-      + ".pg{width:482.76pt;}"
-      + ".ttl{text-align:center;font-family:'黑体',SimHei,sans-serif;font-size:19pt;line-height:22pt;font-weight:700;}"
-      + ".meta{display:flex;justify-content:space-between;font-size:10pt;font-weight:700;line-height:14pt;margin-top:8.4pt;}"
-      + ".tb{width:482.76pt;table-layout:fixed;border-collapse:collapse;margin:1.6pt 0 0;}"
-      + ".tb th,.tb td{border:0.96pt solid #000;padding:0;margin:0;text-align:center;vertical-align:middle;"
-      + "font-weight:400;font-size:9pt;line-height:1.0;}"
-      + ".tb .h1{height:26.16pt;} .tb .h2{height:24.84pt;} .tb .h1 th:not(.grp){font-size:7.5pt;} .tb .h1 th{line-height:1.05;}"
-      + ".tb .h1 th,.tb .h2 th{font-weight:700;}"
-      + ".tb .h2 th{font-size:7.5pt;font-weight:700;}"
-      + ".tb .grp{font-size:10.5pt;font-weight:700;}"
-      + ".tb tr.dr{height:34.73pt;} .tb tr.tot{height:35.28pt;}"
-      + ".tb .nm{line-height:1.45;}"
-      + ".tb .z{background:#EBF8F7;}"
-      + ".nt{font-size:12.37pt;line-height:15.2pt;text-align:justify;text-indent:25.7pt;margin:10pt 0 0;}"
-      + ".nt b{font-weight:700;}"
-      + ".nt.n2{text-indent:25.7pt;margin-top:17.4pt;}";
+      + "body{font-family:'仿宋',FangSong,STFangsong,serif;color:#000;}"
+      + ".pg{position:absolute;left:54pt;top:0;width:481.32pt;height:841.89pt;}"
+      + ".ttl{position:absolute;left:-2.5pt;top:76.9pt;width:481.32pt;text-align:center;"
+      + "font-family:'方正小标宋简体','FZXBSJW--GB1-0','华文中宋',STZhongsong,SimSun,serif;"
+      + "font-size:18.7pt;line-height:22.3pt;font-weight:400;}"
+      + ".meta{position:absolute;left:1.8pt;top:109.6pt;width:442.5pt;display:flex;justify-content:space-between;"
+      + "font-family:'楷体',KaiTi,STKaiti,serif;font-size:9.4pt;line-height:10pt;}"
+      + ".tb{position:absolute;left:0;top:165.6px;width:641.76px;table-layout:fixed;border-collapse:separate;border-spacing:0;}"
+      + ".tb th,.tb td{border:0;padding:0;margin:0;text-align:center;vertical-align:middle;font-weight:400;}"
+      + ".tb tr.h1,.tb tr.h2{height:41.12px;} .tb tr.dr,.tb tr.tot{height:47.04px;}"
+      + ".tb th{font-family:'黑体',SimHei,sans-serif;font-size:10.3pt;line-height:12pt;}"
+      + ".tb tr.h2 th{font-size:7.3pt;line-height:9pt;}"
+      + ".tb td{font-size:9.4pt;line-height:12.7pt;}"
+      + ".tb td.en{font-size:8.3pt;}"
+      + ".tb td.n{font-family:'Times New Roman',Times,serif;font-size:9.4pt;}"
+      + ".tb td.tag{font-family:'Times New Roman',Times,serif;font-size:8.3pt;}"
+      + ".tb .nm{line-height:11.5pt;}"
+      + ".tb tr.tot .nm{font-size:8.3pt;}"
+      + ".tb .z{background:#ECF8F7;}"
+      + ".gr{position:absolute;left:0;top:165.6px;width:641.76px;height:646.72px;}"
+      + ".nt{position:absolute;left:2.4pt;margin:0;font-size:12.5pt;line-height:15.3pt;white-space:nowrap;}"
+      + ".nt.l1{left:27.4pt;top:617.7pt;transform:scaleX(1.0178);transform-origin:0 0;}"
+      + ".nt.l2{top:633.2pt;transform:scaleX(1.0172);transform-origin:0 0;}"
+      + ".nt.l3{top:648.4pt;}"
+      + ".nt.n2{top:679.2pt;text-indent:25pt;transform:scaleX(1.019);transform-origin:0 0;}";
     return "<!DOCTYPE html><html><head><meta charset='utf-8'><title>土石方工程专项施工日报（" + dn + "）</title>"
       + "<style>" + css + "</style></head><body><div class='pg'>"
       + "<div class='ttl'>" + ttl + "</div>"
       + '<div class="meta"><span>统计日期：' + dn + '</span><span>单位：万方</span></div>'
       + "<table class='tb'><colgroup>"
-      + '<col style="width:59.64pt"><col style="width:50.16pt"><col style="width:40.68pt">'
-      + '<col style="width:41.16pt"><col style="width:41.4pt"><col style="width:41.16pt">'
-      + '<col style="width:41.4pt"><col style="width:40.56pt"><col style="width:41.28pt">'
-      + '<col style="width:40.56pt"><col style="width:44.76pt"></colgroup><thead>'
+      + '<col style="width:84.8px"><col style="width:56.32px">'
+      + '<col style="width:56.32px"><col style="width:56.32px"><col style="width:56.32px"><col style="width:56.32px">'
+      + '<col style="width:56.32px"><col style="width:56.32px"><col style="width:56.32px"><col style="width:56.32px">'
+      + '<col style="width:50.08px"></colgroup><thead>'
       + '<tr class="h1"><th rowspan="2">标段</th><th rowspan="2">工程<br>内容</th>'
       + '<th class="grp" colspan="4">整体情况</th><th class="grp" colspan="4">仅保通侧</th><th rowspan="2">备注</th></tr>'
-      + '<tr class="h2"><th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th>'
-      + '<th>设计量</th><th>今日完成</th><th>累计完成</th><th>比例</th></tr>'
+      + '<tr class="h2"><th>设计量</th><th class="z">当日完成<br>数量</th><th>累计完成<br>数量</th><th>累计完成<br>比例</th>'
+      + '<th>设计量</th><th class="z">当日完成<br>数量</th><th>累计完成<br>数量</th><th>累计完成<br>比例</th></tr>'
       + "</thead><tbody>" + rows + "</tbody></table>"
-      + '<p class="nt"><b>说明：</b>' + TG.note1 + "</p>"
+      + '<svg class="gr" viewBox="0 0 641.76 646.72" xmlns="http://www.w3.org/2000/svg" stroke="#000" stroke-width="0.64">' + g + "</svg>"
+      + nts
       + '<p class="nt n2"><b>备注：</b>' + TG.note2 + "</p>"
       + "</div></body></html>";
   }
+
   function tsfPdf() {
     var w = window.open("", "_blank");
     if (!w) { alert("浏览器拦截了新窗口，请允许弹窗后重试"); return; }
