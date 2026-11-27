@@ -111,7 +111,9 @@
     var names = TENDERS.map(function (t, i) { return "xt-xb-" + (i + 1) + ".json"; });
     return Promise.all(names.map(function (n) { return jget(n).catch(function () { return null; }); })).then(function (arr) {
       DATA = {}; arr.forEach(function (o, i) { if (o) DATA[i + 1] = o; });
-      LOADED = true; return DATA;
+      LOADED = true;
+      try { document.dispatchEvent(new CustomEvent("xb-ready")); } catch (e0) {}
+      return DATA;
     });
   }
 
@@ -139,6 +141,7 @@
   /* 对外：数据填报情况页判断旬报逾期（已复核完成数） */
   window.__XB = {
     ready: function () { return LOADED; },
+    load: load,
     done: function (k) {
       if (!LOADED) return null;
       var n = 0;

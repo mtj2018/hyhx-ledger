@@ -599,87 +599,136 @@
     return d;
   }
 
-  /* 逾期统计：返回「应报/已报」以判断警告状态 */
-  var REP_WARN_START = new Date(2026, 11, 20);   /* 工程月报警告识别起点：2026-12-20 */
-  function overdueRep(kind, prevDate, now) {
-    if (dayDiff(prevDate, now) >= 0) return null;      /* 当期还没到期，不存在逾期 */
-    if (ymof(prevDate) < BASE.months[0]) return null;   /* 早于台账起始月，不判定 */
-    if (kind === "month" && prevDate < REP_WARN_START) return null;   /* 工程月报：2026-12-20 起才识别警告 */
-    if (kind === "xb") {
-      if (!window.__XB || !window.__XB.done) return null;
-      var k = (prevDate.getFullYear() + "-" + pad2(prevDate.getMonth() + 1) + "-" + pad2(prevDate.getDate()));
-      var done = window.__XB.done(k);
-      return done === null ? null : { done: done, total: 10, nm: "标段" };
-    }
+  /* ① 各报表填报时间与提醒状态（正常 / 待填报 / N 天后 / 逾期） */
+  var SCHED_REMIND_DAYS = 5;
+  var SCHED_XB_ASKED = false;
+  function schedSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+  function schedAddDays(d, n) {
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    x.setDate(x.getDate() + n);
+    return x;
+  }
+  function schedKey(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+  /* 工程月报应报范围：土建全部；机电 / 交安按纳入月份，机电1、交安1 无起始月限制 */
+  function schedMonthTenders(mth) {
+    var starts = BASE.starts || {};
+    return BASE.tenders.filter(function (t) {
+      if (t.type === "civil") return true;
+      var st = starts[t.tid];
+      return !st || mth >= st;
+    });
+  }
+  /* 返回某期已完成数量；数据源尚未就绪时返回 null，不据此误判逾期 */
+  function schedDone(kind, d) {
+    if (ymof(d) < BASE.months[0]) return null;
+    var i, n = 0, total = 0;
     if (kind === "wk") {
-      if (!window.__WK || !window.__WK.snap) return null;
-      var wk = thursdayOf(prevDate), wkK = wk.getFullYear() + "-" + pad2(wk.getMonth() + 1) + "-" + pad2(wk.getDate());
-      if (wkK <= (window.__WK.seed || "2026-11-19")) return null;   /* 基准周之前不做逾期判定 */
-      var s = window.__WK.snap(wkK);
-      if (!s) return null;
-      var ts = BASE.tenders.filter(function (t) { return /^t\d+$/.test(t.tid); });
-      var n = 0; ts.forEach(function (t) { if (s.rows[t.tid] && s.rows[t.tid].lk) n++; });
-      return { done: n, total: ts.length, nm: "标段" };
+      if (!window.__WK || !window.__WK.snap || !window.__WK.ready()) return null;
+      var wk = thursdayOf(d), wkK = schedKey(wk);
+      if (wkK <= (window.__WK.seed || "2026-11-19")) return null;
+      var ss = window.__WK.snap(wkK);
+      if (!ss) return null;
+      var wts = BASE.tenders.filter(function (t) { return /^t\d+$/.test(t.tid); });
+      total = wts.length;
+      wts.forEach(function (t) { if (ss.rows[t.tid] && ss.rows[t.tid].lk) n++; });
+      return { done: n, total: total };
+    }
+    if (kind === "xb") {
+      if (!window.__XB || !window.__XB.ready || !window.__XB.ready() || !window.__XB.done) return null;
+      var xd = window.__XB.done(schedKey(d));
+      return xd === null ? null : { done: xd, total: 10 };
     }
     if (kind === "month") {
-      var mth = ymof(prevDate), n2 = 0;
-      BASE.tenders.forEach(function (t) {
+      var mth = ymof(d), mts = schedMonthTenders(mth);
+      total = mts.length;
+      mts.forEach(function (t) {
         var lk = lkOf(t.tid, mth);
         var ks = ["shape", "out", "ppl"].concat((BASE.regions && BASE.regions[t.tid]) ? ["reg"] : []);
-        if (ks.every(function (x) { return !!lk[x]; })) n2++;
+        if (ks.every(function (x) { return !!lk[x]; })) n++;
       });
-      return { done: n2, total: BASE.tenders.length, nm: "标段" };
+      return { done: n, total: total };
     }
     if (kind === "jr") {
-      var m2 = ymof(prevDate), n3 = 0;
+      var m2 = ymof(d);
+      total = JRCITY.length;
       JRCITY.forEach(function (c) {
-        var leadOk = (c === "仙桃") ? (jrLocked(c, m2, "lead") && jrLocked(c, m2, "lead2")) : jrLocked(c, m2, "lead");
-        if (leadOk && jrLocked(c, m2, "me") && jrLocked(c, m2, "fj")) n3++;
+        var leadOk = (c === "仙桃")
+          ? (jrLocked(c, m2, "lead") && jrLocked(c, m2, "lead2"))
+          : jrLocked(c, m2, "lead");
+        if (leadOk && jrLocked(c, m2, "me") && jrLocked(c, m2, "fj")) n++;
       });
-      return { done: n3, total: JRCITY.length, nm: "地市州" };
+      return { done: n, total: total };
     }
     return null;
   }
-  function warnCell(o) {
-    if (!o) return '<span class="pg-due-none">—</span>';
-    if (o.done >= o.total) return '<span class="pg-due-ok">正常</span>';
-    var miss = o.total - o.done;
-    return '<span class="pg-warn"><span class="pg-st-dot"></span>逾期 ' + miss + " 个" + o.nm + "未提交</span>";
+  /* 状态页不加载旬报表格，仅拉取旬报数据用于完成判断 */
+  function schedAskXb() {
+    if (!window.__XB || !window.__XB.load || (window.__XB.ready && window.__XB.ready())) return;
+    if (SCHED_XB_ASKED) return;
+    SCHED_XB_ASKED = true;
+    try {
+      window.__XB.load().catch(function () { SCHED_XB_ASKED = false; });
+    } catch (e) { SCHED_XB_ASKED = false; }
   }
-
-  /* ① 各报表填报时间与责任单位 */
+  function schedState(kind, prevDate, nextDate, dueToday, today) {
+    var comp = null;
+    if (dueToday) {
+      comp = schedDone(kind, nextDate);
+      if (comp && comp.done >= comp.total) return { k: "ok", date: nextDate };
+      return { k: "todo", date: nextDate };
+    }
+    if (ymof(prevDate) >= BASE.months[0]) comp = schedDone(kind, prevDate);
+    if (comp && comp.done < comp.total) return { k: "late", date: prevDate };
+    var days = dayDiff(nextDate, today);
+    if (days > 0 && days <= SCHED_REMIND_DAYS) return { k: "soon", date: nextDate, days: days };
+    return { k: "ok", date: nextDate };
+  }
+  function schedFlag(st) {
+    var txt = st.k === "soon" ? st.days + " 天后"
+      : st.k === "todo" ? "待填报"
+      : st.k === "late" ? "逾期" : "正常";
+    var ic = st.k === "ok" ? "✓" : st.k === "late" ? "!" : "◷";
+    return '<span class="sch-flag sch-' + st.k + '"><i class="sch-ic">' + ic + "</i><span>" + txt + "</span></span>";
+  }
   function renderSched() {
     var host = $("#pg-sched");
     if (!host) return;
-    var now = new Date(), tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    /* 当期＝本周四（周四当天是本期填报日，之后仍算这一期，未提交即为逾期） */
-    var dWk = thursdayOf(now), dXun = xunNext(now), d20 = schedNext(20, now), d28 = schedNext(28, now);
+    schedAskXb();
+    var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var wkPrev = thursdayOf(now), wkNext = schedAddDays(wkPrev, 7);
+    var xPrev = xunPrev(now), xNext = xunNext(now);
+    var mPrev = schedPrev(20, now), mNext = schedNext(20, now);
+    var jPrev = schedPrev(28, now), jNext = schedNext(28, now);
     var items = [
-      { nm: "土石方日报", cyc: "每日", due: "每日 24:00 前", org: "各标段施工单位", d: null, warn: null },
-      { nm: "产值周报", cyc: "每周四", due: dstr(dWk), org: "土建 10 个标段施工单位", d: dWk, warn: overdueRep("wk", dWk, tmr) },
-      { nm: "工程旬报", cyc: "每月 10 日 / 20 日 / 30 日", due: dstr(dXun), org: "各标段施工单位填报 · 驻地办复核", d: dXun, warn: overdueRep("xb", xunPrev(now), tmr) },
-      { nm: "工程月报", cyc: "每月 20 日", due: dstr(d20), org: "各标段施工单位 · 驻地办", d: d20, warn: overdueRep("month", schedPrev(20, now), tmr) },
-      { nm: "地市州月报", cyc: "每月 28 日", due: dstr(d28), org: "各地市州驻地办", d: d28, warn: overdueRep("jr", schedPrev(28, now), tmr) },
-      { nm: "晴雨表", cyc: "系统自动更新", due: "—", org: "系统自动更新，不需填报", d: null, warn: null }
+      { kind: "wk", nm: "产值周报", cycle: "每周四", prev: wkPrev, next: wkNext, dueToday: schedSameDay(wkPrev, today) },
+      { kind: "xb", nm: "工程旬报", cycle: "每月 10 / 20 / 月末", prev: xPrev, next: xNext, dueToday: schedSameDay(xNext, today) },
+      { kind: "month", nm: "工程月报", cycle: "每月 20 日", prev: mPrev, next: mNext, dueToday: schedSameDay(mNext, today) },
+      { kind: "jr", nm: "地市州月报", cycle: "每月 28 日", prev: jPrev, next: jNext, dueToday: schedSameDay(jNext, today) }
     ];
     var rows = items.map(function (it, i) {
-      var flag = '<span class="pg-due-none">—</span>', dueCell = it.due;
-      if (it.d) {
-        var dd = dayDiff(it.d, tmr), bad = !!(it.warn && it.warn.done < it.warn.total);
-        if (dd === 0) flag = '<span class="pg-due-today">今日填报</span>';
-        else if (bad || dd < 0) flag = '<span class="pg-due-bad">非正常</span>';
-        else flag = '<span class="pg-due-ok">正常</span>';
-      }
-      return '<tr><td class="c">' + (i + 1) + "</td><td class='nmc'>" + it.nm + "</td>"
-        + '<td class="c">' + it.cyc + "</td><td class=\"c\">" + dueCell + "</td>"
-        + '<td class="c">' + it.org + "</td><td class=\"c\">" + flag + "</td>"
-        + '<td class="c">' + warnCell(it.warn) + "</td></tr>";
+      var st = schedState(it.kind, it.prev, it.next, it.dueToday, today);
+      return '<tr class="sch-row sch-row-' + st.k + '"><td class="c sch-idx">' + pad2(i + 1) + "</td>"
+        + '<td><div class="sch-name">' + it.nm + '</div><div class="sch-cycle">' + it.cycle + "</div></td>"
+        + '<td class="c"><span class="sch-when">' + dstr(st.date) + "</span></td>"
+        + '<td class="c">' + schedFlag(st) + "</td></tr>";
     }).join("");
-    host.innerHTML = '<div class="card-head"><h2>各报表填报时间与责任单位</h2><span class="hint">当日填报为「今日填报」· 逾期未提交为「非正常」· 按期填报为「正常」· 土石方日报不设提醒与警告</span></div>'
-      + '<div class="card-body pg-scroll" style="padding:0 0 6px"><table class="tbl pg-tbl"><thead><tr>'
-      + '<th style="width:46px" class="c">序号</th><th class="nmc">报表</th><th style="width:238px" class="c">填报周期</th>'
-      + '<th style="width:150px" class="c">当期填报时间</th><th class="c">责任单位</th>'
-      + '<th style="width:112px" class="c">提醒状态</th><th style="width:150px" class="c">警告状态</th>'
+    var legend = [["ok", "正常"], ["todo", "待填报"], ["soon", "N 天后"], ["late", "逾期"]].map(function (x) {
+      return '<span class="sch-lg sch-lg-' + x[0] + '"><i></i>' + x[1] + "</span>";
+    }).join("");
+    host.className = "card sch-card";
+    host.innerHTML = '<div class="sch-head">'
+      + '<div class="sch-head-main"><span class="sch-kicker">REPORT SCHEDULE</span>'
+      + '<h2>各报表填报时间与责任单位</h2>'
+      + '<p>按填报周期自动计算 · 默认提前 ' + SCHED_REMIND_DAYS + ' 天开始提醒</p></div>'
+      + '<div class="sch-head-side"><div class="sch-today"><span>今天</span><b>' + dstr(today) + "</b></div>"
+      + '<div class="sch-legend">' + legend + "</div></div></div>"
+      + '<div class="sch-table-wrap"><table class="sch-tbl"><colgroup><col style="width:8%"><col style="width:31%">'
+      + '<col style="width:32%"><col style="width:29%"></colgroup><thead><tr>'
+      + '<th>序号</th><th>报表类型</th><th>填报时间</th><th>提醒状态</th>'
       + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
   }
 
@@ -862,6 +911,10 @@
   document.addEventListener("wk-ready", function () {
     try { renderOut(); } catch (eO) {}
     renderStatus();
+  });
+  /* 旬报数据就绪后，刷新顶部提醒状态 */
+  document.addEventListener("xb-ready", function () {
+    if (onPage("status")) { try { renderSched(); } catch (eX) {} }
   });
 
   /* ================= 地市州月报 ================= */
