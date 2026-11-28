@@ -2,93 +2,30 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive">
-<title>数据填报已迁移 · 沪渝高速改扩建工程</title>
-<meta http-equiv="refresh" content="4;url=https://hyhx-ledger.pages.dev/report/status">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>台账入口已迁移</title>
 <style>
-  :root{--navy:#17324d;--blue:#1f64d8;--line:#dfe7f2;--muted:#66788c;--soft:#f4f7fc}
-  *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:
-    radial-gradient(circle at 15% 10%,#e8f0ff 0,transparent 34%),
-    radial-gradient(circle at 85% 90%,#eef4ff 0,transparent 38%),
-    #f5f7fb;color:var(--navy);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
-  .card{width:min(580px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;
-    box-shadow:0 18px 50px rgba(23,50,77,.12);padding:34px 32px 28px}
-  .brand{font-size:12px;letter-spacing:.14em;color:var(--muted)}
-  h1{margin:12px 0 10px;font-size:27px;line-height:1.35;letter-spacing:-.01em}
-  .lead{margin:0;font-size:15px;line-height:1.8;color:#43566b}
-  .lead b{color:var(--navy)}
-  .count{display:flex;align-items:baseline;gap:7px;margin:22px 0 8px}
-  #count{font-size:58px;font-weight:800;line-height:1;color:var(--blue);font-variant-numeric:tabular-nums}
-  .unit{font-size:15px;color:var(--muted)}
-  .bar{height:6px;border-radius:999px;background:#e8eef8;overflow:hidden}
-  .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#4d8df7,#1f64d8);
-    transform-origin:left center;border-radius:999px}
-  .dest{margin-top:24px;padding:16px 18px;background:var(--soft);border:1px solid var(--line);border-radius:14px}
-  .dest .k{font-size:12px;color:var(--muted);margin-bottom:6px}
-  .dest a{color:var(--blue);text-decoration:none;font-weight:600;word-break:break-all;line-height:1.6}
-  .dest a:hover{text-decoration:underline}
-  .actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 20px;
-    border-radius:11px;background:var(--blue);color:#fff;text-decoration:none;font-size:14px;font-weight:600;
-    box-shadow:0 6px 14px rgba(31,100,216,.24)}
-  .btn:hover{background:#1855bd}
-  .hint{margin:0;font-size:13px;line-height:1.7;color:var(--muted)}
-  .rule{margin:24px 0 18px;border:0;border-top:1px solid var(--line)}
-  .foot{font-size:12px;line-height:1.7;color:#8291a3}
-  @media (max-width:520px){.card{padding:28px 22px 24px}h1{font-size:23px}#count{font-size:50px}}
+html,body{height:100%;margin:0}body{display:flex;align-items:center;justify-content:center;background:#F3F6FA;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;color:#20324A}
+.box{width:min(560px,calc(100% - 40px));background:#fff;border:1px solid #DCE4EE;border-radius:10px;padding:30px 34px;box-shadow:0 10px 32px rgba(31,55,88,.08)}
+h1{font-size:20px;margin:0 0 12px}p{font-size:14px;line-height:1.8;margin:8px 0;color:#53657C}
+a{color:#114C8B;font-weight:600}.tip{font-size:12px;color:#8292A6;margin-top:18px;padding-top:14px;border-top:1px solid #EDF1F6}
 </style>
-</head>
-<body>
-  <main class="card">
-    <div class="brand">沪渝高速改扩建工程 · 数据填报</div>
-    <h1>数据填报已迁移</h1>
-    <p class="lead">本页是<b>旧地址</b>，<b>3 秒后</b>会自动进入新的数据填报页面。</p>
-
-    <div class="count" aria-live="polite"><span id="count">3</span><span class="unit">秒后进入新页面</span></div>
-    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
-
-    <div class="dest">
-      <div class="k">以后请直接访问并收藏这个地址，不要再使用旧链接：</div>
-      <a id="new-link" href="https://hyhx-ledger.pages.dev/report/status">https://hyhx-ledger.pages.dev/report/status</a>
-    </div>
-
-    <div class="actions">
-      <a class="btn" id="go" href="https://hyhx-ledger.pages.dev/report/status">立即进入新页面</a>
-      <p class="hint">如果已收藏旧地址，请删除旧收藏，改为收藏上面的新地址。</p>
-    </div>
-
-    <hr class="rule">
-    <div class="foot">本页仅用于旧链接过渡，数据和填报功能均已迁移至新页面。</div>
-  </main>
-
 <script>
-(function () {
-  var BASE = "https://hyhx-ledger.pages.dev/report/status";
-  var target = BASE + location.search + location.hash;
-  var count = document.getElementById("count");
-  var bar = document.getElementById("bar");
-  var link = document.getElementById("new-link");
-  var go = document.getElementById("go");
-  if (link) link.href = target;
-  if (go) go.href = target;
-
-  var end = Date.now() + 3000;
-  function tick() {
-    var left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
-    var ratio = Math.max(0, Math.min(1, (end - Date.now()) / 3000));
-    if (count) count.textContent = String(left);
-    if (bar) bar.style.transform = "scaleX(" + ratio + ")";
-    if (Date.now() >= end) {
-      location.replace(target);
-      return;
-    }
-    setTimeout(tick, 200);
-  }
-  tick();
+(function(){
+  var p=location.pathname.replace(/^\/hyhx-ledger/,'')||'/';
+  var u='https://hyhx-ledger.pages.dev'+p+location.search+location.hash;
+  var a=document.getElementById('go'); if(a) a.href=u;
+  setTimeout(function(){location.replace(u);},1200);
 })();
 </script>
+</head>
+<body>
+<div class="box">
+<h1>台账入口已迁移</h1>
+<p>旧地址已停用，正在进入新的 Cloudflare 台账系统，请稍候……</p>
+<p><a id="go" href="https://hyhx-ledger.pages.dev/">立即进入新系统</a></p>
+<p class="tip">新地址：hyhx-ledger.pages.dev　请更新收藏夹、二维码和群内链接。</p>
+</div>
 </body>
 </html>

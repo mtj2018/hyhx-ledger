@@ -1,76 +1,31 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="../assets/b.cfg.js?v=261127225640"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>台账入口已迁移</title>
+<style>
+html,body{height:100%;margin:0}body{display:flex;align-items:center;justify-content:center;background:#F3F6FA;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;color:#20324A}
+.box{width:min(560px,calc(100% - 40px));background:#fff;border:1px solid #DCE4EE;border-radius:10px;padding:30px 34px;box-shadow:0 10px 32px rgba(31,55,88,.08)}
+h1{font-size:20px;margin:0 0 12px}p{font-size:14px;line-height:1.8;margin:8px 0;color:#53657C}
+a{color:#114C8B;font-weight:600}.tip{font-size:12px;color:#8292A6;margin-top:18px;padding-top:14px;border-top:1px solid #EDF1F6}
+</style>
 <script>
-(function () {
-  var BUILD = "261127225640";
-  if (!BUILD || (location.protocol !== "http:" && location.protocol !== "https:")) return;
-  var verUrl = (location.pathname.indexOf("/report/") >= 0 ? "../ver.json" : "ver.json") + "?t=" + Date.now();
-  fetch(verUrl, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
-    if (!j || !j.build || j.build === BUILD) return;
-    var key = "pg-ver-" + location.pathname;
-    try { if (sessionStorage.getItem(key) === j.build) return; sessionStorage.setItem(key, j.build); } catch (e) {}
-    location.replace(location.pathname + "?v=" + encodeURIComponent(j.build) + location.hash);
-  }).catch(function () {});
+(function(){
+  var p=location.pathname.replace(/^\/hyhx-ledger/,'')||'/';
+  var u='https://hyhx-ledger.pages.dev'+p+location.search+location.hash;
+  var a=document.getElementById('go'); if(a) a.href=u;
+  setTimeout(function(){location.replace(u);},1200);
 })();
 </script>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive">
-<title>土石方日报 · 沪渝高速改扩建工程</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F2C5C'/%3E%3Cpath d='M9 27 L14 6 M20 27 L23 12' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="../assets/b.css?v=261127225640">
-<link rel="stylesheet" href="../assets/xb.css?v=261127225640">
-<link rel="stylesheet" href="../shared/css/ui.css?v=261127225640">
 </head>
-<body data-page="daily" data-view="daily">
-<header class="top">
-  <div class="top-in">
-    <div class="top-main">
-      <h1 class="top-name">沪渝高速公路武汉至宜昌段改扩建工程</h1>
-      <div class="top-sub">建设单位 <span>湖北汉宜高速公路有限公司</span>　·　G50 沪渝高速　·　270.2 公里　·　计划工期 48 个月</div>
-    </div>
-    <div class="top-meta">
-      <div class="sync-chip" id="bx-chip" style="display:none" title="本页改动会自动保存并写回云端"><span class="sc-dot"></span><span class="sc-t"></span></div>
-    </div>
-  </div>
-</header>
-
-<div class="shell">
-  <aside class="rail">
-    <nav aria-label="主要导航">
-      <a class="nav-item" href="status.html"><span>数据填报情况</span></a>
-      <a class="nav-item is-on" href="daily.html" aria-current="page"><span>土石方日报</span></a>
-      <a class="nav-item" href="weekly.html"><span>产值周报</span></a>
-      <a class="nav-item" href="ten-day.html"><span>工程旬报</span></a>
-      <a class="nav-item" href="monthly.html"><span>工程月报</span></a>
-      <a class="nav-item" href="regions.html"><span>地市州月报</span></a>
-      <a class="nav-item nav-tail" href="weather.html"><span>晴雨表</span></a>
-    </nav>
-  </aside>
-  <main id="main-content" tabindex="-1">
-<section class="view is-on" id="view-tsf">
-      <div class="card">
-        <div class="card-head"><h2>土石方工程施工日报</h2><span class="hint pg-flag" id="tsf-hint" style="display:inline-block"><b>每日更新</b><span class="mdot">·</span>填报完成后点击「提交」</span><span class="pg-money">单位：万方</span></div>
-      </div>
-      <div class="pg-cols">
-        <div style="min-width:0"><div class="card" id="tsf-tbl"></div></div>
-        <div class="pg-right">
-          <div class="card">
-            <div class="card-head"><h2>填报日期</h2><span class="hint">点击日期切换</span></div>
-            <div class="tsf-cal" id="tsf-cal"></div>
-          </div>
-          <div class="card" id="tsf-sum"></div>
-        </div>
-      </div>
-    </section>
-  </main>
+<body>
+<div class="box">
+<h1>台账入口已迁移</h1>
+<p>旧地址已停用，正在进入新的 Cloudflare 台账系统，请稍候……</p>
+<p><a id="go" href="https://hyhx-ledger.pages.dev/">立即进入新系统</a></p>
+<p class="tip">新地址：hyhx-ledger.pages.dev　请更新收藏夹、二维码和群内链接。</p>
 </div>
-<script src="../shared/js/core/sync-core.js?v=261127225640"></script>
-<script src="../shared/js/gh-graphql.js?v=261127225640"></script>
-<script src="../shared/js/report-app.js?v=261127225640"></script>
-
-<script src="../shared/js/ui.js?v=261127225640"></script>
 </body>
 </html>
